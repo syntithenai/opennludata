@@ -5,12 +5,12 @@ import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import ReactTags from 'react-tag-autocomplete'
 
-export default function NluExampleRow(props) {
+export default function NluSkillsRow(props) {
     const [selectionState, setSelectionState] = useState({})
     const {item, splitNumber, style} = props;
     const [newEntity, setNewEntity] = useState('')
     // for ReactTags format using objects
-    const [tags, setTags] = useState([])
+     const [tags, setTags] = useState([])
     const [skills, setSkills] = useState([])
     const reactTags = React.createRef()
     const reactSkills = React.createRef()
@@ -58,7 +58,6 @@ export default function NluExampleRow(props) {
         newItem.skills = newSkills.map(function(newSkill) { return newSkill.name})
         props.saveItem(newItem,props.splitNumber)
       }
-    
         
     function createSelection(field, start, end) {
         if (field) {
@@ -143,23 +142,13 @@ export default function NluExampleRow(props) {
         props.saveItem(newItem,props.splitNumber)
     }
     
-    
-    function setSkill(skill, splitNumber) {
-        //var newItem = item
-        //item.isSelected = true;
-        //props.saveItem(newItem,props.splitNumber)
-    }
-    
     function deselectItem(splitNumber) {
         var newItem = item
         item.isSelected = false;
         props.saveItem(newItem,props.splitNumber)
     }      
-       var intentOptions = props.lookups.intentLookups && props.lookups.intentLookups.sort().map(function(intentKey,i) {
+       var intentOptions = props.intentLookups && props.intentLookups.sort().map(function(intentKey,i) {
           return <Dropdown.Item key={i} value={intentKey} onClick={function(e) {intentChanged(intentKey)}}  >{intentKey}</Dropdown.Item>
-       })
-       var skillOptions = props.lookups.skillLookups && props.lookups.skillLookups.sort().map(function(skillKey,i) {
-          return <Dropdown.Item key={i} value={skillKey} onClick={function(e) {setSkill(skillKey,splitNumber)}}  >{skillKey}</Dropdown.Item>
        })
        // ONE PER ENTITY FOR THIS EXAMPLE
        var entitiesDropdowns = item && item.entities && item.entities.map(function(entity,i) {
@@ -213,7 +202,11 @@ export default function NluExampleRow(props) {
                    {!item.isSelected && <Button style={{float: 'left'}} size="lg" variant="secondary" onClick={function() {selectItem(splitNumber)}} ><img src='/check.svg' /></Button>}
                   {item.isSelected && <Button style={{float: 'left'}} size="lg" variant="success" onClick={function() {deselectItem(splitNumber)}} ><img src='/check.svg' /></Button>}
                   
+                  {item.intent && <Button  style={{float:'right', marginLeft:'0.2em'}}  variant="success"  onClick={function() {props.saveNlu(splitNumber)}} ><img src="/thumb-up.svg" alt="Save" /> Save</Button>}
+                  {!item && <Button   style={{float:'right', marginLeft:'0.2em'}} variant="secondary" ><img src="/thumb-up.svg" alt="Save" /> Save</Button>} 
+                  <Button  variant="danger" style={{float:'right'}} onClick={function(e) {props.deleteItem(splitNumber,(item.id ? item.id : ''))}} ><img src="/thumb-down.svg" alt="Delete" /> Delete</Button>
                   
+                 
                   <Dropdown  style={{float:'left'}} as={ButtonGroup}>
                   <Dropdown.Toggle split  size="sm"  id="dropdown-split-basic" ></Dropdown.Toggle>
                   <Button   size="sm" >{item.intent ? item.intent.toString() : 'Select Intent'} </Button>
@@ -229,7 +222,7 @@ export default function NluExampleRow(props) {
                   </Dropdown>
                   <span style={{float:'left'}}>{entitiesDropdowns}</span>
                  
-                   <div style={{float:'left'}}>
+                  <div style={{float:'left'}}>
                    <ReactTags
                     placeholderText="Add to skill"
                     autoresize={false}
