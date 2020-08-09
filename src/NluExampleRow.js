@@ -1,166 +1,26 @@
 /* global window */
 import {Button,   Dropdown, ButtonGroup } from 'react-bootstrap'
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import ReactTags from 'react-tag-autocomplete'
+import useNluRow from './useNluRow'
+
 
 export default function NluExampleRow(props) {
-    const [selectionState, setSelectionState] = useState({})
-    const {item, splitNumber, style} = props;
-    const [newEntity, setNewEntity] = useState('')
-    // for ReactTags format using objects
-    const [tags, setTags] = useState([])
-    const [skills, setSkills] = useState([])
-    const reactTags = React.createRef()
-    const reactSkills = React.createRef()
-    // tags
-    // tags
-    useEffect(() => {
-        if (item.tags) setTags(item.tags.map(function(tag,i) {return {id:i, name:tag}}))
-        if (item.skills) setSkills(item.skills.map(function(skill,i) {return {id:i, name:skill}}))
-    },[item])
-    
-     function onTagDelete (i) {
-         console.log('ondel',i)
-        const newTags = tags.slice(0)
-        newTags.splice(i, 1)
-        setTags(newTags)
-        var newItem = item
-        newItem.tags = newTags.map(function(newTag) { return newTag.name})
-        props.saveItem(newItem,props.splitNumber)
-      }
-     
-     function onTagAddition (tag) {
-        console.log('onadd',tag)
-        const newTags = [].concat(tags, tag)
-        setTags(newTags)
-        var newItem = item
-        newItem.tags = newTags.map(function(newTag) { return newTag.name})
-        props.saveItem(newItem,props.splitNumber)
-      }
-      
-      function onSkillDelete (i) {
-         console.log('ondel',i)
-        const newSkills = skills.slice(0)
-        newSkills.splice(i, 1)
-        setSkills(newSkills)
-        var newItem = item
-        newItem.skills = newSkills.map(function(newSkill) { return newSkill.name})
-        props.saveItem(newItem,props.splitNumber)
-      }
-     
-     function onSkillAddition (skill) {
-        console.log('onadd',skill)
-        const newSkills = [].concat(skills, skill)
-        setSkills(newSkills)
-        var newItem = item
-        newItem.skills = newSkills.map(function(newSkill) { return newSkill.name})
-        props.saveItem(newItem,props.splitNumber)
-      }
-    
-        
-    function createSelection(field, start, end) {
-        if (field) {
-            if( field.createTextRange ) {
-                var selRange = field.createTextRange();
-                selRange.collapse(true);
-                selRange.moveStart('character', start);
-                selRange.moveEnd('character', end-start);
-                selRange.select();
-            } else if( field.setSelectionRange ) {
-                field.setSelectionRange(start, end);
-            } else if( field.selectionStart ) {
-                field.selectionStart = start;
-                field.selectionEnd = end;
-            }
-            field.focus();
-        }
-    }
-    
-    function updateExampleContent(content) {
-        if (item) {
-            const newItem = JSON.parse(JSON.stringify(item));
-            newItem.example = content;
-            props.saveItem(newItem,props.splitNumber)
-        }
-    }
-    
-    function entityClicked(entityKey,entityType) {
-        if (item.entities)  {
-            var entities = item.entities
-            if (! selectionState || !selectionState.textSelection || selectionState.textSelection.length === 0) {
-                // select text in string
-                if (entities[entityKey]) {
-                   createSelection(document.getElementById('example_input_'+splitNumber),entities[entityKey].start,entities[entityKey].end)
-                }
-            } else {
-                entityTypeChanged(entityKey,entityType);
-            }
-        }
-    }
-    
-    function entityTypeChanged(entityNumber,type) {
-        var newItem = item
-        if (item.entities) {
-            var newEntities = item.entities ? item.entities : []
-            var entity = newEntities[entityNumber] ? newEntities[entityNumber] : {}
-            entity.type = type
-            if (selectionState && selectionState.textSelection) {
-                entity.value = selectionState.textSelection
-                entity.start = selectionState.startTextSelection
-                entity.end = selectionState.endTextSelection
-            }
-            if (!newEntities[entityNumber]) newEntities.push(entity)
-            else newEntities[entityNumber] = entity
-            
-            newItem.entities = newEntities
-            setSelectionState(null)
-            props.saveItem(newItem,props.splitNumber)
-        }
-        
-    }
-    
-    function intentChanged(intent) {
-        var newItem = item 
-        newItem.intent = intent
-        props.saveItem(newItem,props.splitNumber)
-    }
- 
-    
-    function entityDelete(entityNumber) {
-        if (item.entities) {
-            var newItem = item 
-            var newEntities = item.entities.slice(0,entityNumber).concat(item.entities.slice(entityNumber + 1))
-            newItem.entities = newEntities
-            props.saveItem(newItem,props.splitNumber)
-        }
-    }
-    
-    function selectItem(splitNumber) {
-        var newItem = item
-        item.isSelected = true;
-        props.saveItem(newItem,props.splitNumber)
-    }
-    
-    
-    function setSkill(skill, splitNumber) {
-        //var newItem = item
-        //item.isSelected = true;
-        //props.saveItem(newItem,props.splitNumber)
-    }
-    
-    function deselectItem(splitNumber) {
-        var newItem = item
-        item.isSelected = false;
-        props.saveItem(newItem,props.splitNumber)
-    }      
+       const  {item, splitNumber , style} = props;
+       const {    
+            intentTitle, setIntentTitle, selectionState, setSelectionState, newEntity, setNewEntity, tags, skills, reactTags, reactSkills, 
+            onTagDelete, onTagAddition, onSkillDelete,onSkillAddition, updateExampleContent, entityClicked, entityTypeChanged, intentChanged, entityDelete, selectItem,  deselectItem
+        } = useNluRow(props.item, props.saveItem, props.splitNumber, props.style)
+        const [textInput, setTextInput] = useState(props.item && props.item.example ? props.item.example  : '')
+         
        var intentOptions = props.lookups.intentLookups && props.lookups.intentLookups.sort().map(function(intentKey,i) {
           return <Dropdown.Item key={i} value={intentKey} onClick={function(e) {intentChanged(intentKey)}}  >{intentKey}</Dropdown.Item>
        })
-       var skillOptions = props.lookups.skillLookups && props.lookups.skillLookups.sort().map(function(skillKey,i) {
-          return <Dropdown.Item key={i} value={skillKey} onClick={function(e) {setSkill(skillKey,splitNumber)}}  >{skillKey}</Dropdown.Item>
-       })
+       //var skillOptions = props.lookups.skillLookups && props.lookups.skillLookups.sort().map(function(skillKey,i) {
+          //return <Dropdown.Item key={i} value={skillKey} onClick={function(e) {setSkill(skillKey,props.splitNumber)}}  >{skillKey}</Dropdown.Item>
+       //})
        // ONE PER ENTITY FOR THIS EXAMPLE
        var entitiesDropdowns = item && item.entities && item.entities.map(function(entity,i) {
            var entityOptions = props.lookups.entityLookups.sort().map(function(entityKey,j) {
@@ -206,22 +66,24 @@ export default function NluExampleRow(props) {
           </Dropdown.Menu>
         </Dropdown>)
        }
-       var buttonImageStyle={color:'white', height:'2em'}
+       //var buttonImageStyle={color:'white', height:'2em'}
        return item && <div style={style} className={splitNumber % 2 ? 'ListItemOdd' : 'ListItemEven'}>
                <div style={{position:'relative', width: '100%', textAlign:'left',  borderTop: '2px solid black'}}>
                   
-                   {!item.isSelected && <Button style={{float: 'left'}} size="lg" variant="secondary" onClick={function() {selectItem(splitNumber)}} ><img src='/check.svg' /></Button>}
-                  {item.isSelected && <Button style={{float: 'left'}} size="lg" variant="success" onClick={function() {deselectItem(splitNumber)}} ><img src='/check.svg' /></Button>}
+                   {!item.isSelected && <Button style={{float: 'left'}} size="lg" variant="secondary" onClick={function() {selectItem(splitNumber)}} ><img  style={{height:'1em'}} src='/check.svg' alt="Select" /></Button>}
+                  {item.isSelected && <Button style={{float: 'left'}} size="lg" variant="success" onClick={function() {deselectItem(splitNumber)}} ><img  style={{height:'1em'}} src='/check.svg' alt="Deselect" /></Button>}
                   
+                <Button  variant="danger" style={{float:'right'}} onClick={function(e) {if (window.confirm('Really delete')) {props.deleteItem(splitNumber,(item.id ? item.id : ''))}}} ><img src="/thumb-down.svg" alt="Delete" /> Delete</Button>
+
                   
                   <Dropdown  style={{float:'left'}} as={ButtonGroup}>
                   <Dropdown.Toggle split  size="sm"  id="dropdown-split-basic" ></Dropdown.Toggle>
                   <Button   size="sm" >{item.intent ? item.intent.toString() : 'Select Intent'} </Button>
                   <Dropdown.Menu>
-                   <form  style={{display:'inline'}} onSubmit={function(e) {e.preventDefault()}}>
+                   <form  style={{display:'inline'}} onSubmit={function(e) {e.preventDefault(); intentChanged(intentTitle)}}>
                         <div className="form-group">
-                          <input type="text" className="form-control" onChange={function(e) {intentChanged(e.target.value)}}
-                        value={item.intent ? item.intent : ''} />
+                          <input type="text" className="form-control" value={intentTitle} onChange={function(e) {setIntentTitle(e.target.value)}}
+                         />
                         </div>
                       </form>
                       {intentOptions}
@@ -232,6 +94,8 @@ export default function NluExampleRow(props) {
                    <div style={{float:'left'}}>
                    <ReactTags
                     placeholderText="Add to skill"
+                    minQueryLength={1}
+                    maxSuggestionsLength={50}
                     autoresize={false}
                     allowNew={true}
                     ref={reactSkills}
@@ -244,6 +108,8 @@ export default function NluExampleRow(props) {
                   <div style={{float:'left'}}>
                    <ReactTags
                     placeholderText="Add new tag"
+                    minQueryLength={1}
+                    maxSuggestionsLength={50}
                     autoresize={false}
                     allowNew={true}
                     ref={reactTags}
@@ -261,7 +127,7 @@ export default function NluExampleRow(props) {
                      var textSelection = window.getSelection().toString(); 
                      setSelectionState({textSelection:textSelection, textSelectionFrom: splitNumber, startTextSelection: e.target.selectionStart, endTextSelection: e.target.selectionEnd})
                   }}  
-                   type='text' style={{width:'80%'}} value={item.example} id={"example_input_"+splitNumber} onChange={function(e) { updateExampleContent(e.target.value)}} />
+                   type='text' style={{width:'80%'}} value={textInput} id={"example_input_"+splitNumber} onChange={function(e) { setTextInput(e.target.value); updateExampleContent(e.target.value)}} />
                   
                   
                 

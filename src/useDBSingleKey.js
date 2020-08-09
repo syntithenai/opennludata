@@ -1,4 +1,8 @@
-import {useEffect, useReducer} from 'react';
+// USE A SINGLE LOCALSTORAGE KEY FOR PERSISTENCE
+// this is much faster than using set/getItem for each item
+// workable for many thousands of rows
+import { useEffect, useReducer} from 'react';
+
 import {generateObjectId} from './utils'
 import localforage from 'localforage'
 
@@ -8,6 +12,10 @@ function reducer(state, action) {
     case "append":
       if (action.item) {
         return [...state, action.item];
+      } else return state
+     case "prepend":
+      if (action.item) {
+        return [action.item,...state];
       } else return state
     case "insert":
       if (action.item && typeof action.index === "number" && action.index >= 0) {
@@ -60,16 +68,10 @@ export default function useDB(database, databaseTable,singleKey) {
             throw new Error("Missing ID value in getId")
         }
     }
-    //function getIdForIndex(index) {
-        //if (items && items[index] && items[index].id) {
-            //return items[index].id
-        //} else {
-            //throw new Error("Missing ID value in getIdForIndex")
-        //}
-    //}
 
     function loadAll() {
         localforageStorage.getItem(singleKey).then(function(res) {
+          console.log(['loadall',database, databaseTable,singleKey,res])
           dispatch({ type: "replaceall", items: res ? res : []});
         })
     }
@@ -77,6 +79,7 @@ export default function useDB(database, databaseTable,singleKey) {
     
     // save or create
     function saveItem(item,index) {
+        console.log(['save',item,index])
         if (item) {
             // update sources and save text in seperate localstorage
             // ensure id
@@ -86,11 +89,15 @@ export default function useDB(database, databaseTable,singleKey) {
                 item.id = generateObjectId()
             }
             if (items.length === 0) {
+                console.log(['save append len '])
+        
                 dispatch({ type: "append",item: item });
             } else {
                 if ((index === null || index === undefined)  || isNewItem) {
-                    dispatch({ type: "append",item: item });
+                console.log(['save append'])
+                    dispatch({ type: "prepend",item: item });
                 } else {
+                    console.log(['save update'])
                     dispatch({ type: "update",item: item, index: index });
                 }
             }   

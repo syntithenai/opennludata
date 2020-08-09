@@ -2,12 +2,13 @@ import React from 'react';
 import {useState} from 'react';
 import {BrowserRouter as  Router, Route, Link  } from 'react-router-dom'
 import LocalStorageUploadManager from './LocalStorageUploadManager'
+import ListsManager from './ListsManager'
 import NluExampleEditor from './NluExampleEditor'
-import NavbarComponent from './NavbarComponent'
-import {HelpText} from './Components'
+import NavbarComponent from './components/NavbarComponent'
+import {HelpText} from './components/Components'
 import NluImportEditor from './NluImportEditor'
 import NluSkillsEditor from './NluSkillsEditor'
-import {Nav,  Button} from 'react-bootstrap'
+import {Button} from 'react-bootstrap'
 
 function SiteMenu(props) {
     var astyle={paddingLeft:'0.3em'}
@@ -19,22 +20,32 @@ function SiteMenu(props) {
                 <Link style={astyle} to="/examples" ><Button>Organise</Button></Link>
                 <Link style={astyle} to="/skills" ><Button>Skills </Button></Link>
                 <Link style={astyle} to="/search" ><Button>Search Community </Button></Link>
-                
         </div>
 }
 
 function App() {
     
     const [waiting, setWaiting] = useState(false)
-    const [importFrom, setImportFrom] = useState(null)
-    const [importNluFrom, setImportNluFrom] = useState(null)
+    const [pageMessage, setPageMessage] = useState('')  
+    
+    //const [importFrom, setImportFrom] = useState(null)
+    // example summaries
     const [intentLookups, setIntentLookups] = useState([])
     const [entityLookups, setEntityLookups] = useState([])
     const [tagLookups, setTagLookups] = useState([])
     const [skillLookups, setSkillLookups] = useState([])
+    const [listsLookups, setListsLookups]= useState([])
     const [selectedTally, setSelectedTally] = useState(0)
-    const [pageTitle, setPageTitle] = useState('NLU Toolsddd')  
-    const [pageMessage, setPageMessage] = useState('')  
+    
+    // list summaries
+    const [listTally, setListTally] = useState(0)
+    const [selectedListTally, setSelectedListTally] = useState(0)
+    const [listTallyByList, setListTallyByList] = useState({})
+    const [selectedListTallyByList, setSelectedListTallyByList] = useState({})
+    
+    // search bar
+    const [skillFilterValue, setSkillFilterValue] = useState('')
+    
     
     function startWaiting() {
         setWaiting(true)
@@ -45,17 +56,42 @@ function App() {
             setWaiting(false)
         },300)
     }
-    
-    function fileSelected(source) {
-        setImportFrom(source)
+
+    function updateLists(lists) {
+        if (lists) {
+            var newSelectedLists = {}
+            var newLists = {}
+            var tally = 0;
+             var selectedTally = 0;
+            lists.map(function(listItem) {
+                if (listItem && listItem.tags && listItem.tags.length > 0) {
+                    if (listItem.isSelected) {
+                             selectedTally += 1
+                    }
+                    listItem.tags.map(function(tag) {
+                        if (tag && tag.trim().length > 0) {
+                            if (listItem.isSelected) {
+                                 newLists[tag] = (newLists[tag] > 0) ? newLists[tag] + 1 : 1
+                                 newSelectedLists[tag] = (newSelectedLists[tag] > 0) ? newSelectedLists[tag] + 1 : 1
+                            } else {
+                                newLists[tag] = (newLists[tag] >0) ? newLists[tag] + 1 : 1
+                            }
+                        }
+                    })
+                    tally += 1;
+                }
+            })
+            setListTally(tally)
+            setSelectedListTally(selectedTally)
+            setSelectedListTallyByList(newSelectedLists)
+            setListTallyByList(newLists)
+            setListsLookups(Object.keys(newLists))
+            console.log('updated lists', newLists)
+        }
     }
-    
-    function saveNluItems(items) {
-        console.log(['SAVE NLU',items])
-        setImportNluFrom(items)
-    }
+
     function updateLookups(items) {
-        console.log(['UPDATELOOKUPS',items])
+        //console.log(['UPDATELOOKUPS',items])
         if (items && items.length > 0) {
             var tags = {}
             var intents = {}
@@ -68,11 +104,13 @@ function App() {
                if (item.tags && item.tags.length > 0) {
                    item.tags.map(function(tag) {
                       tags[tag] = true  
+                      return null
                    })
                }
                if (item.skills && item.skills.length > 0) {
                    item.skills.map(function(skill) {
                       skills[skill] = true  
+                      return null
                    })
                }
                if (item.entities && item.entities.length > 0) {
@@ -80,8 +118,10 @@ function App() {
                       if (entity.type) {
                           entities[entity.type] = true  
                       }
+                      return null
                    })
                }
+               return null
             })
             const distinct = function(value,index,self) {
                 return self.indexOf(value) === index;
@@ -93,36 +133,42 @@ function App() {
             setSelectedTally(selected)
         }
     }
-    const lookups = {intentLookups,entityLookups,tagLookups,skillLookups, selectedTally}
+    const lookups = {intentLookups,entityLookups,tagLookups,skillLookups, selectedTally, listsLookups, listTally, selectedListTally, listTallyByList, selectedListTallyByList}
   return (
     <div className="OpenNluDataApp">
+        
         <Router>
                 <Route exact path='*' render={
                     (props) => {
-                        return <NavbarComponent waiting={waiting} history={props.history} />
+                        return <NavbarComponent waiting={waiting} history={props.history} message={pageMessage} setPageMessage={setPageMessage}    />
                     }}
                 />
                 
-                <Route exact path='/menu' component={SiteMenu}  title={pageTitle} message={pageMessage}   />
+                <Route exact path='/menu' component={SiteMenu} />
                 <Route path='/sources' render={
-                    (props) => <LocalStorageUploadManager {...props} setPageTitle={setPageTitle} startWaiting={startWaiting} stopWaiting={stopWaiting} fileSelected={fileSelected}  setPageMessage={setPageMessage}    />
+                    (props) => <LocalStorageUploadManager {...props}  startWaiting={startWaiting} stopWaiting={stopWaiting}   setPageMessage={setPageMessage}  updateLookups={updateLookups} updateLists={updateLists} lookups={lookups}  />
                 }/>
                 <Route path='/import' render={
-                    (props) => <NluImportEditor {...props}  setPageTitle={setPageTitle}  saveNluItems={saveNluItems}  importFrom={importFrom} setImportFrom={setImportFrom} lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}  updateLookups={updateLookups}  setPageMessage={setPageMessage}    />}
+                    (props) => <NluImportEditor {...props}        lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}  updateLookups={updateLookups}  setPageMessage={setPageMessage}    />}
                           
                 />
                 
-                <Route path='/examples' render={(props) => <NluExampleEditor {...props} setPageTitle={setPageTitle}  importFrom={importFrom} setImportFrom={setImportFrom} lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateLookups={updateLookups}  setPageMessage={setPageMessage}    />} 
+                <Route path='/examples' render={(props) => <NluExampleEditor {...props}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateLookups={updateLookups}  setPageMessage={setPageMessage}    />} 
                 />
                 
-                <Route path='/skills/:skillId' render={(props) => <NluSkillsEditor {...props} setPageTitle={setPageTitle}  importFrom={importFrom} setImportFrom={setImportFrom} lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateLookups={updateLookups}  setPageMessage={setPageMessage}    />} 
+                <Route path='/skills/:skillId' render={(props) => <NluSkillsEditor {...props}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateLookups={updateLookups}  setPageMessage={setPageMessage}    />} 
                 />
 
-                 <Route path='/skills' render={(props) => <NluSkillsEditor {...props} setPageTitle={setPageTitle}  importFrom={importFrom} setImportFrom={setImportFrom} lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateLookups={updateLookups}  setPageMessage={setPageMessage}    />} 
+                 <Route path='/skills' render={(props) => <NluSkillsEditor {...props} skillFilterValue={skillFilterValue} setSkillFilterValue={setSkillFilterValue}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateLookups={updateLookups}  setPageMessage={setPageMessage}    />} 
                 />
                 
+               
+                <Route path='/lists' render={
+                    (props) => <ListsManager {...props}   lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}  updateLookups={updateLookups}  setPageMessage={setPageMessage}  updateLists={updateLists}   />}
+                          
+                />
                 
-                <Route exact path='/help' component={HelpText} setPageTitle={setPageTitle}    />
+                <Route exact path='/help' component={HelpText}     />
                 <Route exact path='/' component={HelpText} />
         </Router>
     </div>

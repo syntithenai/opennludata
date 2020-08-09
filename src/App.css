@@ -31,7 +31,8 @@
 
 .react-tags {
   position: relative;
-  padding: 6px 0 0 6px;
+  padding: 0px 0 0 6px;
+  
 /*
   border: 1px solid #D1D1D1;
 */
@@ -47,6 +48,7 @@
 
 .react-tags.is-focused {
   border-color: #B1B1B1;
+  z-index:99;
 }
 
 .react-tags__selected {
@@ -101,7 +103,7 @@
 .react-tags__search-input {
   /* prevent autoresize overflowing the container */
   max-width: 100%;
-
+  width: 7em;
   /* remove styles and layout from this element */
   margin: 0;
   padding: 0;

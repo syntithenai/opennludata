@@ -4,18 +4,20 @@ import localforage from 'localforage'
 
 // handle list updates with minimum disruption to top level items
 function reducer(state, action) {
-  switch (action.type) {
+ switch (action.type) {
     case "append":
       if (action.item) {
         return [...state, action.item];
       } else return state
     case "insert":
       if (action.item && typeof action.index === "number" && action.index >= 0) {
-          return [
-            ...state.slice(0, action.index),
-            action.item,
-            ...state.slice(action.index)
-          ];
+          if (state.length > 0) {
+              return [
+                ...state.slice(0, action.index),
+                action.item,
+                ...state.slice(action.index)
+              ];
+          } else return state
         } else return state
     case "remove":
       if (typeof action.index === "number" && action.index >= 0) {
@@ -98,8 +100,7 @@ export default function useDB(database, databaseTable) {
             localforageStorage.setItem(item.id,item)
             if (items.length === 0) {
                 dispatch({ type: "append",item: item });
-            }
-            if ((index === null || index === undefined)  || isNewItem) {
+            } else if ((index === null || index === undefined)  || isNewItem) {
                 dispatch({ type: "append",item: item });
             } else {
                 if (index) {
