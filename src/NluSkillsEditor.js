@@ -1,45 +1,287 @@
 import React, {useState, useEffect} from 'react';
 import './App.css';
 import {Link} from 'react-router-dom'
-import {Button, Dropdown, Badge, } from 'react-bootstrap'
+import {Button, Dropdown, Badge,ButtonGroup, ListGroup } from 'react-bootstrap'
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { VariableSizeList as List } from 'react-window';
-import NluSkillsRow from './NluSkillsRow'
-import TagAllDropDown from './components/TagAllDropDown'
-import IntentAllDropDown from './components/IntentAllDropDown'
-import SkillAllDropDown from './components/SkillAllDropDown'
-
-import EditorSearchBar from './components/EditorSearchBar'
 import useNluEditor from './useNluEditor'
+import exportFormats from './export/index'
+import {exportJSON} from './export/exportJSON'
+import useDB from './useDB'
+import {generateObjectId, uniquifyArray} from './utils'
+import ReactTags from 'react-tag-autocomplete'
+import SuggestionComponent from './components/SuggestionComponent'
+//import ExportPage from './ExportPage'
+import { saveAs } from 'file-saver';
 
-const RenderRow = function(props) {
-    const index = props.index
-    const style = props.style
-    const item = props.data.items[index]
-    return <NluSkillsRow  
-         item={item}  splitNumber={index} style={style}
-         saveItem={props.data.saveItem} deleteItem={props.data.deleteItem} saveNlu={props.data.saveNlu}
-         lookups={props.data.lookups} />
-}
+import localforage from 'localforage'
+//const RenderRow = function(props) {
+    //const index = props.index
+    //const style = props.style
+    //const item = props.data.items[index]
+    //return <NluSkillsRow  
+         //item={item}  splitNumber={index} style={style}
+         //saveItem={props.data.saveItem} deleteItem={props.data.deleteItem} saveNlu={props.data.saveNlu}
+         //lookups={props.data.lookups} />
+//}
+
 
 export default  function NluSkillsEditor(props) {
-    const {loadAll, deleteItem , findKeyBy, searchFilter, setSearchFilter, tagAllValue, setTagAllValue, skillAllValue, setSkillAllValue, skillFilterValue, setSkillFilterValue, intentAllValue, setIntentAllValue, listRef, tagAll, intentAll, resetSelection, selectAll,  skillSetAll, saveItemWrap, getItemSize,  saveNlu, filteredItems, createEmptyItem} = useNluEditor('nlutool','examples','alldata', props.updateLookups)
+    const {items, loadAll, skillFilterValue, setSkillFilterValue, filteredItems} = useNluEditor('nlutool','examples','alldata', props.updateLookups)
     const [currentIntent, setCurrentIntent] = useState('')
+    const [invocation, setInvocation] = useState('')
+    const [entitiesForSkill, setEntitiesForSkill] = useState({})
+    const [listsForEntity, setListsForEntity] = useState({})
+    const [currentSkill, setCurrentSkill] = useState({id:generateObjectId(), invocation:'', title:skillFilterValue, entities:{}})
+    //const skillsManager = useDB('nlutool','skills')
+    const listsManager = useDB('nlutool','lists')
+    const [showExportDialog, setShowExportDialog] = useState(false)
+    const [collatedItems, setCollatedItems] = useState({})
+    const [collatedCounts, setCollatedCounts] = useState({})
+    var skillsStorage = localforage.createInstance({
+       name: "nlutool",
+       storeName   : "skills",
+     });
+    //const params = useParams()
+    //skillFilterValue = params.skillId;
+    //function setSkillFilterValueWrap(value) {
+        //setSkill
+        //props.history.push('/skills/'+value)
+    //}
+    //const {loadAll, saveItem, deleteItem , items, setItems, findKeyBy, filter} = 
+    
+    // load all on init
     useEffect(() => {
         loadAll()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        //skillsManager.loadAll()
+        if (skillFilterValue) {
+            //localforage.setItem('key', 'value', function (err) {
+              //// if err is non-null, we got an error
+              skillsStorage.getItem(skillFilterValue, function (err, skill) {
+                // if err is non-null, we got an error. otherwise, value is the value
+                if (err) throw new Error(err)
+                if (skill) {
+                    setCurrentSkill(skill)
+                    setInvocation(skill.invocation)
+                }
+              });
+            //});
+        } 
+        listsManager.loadAll()
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     },[])
     
+    // load skill on change skillFilterValue
+    useEffect(() => {
+        //skillsManager.loadAll()
+        if (skillFilterValue) {
+            //localforage.setItem('key', 'value', function (err) {
+              //// if err is non-null, we got an error
+              skillsStorage.getItem(skillFilterValue, function (err, skill) {
+                // if err is non-null, we got an error. otherwise, value is the value
+                if (err) throw new Error(err)
+                if (skill) {
+                    setCurrentSkill(skill)
+                    setInvocation(skill.invocation)
+                }
+              });
+            //});
+        } 
+        
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },[skillFilterValue])
+    //// set current skill
     //useEffect(() => {
-        //if (importFrom) {
-            //var parsed = parseImportText(importFrom)
-            //setItems(parsed)
-            //props.setImportFrom('')
+       //if (skillFilterValue && skillFilterValue.length > 0) {
+            ////console.log(['LOAD ALL real ',skillFilterValue,skillsManager.items]) 
+            //var filtered = skillsManager.items.filter(function(item) {
+                ////console.log(['skill filter  ',item.title === skillFilterValue,item])
+                ////return true
+                //if (item.title === skillFilterValue) return true
+                //else return false
+            //})
+            ////console.log(['LOAD ALL filtered ',filtered])
+            //if (filtered.length > 0) {
+                //var skill = filtered[0]
+                ////skill.entities = Object.keys(entitiesForSkill).map(function(entity) {
+                    ////entity.lists = listsForEntity[entity] ? listsForEntity[entity] : []
+                    ////return entity
+                ////})
+                //setCurrentSkill(skill)
+                //setInvocation(skill.invocation)
+            //}
         //}
-    //// eslint-disable-next-line react-hooks/exhaustive-deps
-    //},[props.importFrom])
+    //},[skillsManager.items,skillFilterValue])
     
+    // load list lookups
+    useEffect(() => {
+        if (listsManager.items.length > 0) { 
+            //console.log(['UPD ITEMS',listsManager.items,listsManager.items[0]])
+            props.updateLists(listsManager.items[0])
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    },[listsManager.items])
     
+    // collate entitiesForSkills from filtered example 
+    useEffect(() => {
+        var entities = {}
+        
+        filteredItems.map(function (item,itemKey) {
+          if (Array.isArray(item.entities)) {
+              item.entities.map(function(entity,entityKey) {
+                 if (entity && entity.type && entity.type.length > 0) {
+                     if (typeof entities[entity.type] !== "object") entities[entity.type] = {}
+                     if (!Array.isArray(entities[entity.type].values )) entities[entity.type].values = []
+                     entities[entity.type].values.push(entity.value)
+                 }
+                 return null
+              })
+          }
+          return null
+        })
+        // sort and uniquify
+        Object.keys(entities).map(function(entityName,entityKey) {
+           const entity = entities[entityName]
+           entity.values = uniquifyArray(entity.values).sort()
+           return null
+        })
+        setEntitiesForSkill(entities)
+        
+        // examples collated by intent
+         var newCollatedItems = collatedItems
+         var newCollatedCounts = collatedCounts
+         if (filteredItems) {
+             filteredItems.map(function(item) {
+                if (item.intent) {
+                    if (!newCollatedItems[item.intent]) newCollatedItems[item.intent]=[]
+                    newCollatedCounts[item.intent] =   (newCollatedCounts[item.intent] > 0) ? newCollatedCounts[item.intent] + 1 : 1;
+                    //if (collatedItems[item.intent].length < 300) {
+                        newCollatedItems[item.intent].push({example: item.example, entities: item.entities})
+                    //}
+                    
+                }
+               return null;  
+             })
+             setCollatedItems(newCollatedItems)
+             setCollatedCounts(newCollatedCounts)
+             console.log(['UDPATE SKILL WITH INTENTS',currentSkill, collatedItems])
+             var newSkill = currentSkill;
+             newSkill.intents = collatedItems
+             setCurrentSkill(newSkill)
+             console.log(['UDPATE SKILL WITH INTENTS',JSON.parse(JSON.stringify(newSkill))])
+         }   
+        
+        
+    },[filteredItems])
+    
+     // load invocation into skill
+    useEffect(() => {
+        if (currentSkill) {
+          //console.log(['SET INVOCK HAVE CURRENT SKILL',currentSkill,invocation])
+          var skill = currentSkill
+          skill.invocation = invocation
+          setCurrentSkill(skill)
+          //skillsManager.saveItem(currentSkill,null)
+      }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    },[invocation])
+    
+    useEffect(() => {
+        console.log('change cs or inv',currentSkill)
+        if (currentSkill && currentSkill.title && currentSkill.title.length > 0) {
+            console.log('change cs or inv real')
+            //var index = skillsManager.findKeyBy('id',newCurrentSkill.id)
+            //if (index != null) {
+            // merge in entity values
+            if (entitiesForSkill) {
+                Object.keys(entitiesForSkill).map(function(entity) {
+                   if (currentSkill.entities && currentSkill.entities[entity]) {
+                       currentSkill.entities[entity].values = entitiesForSkill[entity].values;
+                   }  
+                })
+            }
+            // merge in intents
+            
+            console.log(['save skill ',skillFilterValue,currentSkill])
+            skillsStorage.setItem(skillFilterValue, currentSkill, function (err) {
+                console.log(['saved skill '])
+                if (err)  {
+                    console.log(err)
+                    throw new Error(err)
+                }
+            })
+              //// if err is non-null, we got an error
+            
+            //skillsManager.saveItem(newCurrentSkill,index)
+            //}
+            //
+            //currentSkill.entities = entitiesForSkill
+            //newCurrentSkill.invocation = invocation;
+            //newCurrentSkill.title = skillFilterValue;
+            //console.log(['save now ',index,newCurrentSkill])
+            //setCurrentSkill(newCurrentSkill)
+            
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    },[currentSkill,listsForEntity, invocation])
+    
+  
+  
+  //function setInvocation(val) {
+      //console.log('SET INVOCK')
+      ////if (currentSkill) {
+          ////console.log(['SET INVOCK HAVE CURRENT SKILL',currentSkill,val])
+          ////var skill = currentSkill
+          ////skill.invocation = val 
+          ////setCurrentSkill(skill)
+      ////}
+  //}
+    
+  function addListToSkillEntity(entity,list) {
+      //console.log(['ADSKOI',currentSkill,currentSkill.entities,entity,list])
+      if (entity && list && list.name) {
+            var skill = currentSkill;
+            if (!skill.entities) skill.entities={}
+            if (!skill.entities[entity]) skill.entities[entity] = {lists:[]}
+            if (!Array.isArray(skill.entities[entity].lists)) skill.entities[entity].lists = []
+            //var newListsForEntity = listsForEntity
+            //console.log(['ADSKOI1.5',skill])
+            skill.entities[entity].lists.push(list.name)
+            skill.entities[entity].lists = uniquifyArray(skill.entities[entity].lists).sort()
+           //newListsForEntity[entity] = uniquifyArray(newListsForEntity).sort()
+            setCurrentSkill(skill)  
+            // force render
+            setListsForEntity(JSON.stringify(skill.entities))  
+            //} else {
+                //console.log(['ADSKOI new'])
+               //newListsForEntity[entity] = [list.name]
+            //}
+             //console.log(['ADSKOI2 final',newListsForEntity])
+            //setListsForEntity(newListsForEntity)
+       } else {
+           console.log([' missing data'])
+       }
+  }
+  
+  function removeListFromSkillEntity(entity, listIndex) {
+      var skill = currentSkill
+      //console.log(['REMOVESKILLFROMLIST',entity,listIndex])
+      if (skill && skill.entities && entity && skill.entities[entity] && skill.entities[entity].lists) {
+          var lists = skill.entities[entity].lists
+          //lists = uniquifyArray([lists.slice(0, listIndex),lists.slice(listIndex + 1)]).sort()
+          lists = lists.slice(0, listIndex).concat(lists.slice(listIndex + 1))
+          
+          skill.entities[entity].lists = lists
+          setCurrentSkill(skill)  
+          setListsForEntity(JSON.stringify(skill.entities))  
+          //console.log(['REMOVESKILLFROMLIST ddd',lists])
+      } 
+       //var newEntitiesForSkill = entitiesForSkill
+       //if (newEntitiesForSkill[entity]) {
+           //var lists = newEntitiesForSkill[entity].lists && Array.isArray(newEntitiesForSkill[entity].lists) ? newEntitiesForSkill[entity].lists : [];
+           //newEntitiesForSkill[entity].lists = uniquifyArray([lists.slice(0, listIndex),lists.slice(listIndex + 1)]).sort()
+           //setEntitiesForSkill(newEntitiesForSkill)
+       //}
+  }
   
     
     function renderEditor(props) {
@@ -55,21 +297,7 @@ export default  function NluSkillsEditor(props) {
                 //return matchSearchFilter && skillFilterValue && item.skills && item.skills.indexOf(skillFilterValue) !== -1
                 
             //})
-             var collatedItems={}
-             var collatedCounts={}
-             if (filteredItems) {
-                 filteredItems.map(function(item) {
-                    if (item.intent) {
-                        if (!collatedItems[item.intent]) collatedItems[item.intent]=[]
-                        collatedCounts[item.intent] =   (collatedCounts[item.intent] > 0) ? collatedCounts[item.intent] + 1 : 1;
-                        //if (collatedItems[item.intent].length < 300) {
-                            collatedItems[item.intent].push(item)
-                        //}
-                        
-                    }
-                   return null;  
-                 })
-             }   
+             
                 
                 
             if (filteredItems && filteredItems.length > 0) {
@@ -80,25 +308,29 @@ export default  function NluSkillsEditor(props) {
                //var intentOptions = props.lookups.intentLookups && props.lookups.intentLookups.sort().map(function(intentKey,i) {
                   //return <Dropdown.Item key={i} value={intentKey} onClick={function(e) {setIntentAllValue(intentKey);intentAll(intentKey)}}  >{intentKey}</Dropdown.Item>
                //})
-                return <div>
-        
-             {props.lookups.selectedTally > 0 && <span style={{float:'right'}}> 
-                <span>With {props.lookups.selectedTally} selected&nbsp;</span>
+                //CURRENT SKILL: {JSON.stringify(currentSkill)}
+                //<hr/>
                 
-                       <SkillAllDropDown skillSetAll={skillSetAll} skillAllValue={skillAllValue}  setSkillAllValue={setSkillAllValue}  lookups={props.lookups}/>
-                <IntentAllDropDown intentAll={intentAll} intentAllValue={intentAllValue} setIntentAllValue={setIntentAllValue}  lookups={props.lookups}/>
-                <TagAllDropDown tagAll={tagAll} tagAllValue={tagAllValue} setTagAllValue={setTagAllValue}  lookups={props.lookups}/>
                 
-                </span> } 
-                    
-                   
-                    
-                    
-                      <div style={{clear:'both'}}>
-                        <span>{Object.keys(collatedItems).map(function(collatedIntent, i) {
+                //GENENT: {JSON.stringify(entitiesForSkill)}
+                //<hr/>
+                //LISTS: {JSON.stringify(listsForEntity)}
+                //<hr/>
+                
+                // {<ExportPage showExportDialog={showExportDialog} setShowExportDialog={setShowExportDialog} currentSkill={currentSkill} />}
+                 return <div>
+                    CURRENT SKILL: {JSON.stringify(currentSkill.intents)}
+                <hr/>
+                
+                       <div><h3>{skillFilterValue} </h3></div>
+                        <div>
+                        <label style={{fontWeight:'bold', marginLeft:'0.5em'}} > Invocation <input type='text' value={invocation} onChange={function(e) {setInvocation(e.target.value)}} /></label>
+                        </div>
+                        
+                        
+                        <b style={{marginRight:'1em', marginLeft:'0.5em'}} >Intents</b>
+                        <span>{Object.keys(collatedItems).sort().map(function(collatedIntent, i) {
                                 var useCurrentIntent = currentIntent ? currentIntent : Object.keys(collatedItems)[0]
-                                //const warning = <b>{collatedItems[collatedIntent].length}/{collatedCounts[collatedIntent].length}</b>
-                                //collatedItems[collatedIntent].length  === collatedCounts[collatedIntent].length ? <b>/dd{collatedCounts[collatedIntent].length}</b> : <b>/{collatedCounts[collatedIntent].length}</b>
                                 var completionVariant = 'danger'
                                 if (collatedItems[collatedIntent].length > 300) {
                                     completionVariant = 'success'
@@ -110,42 +342,46 @@ export default  function NluSkillsEditor(props) {
                                 
                                 
                                 if (collatedItems[collatedIntent].length  === collatedCounts[collatedIntent]) {
-                                        return <Button key={collatedIntent} variant={collatedIntent === useCurrentIntent ? "primary" : "outline-primary"} onClick={function() {setCurrentIntent(collatedIntent)}}>
+                                        return <Link key={collatedIntent} to={"/examples/skill/"+skillFilterValue+"/intent/"+collatedIntent} ><Button key={collatedIntent} variant={collatedIntent === useCurrentIntent ? "primary" : "outline-primary"} onClick={function() {setCurrentIntent(collatedIntent)}}>
                                             <Badge variant={completionVariant} > {collatedItems[collatedIntent].length} </Badge>
                                             &nbsp;{collatedIntent}
-                                        </Button>
+                                        </Button></Link>
                                 } else {
-                                    return <Button variant={collatedIntent === useCurrentIntent ? "primary" : "outline-primary"} onClick={function() {setCurrentIntent(collatedIntent)}}>
+                                    return <Link key={collatedIntent} to={"/examples/skill/"+skillFilterValue+"/intent/"+collatedIntent} ><Button variant={collatedIntent === useCurrentIntent ? "primary" : "outline-primary"} onClick={function() {setCurrentIntent(collatedIntent)}}>
                                             <Badge variant="danger" > {collatedItems[collatedIntent].length}/{collatedCounts[collatedIntent]} </Badge>
                                             &nbsp;{collatedIntent}
-                                        </Button>
+                                        </Button></Link>
                                 }
                                 
                         })}</span>
-                       
-                        <div style={{clear:'both'}}>
-                            {Object.keys(collatedItems).map(function(collatedIntent, i) {
-                                var useCurrentIntent = currentIntent ? currentIntent : Object.keys(collatedItems)[0]
-                                if (collatedIntent === useCurrentIntent) {
-                                    return <List
-                                        key="list"
-                                        ref={listRef}
-                                        itemData={{items: collatedItems[collatedIntent], saveItem: saveItemWrap, saveNlu, deleteItem, findKeyBy, lookups: props.lookups}}
-                                        itemKey={index => index}  
-                                        className="List"
-                                        height={700}
-                                        itemCount={collatedItems[collatedIntent].length}
-                                        itemSize={getItemSize}
-                                        width={'100%'}
-                                      >{RenderRow}</List>
-                                    
-                                   
-                                 } else {
-                                    return null
-                                }
-                            })}
+                        <div style={{marginTop:'0.7em'}} >
+                      <b style={{marginRight:'1em', marginLeft:'0.5em'}} >Entities</b><ListGroup>{Object.keys(entitiesForSkill).map(function(collatedEntity, i) {
+                                
+                                const listTags = currentSkill && currentSkill.entities && currentSkill.entities[collatedEntity] && currentSkill.entities[collatedEntity].lists ? currentSkill.entities[collatedEntity].lists.map(function(listItem,listItemKey) {return {id:listItemKey, name:listItem} }) : []
+                                //console.log(listTags)
+                                    return <ListGroup.Item key={collatedEntity} >
+                                            
+                                             <span style={{marginLeft:'1em', float:'left', fontWeight:'bold'}}>&nbsp;{collatedEntity}</span>
+                                          
+                                            <span style={{marginLeft:'1em', float:'left'}}>&nbsp;{entitiesForSkill[collatedEntity].values.slice(0,5).join(", ")}</span>
+                                            <span style={{marginLeft:'1em', float:'left'}}>
+                                           <label><i></i> <ReactTags
+                                            placeholderText="Also use values from "
+                                            minQueryLength={0}
+                                            maxSuggestionsLength={50}
+                                            autoresize={true}
+                                            allowNew={false}
+                                            tags={listTags}
+                                            suggestionComponent={SuggestionComponent}
+                                            suggestions={props.lookups.listsLookups.map(function(tag,i) {return {id: i, name: tag}})}
+                                            onDelete={function(index) {removeListFromSkillEntity(collatedEntity, index)}}
+                                            onAddition={function(tag) {addListToSkillEntity(collatedEntity, tag)}} /> </label>
+                                            </span>
+                                        </ListGroup.Item>
+                                //}
+                                
+                        })}</ListGroup>
                         </div>
-                    </div>
                
                 </div>
 
@@ -163,38 +399,29 @@ export default  function NluSkillsEditor(props) {
         }
     }
     
+    
      var skillOptions = props.lookups.skillLookups && props.lookups.skillLookups.sort().map(function(skillKey,i) {
           return <Dropdown.Item key={i} value={skillKey} onClick={function(e) {setSkillFilterValue(skillKey)}}  >{skillKey}</Dropdown.Item>
        })
        skillOptions.unshift(<Dropdown.Item key={'empty_key_value_empty'} value={''} onClick={function(e) {setSkillFilterValue('')}}  >&nbsp;</Dropdown.Item>)
-       
-    //return <div>
-        //{skillFilterValue && <Button style={{float:'right', marginLeft:'1em'}} onClick={function(e) {} } variant="success"  >Publish</Button> }
-                    
-        //{skillFilterValue && <span style={{float:'left'}} >
-            
-            //{props.lookups.selectedTally > 0 && <Button size="lg"  onClick={function(e) { resetSelection(e) }} variant="success"  ><img style={{height:'1em'}} src='/check.svg' alt="Select"  /></Button> }
-            //{props.lookups.selectedTally <= 0 && <Button size="lg" onClick={function(e) { selectAll(e) }} variant="secondary"  ><img style={{height:'1em'}} src='/check.svg' alt="Deselect"  /></Button> }
-            //{skillFilterValue && skillFilterValue.length > 0 && <span><SearchInput searchFilter={searchFilter} setSearchFilter={setSearchFilter} /></span>}
-           //</span>}   
-               //{skillFilterValue && skillFilterValue.length > 0 &&  <Dropdown style={{marginLeft:'0.5em'}}  as={ButtonGroup}>
-                  //<Dropdown.Toggle split   id="dropdown-split-basic" ></Dropdown.Toggle>
-                  //<Button  >{'Skill '+(skillFilterValue ? ' - '+ skillFilterValue : '')} </Button>
-                  //<Dropdown.Menu>
-                      //{skillOptions}
-                  //</Dropdown.Menu>
-                //</Dropdown>}
-                  
-              //{renderEditor(props)}
-        //</div>
+   
+        //<Button style={{float:'right',marginLeft:'0.5em'}}  variant="success" onClick={function() {setShowExportDialog(true)}} >Publish</Button>
+         
     return <div>
-        {skillFilterValue && <EditorSearchBar {...props} searchFilter={searchFilter} setSearchFilter={setSearchFilter} skillFilterValue={skillFilterValue} setSkillFilterValue={setSkillFilterValue} resetSelection={resetSelection} selectAll={selectAll} createEmptyItem={createEmptyItem} />}
+         {skillFilterValue && skillFilterValue.length > 0 && <Dropdown style={{float:'right',marginLeft:'0.5em'}}  as={ButtonGroup}>
+          <Dropdown.Toggle split variant="success"  id="dropdown-split-basic" ></Dropdown.Toggle>
+          <Button  variant="success">Export</Button>
+          <Dropdown.Menu variant="success" >
+              {exportFormats.map(function(exportFormat,i) {
+                  var title = 'opennludata_'+exportFormat.name+'_'+Date.now()
+                return <Dropdown.Item variant="success" key={i} value={exportFormat.name} onClick={function(e) {exportFormat.exportFunction(currentSkill).then(function(zipBody) {
+                saveAs(zipBody, title)
+            })}}  >{exportFormat.name}</Dropdown.Item>
+           })}
+          </Dropdown.Menu>
+        </Dropdown>}
          {renderEditor(props)}
     </div>
             
 }
       
-
-
-
-

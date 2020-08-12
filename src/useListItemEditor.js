@@ -1,7 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import localforage from 'localforage'
 import useDBSingleKey from './useDBSingleKey'
-import {generateObjectId, uniquifyArray} from './utils'
 
 
 function useListItemEditor(database, databaseTable, databaseKey, updateLists) {
@@ -26,8 +24,8 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists) {
             }
             var matchPicklist = true
             if (listFilterValue === "Not In A List") {
-                console.log(['tags',item.tags])
-                if (!item.tags || (item.tags && item.tags.length == 0)) {
+                //console.log(['tags',item.tags])
+                if (!item.tags || (item.tags && item.tags.length === 0)) {
                     matchPicklist =  true
                 } else {
                     matchPicklist = false
@@ -75,7 +73,7 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists) {
     }
     
     function tagAll(val) {
-        console.log(['tagall',tagAllValue,val])
+        //console.log(['tagall',tagAllValue,val])
         var tagValue = val ? val : tagAllValue;
         if (items) {
             var newItems = []
@@ -96,7 +94,7 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists) {
     }
 
     function untagAll(val) {
-        console.log(['untagall',tagAllValue,val])
+        //console.log(['untagall',tagAllValue,val])
         //var tagValue = val ? val : tagAllValue;
         if (items) {
             var newItems = []
@@ -107,7 +105,7 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists) {
                    if (!newItem.tags) newItem.tags=[]
                    var finalTags = []
                    newItem.tags.map(function(tag) {
-                       if (tag != val) {
+                       if (tag !== val) {
                            finalTags.push(tag)
                        }  
                        return null
@@ -125,7 +123,7 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists) {
     
     
     function resetSelection() {
-         console.log('reset sa')
+         //console.log('reset sa')
          if (items) {
             var newItems = []
             items.map(function(item,i) {

@@ -19,7 +19,7 @@ const RenderRow = function(props) {
 }
 
 export default function NluExampleEditor(props) {
-    const {loadAll, deleteItem , items, findKeyBy, searchFilter, setSearchFilter, tagAllValue, setTagAllValue, skillAllValue, setSkillAllValue, skillFilterValue, setSkillFilterValue, intentFilterValue, setIntentFilterValue, intentAllValue, setIntentAllValue, listRef, tagAll,untagAll, unskillAll, intentAll, resetSelection, selectAll,  skillSetAll, saveItemWrap, getItemSize, deleteAll, filteredItems, createEmptyItem} = useNluEditor('nlutool','examples','alldata', props.updateLookups)
+    const {loadAll, deleteItem , items, findKeyBy, searchFilter, setSearchFilter, skillFilterValue, setSkillFilterValue, intentFilterValue, setIntentFilterValue, tagAllValue, setTagAllValue, skillAllValue, setSkillAllValue,  intentAllValue, setIntentAllValue, listRef, tagAll,untagAll, unskillAll, intentAll, resetSelection, selectAll,  skillSetAll, saveItemWrap, getItemSize, deleteAll, filteredItems, createEmptyItem} = useNluEditor('nlutool','examples','alldata', props.updateLookups)
     useEffect(() => {
         loadAll()
     // eslint-disable-next-line react-hooks/exhaustive-deps

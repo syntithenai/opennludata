@@ -1,8 +1,8 @@
 import React, {useState, useEffect} from 'react'
-import {findFirstDiffPos, uniquifyArray, uniquifyArrayOfObjects} from './utils'
+import {uniquifyArray, uniquifyArrayOfObjects} from './utils'
 function useListItemRow(item, saveItem, splitNumber, style) {
     const [selectionState, setSelectionState] = useState({})
-    const [newEntity, setNewEntity] = useState('')
+    //const [newEntity, setNewEntity] = useState('')
     // for ReactTags format using objects
     const [tags, setTags] = useState([])
     //console.log(['USENLUROW',splitNumber])
@@ -30,9 +30,9 @@ function useListItemRow(item, saveItem, splitNumber, style) {
       }
     
     function updateExampleContent(content) {
-        console.log(['UPDTEXT', item, content])
+        //console.log(['UPDTEXT', item, content])
         if (item && typeof content === "string") {
-            console.log('UPDTEXTREAL')
+            //console.log('UPDTEXTREAL')
             const newItem = item //JSON.parse(JSON.stringify(item));
             
             newItem.value = content;

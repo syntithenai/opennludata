@@ -1,7 +1,7 @@
 import {splitSentences, generateObjectId} from './utils'
 
 function cleanListItem(text) {
-    return text ? text.replace(/[^0-9a-z\ ,]/gi, '') : ''
+    return text ? text.replace(/[^0-9a-z ,]/gi, '') : ''
 }
 
 function extractSynonym(text) {
@@ -33,7 +33,7 @@ function parseLists(text,listName) {
             const splits = splitSentences(text)
             splits.map(function(textInner,i) {
                 var [synonym, value] = extractSynonym(textInner)
-                value = value.trim().replace(/[^0-9a-z\ ]/gi, '')
+                value = value.trim().replace(/[^0-9a-z ]/gi, '')
                 if (value && value.length > 0) {
                     newTextSplits.push({'id':generateObjectId(), 'value':value,'synonym':synonym})
                 }
@@ -67,8 +67,10 @@ function parseLists(text,listName) {
                         var uniqueKeys = {}
                         list.map(function(listItem) {
                            uniqueKeys[listItem.value+':'+listItem.synonym] = listItem
+                           return null
                         })
-                        lists[listKey] = Object.values(uniqueKeys).sort(sortListSplits);
+                        lists[listKey] = Object.values(uniqueKeys).sort(sortListSplits)
+                        return null
                     })
                     
                 // array of text
@@ -83,12 +85,12 @@ function parseLists(text,listName) {
                     }
                     lists[key] = newSplits.sort(sortListSplits)
                 }
-                console.log(['LISTS',lists])
+                //console.log(['LISTS',lists])
                 return lists
                 //return items.sort(sortListSplits) 
             // PLAIN TEXT LIST
             }  else {
-                 var lists = {}
+                lists = {}
                 lists[key] = generateSplits() 
                 return lists
             }
@@ -100,7 +102,7 @@ function parseLists(text,listName) {
               //console.log(doc);
             //} catch (e) {
                // finally text
-                var lists = {}
+                lists = {}
                 lists[key] = generateSplits() 
                 return lists
             //}
@@ -145,7 +147,7 @@ function parseImportText(text) {
                                 if (json.intents[l].inputs) {
                                     for (var inputKey in json.intents[l].inputs) {
                                        var input = json.intents[l].inputs[inputKey]
-                                       console.log([phrase,input.name])
+                                       //console.log([phrase,input.name])
                                        const markerStart = phrase.indexOf("{"+input.name+"}")
                                        if (markerStart !== -1)  {
                                            phrase = phrase.replace("{"+input.name+"}",input.name)
@@ -159,7 +161,7 @@ function parseImportText(text) {
                             }
                         }
                     }
-                    console.log(['JOVO IMPORT',items])
+                    //console.log(['JOVO IMPORT',items])
                     //var entity = json.rasa_nlu_data.common_examples[i]
                     //var cleanEntities = entity.entities && entity.entities.map(function(el,j) { return {type:el.entity, value:el.value, start:el.start, end:el.end} })
                     //if (entity.text && entity.text.trim().length > 0) items.push({'id':generateObjectId(), 'example':entity.text,'intent':entity.intent,"entities":cleanEntities, tags:[]})

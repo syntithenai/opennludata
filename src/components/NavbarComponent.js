@@ -10,7 +10,7 @@ export default function NavbarComponent(props) {
     const currentPage = props.history && props.history.location && props.history.location.pathname ? props.history.location.pathname : '/'
     const pages = {
         '/': {name: 'NLU Tool',show: false},
-        '/search': {name: 'Search',show: true},
+        '/search': {name: 'Search',show: true, link:'https://github.com/syntithenai/opennludata/wiki'},
         '/sources': {name: 'Sources',show: false},
         '/import': {name: 'Import',show: false},
         '/lists': {name: 'Entities',show: true},
@@ -22,7 +22,13 @@ export default function NavbarComponent(props) {
     
     const links = Object.keys(pages).map(function(link,k) {
         const page = pages[link]
-        if (page.show) return <Link key={k} style={astyle} to={link} ><Button variant={link === currentPage ? 'success' : 'primary'}>{page.name}</Button></Link>
+        if (page.show) {
+            if (page.link) {
+                return <a key={k} style={astyle} href={page.link} ><Button variant='primary' >{page.name}</Button></a>                
+            } else {
+                return <Link key={k} style={astyle} to={link} ><Button variant={link === currentPage ? 'success' : 'primary'}>{page.name}</Button></Link>
+            }
+        }
         return null
     })
 //        <Navbar.Text><Button><img src='/menu.svg' alt='menu' /></Button></Navbar.Text>
@@ -32,8 +38,8 @@ export default function NavbarComponent(props) {
             <Button variant="danger" size="sm"  style={{float:'right', fontWeight: 'bold',borderRadius:'20px',marginLeft:'1em'}} onClick={function(e) {props.setPageMessage('')}}>X</Button>{props.message} 
         </div>}
     
-        <Link to="/menu" >
-        </Link>
+        <img src="/fire.svg"  style={{height:'1.8em'}} alt="logo"/>
+        
          
         <div style={{width: '100%'}}>
         {links}

@@ -5,7 +5,7 @@ import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import ReactTags from 'react-tag-autocomplete'
 import useNluRow from './useNluRow'
-
+import SuggestionComponent from './components/SuggestionComponent'
 export default function NluImportRow(props) {
      const  {item, splitNumber , style} = props;
        const {    
@@ -92,12 +92,13 @@ export default function NluImportRow(props) {
                   <div style={{float:'left'}}>
                    <ReactTags
                     placeholderText="Add to skill"
-                    minQueryLength={1}
+                    minQueryLength={0}
                     maxSuggestionsLength={50}
                     autoresize={false}
                     allowNew={true}
                     ref={reactSkills}
                     tags={skills}
+                    suggestionComponent={SuggestionComponent}
                     suggestions={props.lookups.skillLookups.map(function(tag,i) {return {id: i, name: tag}})}
                     onDelete={onSkillDelete}
                     onAddition={onSkillAddition} /> 
@@ -106,12 +107,13 @@ export default function NluImportRow(props) {
                   <div style={{float:'left'}}>
                    <ReactTags
                     placeholderText="Add new tag"
-                    minQueryLength={1}
+                    minQueryLength={0}
                     maxSuggestionsLength={50}
                     autoresize={false}
                     allowNew={true}
                     ref={reactTags}
                     tags={tags}
+                    suggestionComponent={SuggestionComponent}
                     suggestions={props.lookups.tagLookups.map(function(tag,i) {return {id: i, name: tag}})}
                     onDelete={onTagDelete}
                     onAddition={onTagAddition} /> 

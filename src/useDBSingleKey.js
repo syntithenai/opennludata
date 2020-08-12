@@ -71,7 +71,7 @@ export default function useDB(database, databaseTable,singleKey) {
 
     function loadAll() {
         localforageStorage.getItem(singleKey).then(function(res) {
-          console.log(['loadall',database, databaseTable,singleKey,res])
+          //console.log(['loadall',database, databaseTable,singleKey,res])
           dispatch({ type: "replaceall", items: res ? res : []});
         })
     }
@@ -79,7 +79,7 @@ export default function useDB(database, databaseTable,singleKey) {
     
     // save or create
     function saveItem(item,index) {
-        console.log(['save',item,index])
+        //console.log(['save',item,index])
         if (item) {
             // update sources and save text in seperate localstorage
             // ensure id
@@ -89,15 +89,15 @@ export default function useDB(database, databaseTable,singleKey) {
                 item.id = generateObjectId()
             }
             if (items.length === 0) {
-                console.log(['save append len '])
+                //console.log(['save append len '])
         
                 dispatch({ type: "append",item: item });
             } else {
                 if ((index === null || index === undefined)  || isNewItem) {
-                console.log(['save append'])
+                //console.log(['save append'])
                     dispatch({ type: "prepend",item: item });
                 } else {
-                    console.log(['save update'])
+                    //console.log(['save update'])
                     dispatch({ type: "update",item: item, index: index });
                 }
             }   
@@ -120,7 +120,6 @@ export default function useDB(database, databaseTable,singleKey) {
         localforageStorage.clear().then(function() {
             dispatch({ type: "replaceall", items: items})
         })
-        
     }
     
     function filter(matchFunction) {

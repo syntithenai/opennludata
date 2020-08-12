@@ -6,13 +6,14 @@ import SearchInput from './SearchInput'
 const ListsManagerSearchBar = function(props) {
     const [topTagOptions,setTopTagOptions] = useState([])
     useEffect(() => {
-        console.log(['kust nabager ',props.lookups.listsLookups])
+        //console.log(['kust nabager ',props.lookups.listsLookups])
         var topTagOptionss = props.lookups.listsLookups && props.lookups.listsLookups.sort().map(function(listKey,i) {
               return <Dropdown.Item key={i} value={listKey} onClick={function(e) {props.setListFilterValue(listKey)}}  >{listKey}</Dropdown.Item>
         })
         topTagOptionss.unshift(<Dropdown.Item key={'empty_key_value_empty'} value={''} onClick={function(e) {props.setListFilterValue('')}}  >&nbsp;</Dropdown.Item>)
         topTagOptionss.push(<Dropdown.Item key={'Not In A List'} value={'Not In A List'} onClick={function(e) {props.setListFilterValue('Not In A List')}}  ><b>Not In A List</b></Dropdown.Item>)
         setTopTagOptions(topTagOptionss)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.lookups])
     
     return <div>

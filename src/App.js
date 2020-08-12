@@ -8,7 +8,19 @@ import NavbarComponent from './components/NavbarComponent'
 import {HelpText} from './components/Components'
 import NluImportEditor from './NluImportEditor'
 import NluSkillsEditor from './NluSkillsEditor'
+import SearchPage from './SearchPage'
 import {Button} from 'react-bootstrap'
+//const axios = require('axios');
+  //axios.get('https://github.com/syntithenai/opennludata/wiki/test-skill')
+  //.then(function (response) {
+    //// handle success
+    //console.log(response);
+  //})
+  //.catch(function (error) {
+    //// handle error
+    //console.log(error);
+  //})
+//
 
 function SiteMenu(props) {
     var astyle={paddingLeft:'0.3em'}
@@ -44,8 +56,10 @@ function App() {
     const [selectedListTallyByList, setSelectedListTallyByList] = useState({})
     
     // search bar
+    //https://github.com/search?q=repo:syntithenai/opennludata&type=Wikis
     const [skillFilterValue, setSkillFilterValue] = useState('')
-    
+  
+
     
     function startWaiting() {
         setWaiting(true)
@@ -77,16 +91,18 @@ function App() {
                                 newLists[tag] = (newLists[tag] >0) ? newLists[tag] + 1 : 1
                             }
                         }
+                        return null
                     })
                     tally += 1;
                 }
+                return null
             })
             setListTally(tally)
             setSelectedListTally(selectedTally)
             setSelectedListTallyByList(newSelectedLists)
             setListTallyByList(newLists)
             setListsLookups(Object.keys(newLists))
-            console.log('updated lists', newLists)
+            //console.log('updated lists', newLists)
         }
     }
 
@@ -136,7 +152,7 @@ function App() {
     const lookups = {intentLookups,entityLookups,tagLookups,skillLookups, selectedTally, listsLookups, listTally, selectedListTally, listTallyByList, selectedListTallyByList}
   return (
     <div className="OpenNluDataApp">
-        
+            
         <Router>
                 <Route exact path='*' render={
                     (props) => {
@@ -153,13 +169,25 @@ function App() {
                           
                 />
                 
-                <Route path='/examples' render={(props) => <NluExampleEditor {...props}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateLookups={updateLookups}  setPageMessage={setPageMessage}    />} 
+                <Route exact  path='/examples' render={(props) => <NluExampleEditor {...props}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateLookups={updateLookups}  setPageMessage={setPageMessage}    />} 
                 />
                 
-                <Route path='/skills/:skillId' render={(props) => <NluSkillsEditor {...props}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateLookups={updateLookups}  setPageMessage={setPageMessage}    />} 
+                <Route exact path='/examples/skill/:skillId' render={(props) => <NluExampleEditor {...props}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateLookups={updateLookups} updateLists={updateLists}  setPageMessage={setPageMessage}    />} 
+                />
+                
+                <Route path='/examples/intent/:intentId' render={(props) => <NluExampleEditor {...props}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateLookups={updateLookups} updateLists={updateLists}  setPageMessage={setPageMessage}    />} 
+                />
+                
+                <Route exact path='/examples/skill/:skillId/intent/:intentId' render={(props) => <NluExampleEditor {...props}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateLookups={updateLookups} updateLists={updateLists}  setPageMessage={setPageMessage}    />} 
+                />
+                
+                <Route exact path='/skills/:skillId' render={(props) => <NluSkillsEditor {...props}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateLookups={updateLookups} updateLists={updateLists}  setPageMessage={setPageMessage}    />} 
+                />
+                
+                <Route exact path='/skills/skill/:skillId' render={(props) => <NluSkillsEditor {...props}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateLookups={updateLookups} updateLists={updateLists}  setPageMessage={setPageMessage}    />} 
                 />
 
-                 <Route path='/skills' render={(props) => <NluSkillsEditor {...props} skillFilterValue={skillFilterValue} setSkillFilterValue={setSkillFilterValue}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateLookups={updateLookups}  setPageMessage={setPageMessage}    />} 
+                 <Route exact path='/skills' render={(props) => <NluSkillsEditor {...props} skillFilterValue={skillFilterValue} setSkillFilterValue={setSkillFilterValue}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateLookups={updateLookups} updateLists={updateLists}  setPageMessage={setPageMessage}    />} 
                 />
                 
                
@@ -169,6 +197,7 @@ function App() {
                 />
                 
                 <Route exact path='/help' component={HelpText}     />
+                 <Route exact path='/search' component={SearchPage}     />
                 <Route exact path='/' component={HelpText} />
         </Router>
     </div>

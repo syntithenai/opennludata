@@ -90,6 +90,7 @@ export default function useDB(database, databaseTable) {
     // save or create
     function saveItem(item,index) {
         if (item) {
+            //console.log(['SAVEDB',item,index])
             // update sources and save text in seperate localstorage
             // ensure id
             var isNewItem = false;
@@ -99,27 +100,33 @@ export default function useDB(database, databaseTable) {
             }
             localforageStorage.setItem(item.id,item)
             if (items.length === 0) {
-                dispatch({ type: "append",item: item });
-            } else if ((index === null || index === undefined)  || isNewItem) {
+                console.log(['SAVEDB len0',item,index])
                 dispatch({ type: "append",item: item });
             } else {
-                if (index) {
+                if ((index === null || index === undefined)  || isNewItem) {
+                    console.log(['SAVEDB append',item,index])
+                    dispatch({ type: "append",item: item });
+                } else {
+                    console.log(['SAVEDB update',item,index])
                     dispatch({ type: "update",item: item, index: index });
                 }
             }
             
         }
     }
+    
 
     function findBy(field,value) {
         var key = findKeyBy(field,value)
-        return items[key];
+        if (key) return items[key];
+        return null
     }
     
     function findKeyBy(field,value) {
         for (var k in items) {
             if (items[k] && items[k][field] === value) return k
         }
+        return null
     }
 
 
@@ -127,7 +134,7 @@ export default function useDB(database, databaseTable) {
         localforageStorage.clear().then(function() {
             dispatch({ type: "replaceall", items: items})
             if (items) {
-                items.map(function(item) {console.log('set item forage'); localforageStorage.setItem(getId(item),item); return null})
+                items.map(function(item) { localforageStorage.setItem(getId(item),item); return null})
             }
         })
         

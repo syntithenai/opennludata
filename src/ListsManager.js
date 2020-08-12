@@ -1,18 +1,14 @@
-import React, {useState, useEffect} from 'react';
+import React, { useEffect} from 'react';
 import './App.css';
 import {Link} from 'react-router-dom'
-import {Button, Dropdown, Badge, } from 'react-bootstrap'
+import {Button } from 'react-bootstrap'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { VariableSizeList as List } from 'react-window';
-import NluSkillsRow from './NluSkillsRow'
-import TagAllDropDown from './components/TagAllDropDown'
-import IntentAllDropDown from './components/IntentAllDropDown'
 import ListAllDropDown from './components/ListAllDropDown'
 
 import ListsManagerSearchBar from './components/ListsManagerSearchBar'
 import ListsManagerRow from './ListsManagerRow'
 import useListItemEditor from './useListItemEditor'
-import {MatchesTallies} from './components/Components'
 
 const RenderRow = function(props) {
     const index = props.index
@@ -26,7 +22,7 @@ const RenderRow = function(props) {
 
 export default  function ListsManager(props) {
     const {loadAll, deleteItem ,items, findKeyBy, searchFilter, setSearchFilter, tagAllValue, setTagAllValue, listRef, tagAll,untagAll, resetSelection, selectAll, saveItemWrap, getItemSize,  filteredItems, listFilterValue, setListFilterValue, deleteAll, createEmptyItem} = useListItemEditor('nlutool','lists','alldata', props.updateLists)
-    const [currentList, setCurrentList] = useState('')
+    //const [currentList, setCurrentList] = useState('')
    
     useEffect(() => {
         loadAll()

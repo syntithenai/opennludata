@@ -11,7 +11,7 @@ import {generateObjectId, uniquifyArray } from './utils'
 
 // COMPONENTS
 function IndexPage(props) {
-    console.log(['man index ',props])
+    //console.log(['man index ',props])
     return <div>
                  <NewFileButtons {...props} />
                  <h1>Sources</h1>
@@ -20,8 +20,8 @@ function IndexPage(props) {
 }
 
 export default function LocalStorageUploadManager(props) {
-    console.log('man')
-    console.log(props)
+    //console.log('man')
+    //console.log(props)
      var localforageStorageImport = localforage.createInstance({
        name: 'nlutool',
        storeName   :'import',
@@ -55,11 +55,11 @@ export default function LocalStorageUploadManager(props) {
     }    
   
     function importExamples(item) {
-         console.log(['import examples',item])
+         //console.log(['import examples',item])
         if (item && item.id && item.data) {
             var parsed = parseImportText(item.data)
             localforageStorageImport.getItem('alldata').then(function(res) {
-                console.log('IMPORT MERGE',res,parsed,[].concat(parsed,res))
+                //console.log('IMPORT MERGE',res,parsed,[].concat(parsed,res))
                 localforageStorageImport.setItem('alldata',[].concat(parsed,res)) 
                 props.history.push('/import') 
             })
@@ -69,13 +69,13 @@ export default function LocalStorageUploadManager(props) {
     }
     
     function importLists(item,title) {
-        console.log(['import lists',item,title])
+        //console.log(['import lists',item,title])
         if (item && item.id && item.data) {
             var parsed = parseLists(item.data)
-            console.log(['import lists',parsed])
+            //console.log(['import lists',parsed])
             if (parsed) {
                 localforageStorageLists.getItem('alldata').then(function(allLists) {
-                    console.log(['got list ',allLists])
+                    //console.log(['got list ',allLists])
                     var allListsIndex = {}
                     if (!allLists) {
                         allLists = []
@@ -85,6 +85,7 @@ export default function LocalStorageUploadManager(props) {
                         if (listItem && listItem.value && listItem.value.trim().length > 0)  {
                             allListsIndex[listItem.value] = listItem
                         }
+                        return null
                     })
                     // update incoming list values
                     Object.keys(parsed).map(function(listName,i) {
@@ -112,7 +113,7 @@ export default function LocalStorageUploadManager(props) {
                                     allListsIndex[newListItem.value] = newListItem
                                 // new list item    
                                 } else {
-                                    var newListItem = {id: generateObjectId() , value: newListItem.value, synonym: newListItem.synonym ? newListItem.synonym : '', tags:[]}
+                                    newListItem = {id: generateObjectId() , value: newListItem.value, synonym: newListItem.synonym ? newListItem.synonym : '', tags:[]}
                                     
                                     if (listName !== '___') {
                                         if (listItem.tags) newListItem.tags.push(listName)
@@ -124,8 +125,10 @@ export default function LocalStorageUploadManager(props) {
                                     
                                     allListsIndex[newListItem.value] = newListItem
                                 }
+                                return null
                             })
                         }
+                        return null
                     })
                     //console.log('IMPORT MERGE',res,parsed,[].concat(parsed,res))
                     localforageStorageLists.setItem('alldata',Object.values(allListsIndex)) 
@@ -144,7 +147,7 @@ export default function LocalStorageUploadManager(props) {
         }
     }
     
-    console.log(['RENDER LOMAN',props])
+    //console.log(['RENDER LOMAN',props])
     return (
         <div className="LocalStorageUploadManager" >
             <Route 
@@ -156,7 +159,7 @@ export default function LocalStorageUploadManager(props) {
                 />}     
             />
             <Route {...props} exact path={props.match.path} 
-                render={function(iprops) { console.log(['AA',props,iprops]); return  <IndexPage {...props} 
+                render={function(iprops) { return  <IndexPage {...props} 
                     items={items}
                     deleteItem={deleteItem} saveItem={saveItem} importExamples={importExamples} importLists={importLists}
                     handleFileSelection={handleFileSelection}

@@ -1,12 +1,11 @@
 /* global window */
-import {Button,   Dropdown, ButtonGroup } from 'react-bootstrap'
+import {Button } from 'react-bootstrap'
 import React from 'react';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import ReactTags from 'react-tag-autocomplete'
-import {InputGroup } from 'react-bootstrap'
 import useListItemRow from './useListItemRow'
-
+import SuggestionComponent from './components/SuggestionComponent'
 export default function ListsManagerRow(props) {
         const  {item, splitNumber , style} = props;
        const {    
@@ -39,14 +38,13 @@ export default function ListsManagerRow(props) {
                      <span  style={{float:'left'}}>
                        <ReactTags
                         placeholderText="Add to list"
-                        minQueryLength={1}
+                        minQueryLength={0}
                         maxSuggestionsLength={50}
                         autoresize={false}
                         allowNew={true}
-                        minQueryLength={1}
-                        maxSuggestionsLength={50}
                         ref={reactTags}
                         tags={tags}
+                        suggestionComponent={SuggestionComponent}
                         suggestions={props.lookups.listsLookups.map(function(listName,i) {return {id: i, name: listName}})}
                         onDelete={onTagDelete}
                         onAddition={onTagAddition} /> 

@@ -40,11 +40,12 @@ function splitSentences(text) {
     }
     
     function uniquifyArray(a) {
-        console.log(['UNIQARRAY',a])
+        //console.log(['UNIQARRAY',a])
         if (Array.isArray(a)) {
             var index = {}
             a.map(function(value) {
                 index[value] = true 
+                return null
             })
             return Object.keys(index)
         } else {
@@ -64,6 +65,7 @@ function splitSentences(text) {
                         emptyIndex = value
                     }
                 }
+                return null
             })
             if (emptyIndex) return [emptyIndex].concat(Object.values(index))
             else return Object.values(index)
@@ -71,5 +73,7 @@ function splitSentences(text) {
             return []
         }
     }
+    
+    
     
 export {generateObjectId, parentUrl, concatText , findFirstDiffPos, splitSentences,uniquifyArray, uniquifyArrayOfObjects}

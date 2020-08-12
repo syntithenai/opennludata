@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import {Button, Dropdown, ButtonGroup, InputGroup} from 'react-bootstrap'
 
 const ImportListsDropDown = function(props) {
-    console.log(props)
+    //console.log(props)
     const [importToValue,setImportToValue] = useState(props.importTo ? props.importTo : '')
     return <Dropdown style={{float:'right', marginLeft:'0.5em'}} variant="success"  as={ButtonGroup}>
           <Dropdown.Toggle split  size="md" variant="success"  id="dropdown-split-basic" ></Dropdown.Toggle>

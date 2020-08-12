@@ -38,7 +38,7 @@ function NewFileButtons(props) {
 }
 
 function FilesList(props) {
-    console.log(['man fl ',props])
+    //console.log(['man fl ',props])
      const { items} = props  
      if (items) {
        const list = Object.values(items).map(function(item,i) {

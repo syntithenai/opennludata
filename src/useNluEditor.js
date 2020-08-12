@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react';
 import localforage from 'localforage'
 import useDBSingleKey from './useDBSingleKey'
 import {uniquifyArray} from './utils'
+import {useParams, useHistory} from 'react-router-dom'
 
 function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
     const {loadAll, saveItem, deleteItem , items, setItems, findKeyBy, filter} = useDBSingleKey(database, databaseTable, databaseKey)
@@ -10,10 +11,43 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
     const [searchFilter, setSearchFilter] = useState('')
     const [tagAllValue, setTagAllValue] = useState('')
     const [skillAllValue, setSkillAllValue] = useState('')
-    const [skillFilterValue, setSkillFilterValue] = useState('')
-    const [intentFilterValue, setIntentFilterValue] = useState('')
+    //const [skillFilterValue, setSkillFilterValue] = useState('')
+    //const [intentFilterValue, setIntentFilterValue] = useState('')
     const [intentAllValue, setIntentAllValue] = useState('')
     const listRef = React.createRef()
+    
+    const params = useParams()
+    const history = useHistory()
+    var skillFilterValue = params.skillId ? params.skillId : '';
+    function setSkillFilterValue(value) {
+        //console.log('SETSKILLVAL')
+        //console.log(history)
+        var root = history.location.pathname.split("/")
+        var parts=['/'+root[1]]
+        skillFilterValue = value;
+        if (skillFilterValue.length > 0) {
+            parts.push('/skill/'+skillFilterValue)
+        }
+        if (intentFilterValue.length > 0) {
+            parts.push('/intent/'+intentFilterValue)
+        }
+        //console.log(['ssv',parts,value])
+        history.push(parts.join(''))
+    }
+    var intentFilterValue = params.intentId ? params.intentId : '';
+    
+    function setIntentFilterValue(value) {
+        var parts=['/examples']
+        intentFilterValue = value;
+        if (skillFilterValue.length > 0) {
+            parts.push('/skill/'+skillFilterValue)
+        }
+        if (intentFilterValue.length > 0) {
+            parts.push('/intent/'+intentFilterValue)
+        }
+        history.push(parts.join(''))
+    }
+    
     //const examplesDB = useDBSingleKey('nlutool','examples','alldata')
     //var updateLookupsTimeout = null
     //var updateFilteredTimeout = null
@@ -27,7 +61,7 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
      
     useEffect(() => {
         //clearTimeout(updateFilteredTimeout)
-        console.log('UPDATE FILTERED'+intentFilterValue)
+        //console.log('UPDATE FILTERED'+intentFilterValue)
         //updateFilteredTimeout = setTimeout(function() {
              //console.log('UPDATE FILTERED NOW')
              var filteredItems = filter(function(item) {
@@ -94,7 +128,7 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
     }
     
     function tagAll(val) {
-        console.log(['tagall',tagAllValue,val])
+        //console.log(['tagall',tagAllValue,val])
         var tagValue = val ? val : tagAllValue;
         if (items) {
             var newItems = []
@@ -116,7 +150,7 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
     }
     
     function intentAll(val) {
-        console.log(['intentall',intentAllValue,val])
+        //console.log(['intentall',intentAllValue,val])
         var intentValue = val ? val : intentAllValue;
         if (items) {
             var newItems = []
@@ -167,7 +201,7 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
     }
     
      function skillSetAll(val) {
-         console.log(['set skill all',tagAllValue,val])
+         //console.log(['set skill all',tagAllValue,val])
         var skillValue = val ? val : skillAllValue;
         if (items) {
             var newItems = []
@@ -190,7 +224,7 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
     
        
     function saveAll(e)  {
-        console.log(['save akk',filteredItems])
+        //console.log(['save akk',filteredItems])
         if (items) {
             var newItems = []
             var lsItems = []
@@ -219,7 +253,7 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
         if (skill && skill.trim().length > 0) skills.push(skill)
         var newIntent=''
         if (intent && intent.trim().length > 0) newIntent = intent
-        saveItem({id:null, example:'', intent:intent, skills:skills,tags:[]})
+        saveItem({id:null, example:'', intent:newIntent, skills:skills,tags:[]})
    }
     
     function saveItemWrap(item,index) {
@@ -295,7 +329,7 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
     }
     
       function untagAll(val) {
-        console.log(['untagall',tagAllValue,val])
+        //console.log(['untagall',tagAllValue,val])
         //var tagValue = val ? val : tagAllValue;
         if (items) {
             var newItems = []
@@ -306,7 +340,7 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
                    if (!newItem.tags) newItem.tags=[]
                    var finalTags = []
                    newItem.tags.map(function(tag) {
-                       if (tag != val) {
+                       if (tag !== val) {
                            finalTags.push(tag)
                        }  
                        return null
@@ -323,7 +357,7 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
     }
     
        function unskillAll(val) {
-        console.log(['unskillall',tagAllValue,val])
+        //console.log(['unskillall',tagAllValue,val])
         //var tagValue = val ? val : tagAllValue;
         if (items) {
             var newItems = []
@@ -334,7 +368,7 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
                    if (!newItem.skills) newItem.skills=[]
                    var finalTags = []
                    newItem.skills.map(function(tag) {
-                       if (tag != val) {
+                       if (tag !== val) {
                            finalTags.push(tag)
                        }  
                        return null
@@ -350,9 +384,9 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
         }
     }
     
-    function sortItems() {
+    //function sortItems() {
         
-    }
+    //}
     
 
     
