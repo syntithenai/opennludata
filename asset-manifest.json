@@ -1,0 +1,26 @@
+{
+  "files": {
+    "main.css": "/opennludata/static/css/main.8b532490.chunk.css",
+    "main.js": "/opennludata/static/js/main.37ac5555.chunk.js",
+    "main.js.map": "/opennludata/static/js/main.37ac5555.chunk.js.map",
+    "runtime-main.js": "/opennludata/static/js/runtime-main.e956959c.js",
+    "runtime-main.js.map": "/opennludata/static/js/runtime-main.e956959c.js.map",
+    "static/css/2.690df615.chunk.css": "/opennludata/static/css/2.690df615.chunk.css",
+    "static/js/2.dd0977fc.chunk.js": "/opennludata/static/js/2.dd0977fc.chunk.js",
+    "static/js/2.dd0977fc.chunk.js.map": "/opennludata/static/js/2.dd0977fc.chunk.js.map",
+    "index.html": "/opennludata/index.html",
+    "precache-manifest.ae412a9fdce1829a3fb78d6eb06f5588.js": "/opennludata/precache-manifest.ae412a9fdce1829a3fb78d6eb06f5588.js",
+    "service-worker.js": "/opennludata/service-worker.js",
+    "static/css/2.690df615.chunk.css.map": "/opennludata/static/css/2.690df615.chunk.css.map",
+    "static/css/main.8b532490.chunk.css.map": "/opennludata/static/css/main.8b532490.chunk.css.map",
+    "static/js/2.dd0977fc.chunk.js.LICENSE.txt": "/opennludata/static/js/2.dd0977fc.chunk.js.LICENSE.txt",
+    "static/media/jsoneditor.css": "/opennludata/static/media/jsoneditor-icons.2b9b4872.svg"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.e956959c.js",
+    "static/css/2.690df615.chunk.css",
+    "static/js/2.dd0977fc.chunk.js",
+    "static/css/main.8b532490.chunk.css",
+    "static/js/main.37ac5555.chunk.js"
+  ]
+}
