@@ -1,6 +1,6 @@
 {
   "name": "opennludata",
-  "homepage": "http://syntithenai.github.io/opennludata",
+  "homepage": "http://opennludata.org",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -23,6 +23,7 @@
     "react-copy-to-clipboard": "^5.0.2",
     "react-dom": "^16.13.1",
     "react-file-reader-input": "^2.0.0",
+    "react-ga": "^3.1.2",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.1",

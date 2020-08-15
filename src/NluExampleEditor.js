@@ -15,11 +15,11 @@ const RenderRow = function(props) {
     return <NluExampleRow  
          item={item} splitNumber={index} style={style}
          saveItem={props.data.saveItem} deleteItem={props.data.deleteItem} 
-         lookups={props.data.lookups} />
+         lookups={props.data.lookups} setPageMessage={props.data.setPageMessage} />
 }
 
 export default function NluExampleEditor(props) {
-    const {loadAll, deleteItem , items, findKeyBy, searchFilter, setSearchFilter, skillFilterValue, setSkillFilterValue, intentFilterValue, setIntentFilterValue, tagAllValue, setTagAllValue, skillAllValue, setSkillAllValue,  intentAllValue, setIntentAllValue, listRef, tagAll,untagAll, unskillAll, intentAll, resetSelection, selectAll,  skillSetAll, saveItemWrap, getItemSize, deleteAll, filteredItems, createEmptyItem} = useNluEditor('nlutool','examples','alldata', props.updateLookups)
+    const {loadAll, deleteItem , items, findKeyBy, searchFilter, setSearchFilter, skillFilterValue, setSkillFilterValue, intentFilterValue, setIntentFilterValue, tagAllValue, setTagAllValue, skillAllValue, setSkillAllValue,  intentAllValue, setIntentAllValue, listRef, tagAll,untagAll, unskillAll, intentAll, resetSelection, selectAll,  skillSetAll, saveItemWrap, getItemSize, deleteAll, filteredItems, createEmptyItem} = useNluEditor('nlutool','examples','alldata', props.updateFunctions.updateLookups)
     useEffect(() => {
         loadAll()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -63,7 +63,7 @@ export default function NluExampleEditor(props) {
                
                 <List
                     ref={listRef}
-                    itemData={{items: filteredItems, saveItem: saveItemWrap, deleteItem, findKeyBy, lookups: props.lookups}}
+                    itemData={{items: filteredItems, saveItem: saveItemWrap, deleteItem, findKeyBy, lookups: props.lookups, setPageMessage: props.setPageMessage}}
                     itemKey={index => index}  
                     className="List"
                     height={700}
@@ -82,7 +82,6 @@ export default function NluExampleEditor(props) {
     }
     
      return <div>
-        <Link  style={{float:'right'}} to={'/import'} ><Button variant='warning' >Current Import</Button></Link>
         <EditorSearchBar {...props} searchFilter={searchFilter} setSearchFilter={setSearchFilter} skillFilterValue={skillFilterValue} setSkillFilterValue={setSkillFilterValue} resetSelection={resetSelection} selectAll={selectAll}  createEmptyItem={createEmptyItem} intentFilterValue={intentFilterValue} setIntentFilterValue={setIntentFilterValue} untagAll={untagAll} unskillAll={unskillAll}  />
          {renderEditor(props)}
     </div>

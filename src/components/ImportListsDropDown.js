@@ -8,7 +8,7 @@ const ImportListsDropDown = function(props) {
           <Dropdown.Toggle split  size="md" variant="success"  id="dropdown-split-basic" ></Dropdown.Toggle>
           <Button variant="success"  size="md" >{'Import Entities as'} </Button>
           <Dropdown.Menu>
-           <form  style={{display:'inline'}} onSubmit={function(e) {e.preventDefault() ; props.importListTo(e.target.value)}} >
+           <form  style={{display:'inline'}} onSubmit={function(e) {e.preventDefault() ; props.importListTo(importToValue)}} >
                 <div className="form-group">
                 <InputGroup> 
                     <input type="text" className="form-control" onChange={function(e) {setImportToValue(e.target.value)}}

@@ -8,43 +8,50 @@ import localforage from 'localforage'
 
 // handle list updates with minimum disruption to top level items
 function reducer(state, action) {
-  switch (action.type) {
+    const index = parseInt(action.index)
+ 
+    switch (action.type) {
     case "append":
       if (action.item) {
         return [...state, action.item];
       } else return state
-     case "prepend":
+    case "prepend":
       if (action.item) {
         return [action.item,...state];
       } else return state
     case "insert":
-      if (action.item && typeof action.index === "number" && action.index >= 0) {
-          return [
-            ...state.slice(0, action.index),
-            action.item,
-            ...state.slice(action.index)
-          ];
-        } else throw new Error("Missing item or index on reduce insert")
+      if (action.item && typeof index === "number" ) {
+          if (state.length > 0) {
+              return [
+                ...state.slice(0, index),
+                action.item,
+                ...state.slice(index)
+              ];
+          } else return state
+        } else return state
     case "remove":
-      if (typeof action.index === "number" && action.index >= 0) {
+      if (typeof index === "number" ) {
           return [
-            ...state.slice(0, action.index),
-            ...state.slice(action.index + 1)
+            ...state.slice(0, index),
+            ...state.slice(index + 1)
           ];
-       } else throw new Error("Missing index on reduce remove")
+       } else return state 
     case "update":
-       if (action.item && typeof action.index === "number" && action.index >= 0) {
-            return [
-            ...state.slice(0, action.index),
+       if (action.item && typeof index === "number" ) {
+           return  [
+            ...state.slice(0, index),
             action.item,
-            ...state.slice(action.index + 1)
+            ...state.slice(index + 1)
           ];
-      } else throw new Error("Missing item or index on reduce update")
+        } else return state 
     case "replaceall":
-        return action.items
+        if (typeof action.items === "object") {
+            return action.items
+        } else return state
     default:
-      throw new Error();
+      throw new Error('Invalid reduction in useDBSingleKey');
   }
+    
 }
 
 // state manager with local storage backing

@@ -9,7 +9,7 @@ function SearchPage(props) {
     
     return <div>
     <h3>Search</h3>
-    <iframe src="https://github.com/syntithenai/opennludata/wiki" ></iframe>
+    <a target="_new" href="https://github.com/syntithenai/opennludata/wiki" ><Button>Search the WIKI</Button></a>
     
     
     </div>

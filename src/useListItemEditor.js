@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import useDBSingleKey from './useDBSingleKey'
-
+import {useParams, useHistory} from 'react-router-dom'
 
 function useListItemEditor(database, databaseTable, databaseKey, updateLists) {
     const {loadAll, saveItem, deleteItem , items, setItems, findKeyBy, filter} = useDBSingleKey(database, databaseTable, databaseKey)
@@ -9,7 +9,18 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists) {
     const [searchFilter, setSearchFilter] = useState('')
     const [tagAllValue, setTagAllValue] = useState('')
     const listRef = React.createRef()
-    const [listFilterValue, setListFilterValue] = useState('')
+    //const [listFilterValue, setListFilterValue] = useState('')
+    
+    var params = useParams()
+    var listFilterValue = params.listId ? params.listId : '';
+    var history = useHistory()
+    function setListFilterValue(value) {
+        var root = history.location.pathname.split("/")
+        var parts=['/'+root[1]]
+        parts.push('/'+value)
+        history.push(parts.join(''))
+    }
+   
       
     useEffect(() => {
          var filteredItems = filter(function(item) {
@@ -141,13 +152,15 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists) {
          if (items) {
             var newItems = []
             items.map(function(item,i) {
-                if (item.id && filteredItemsKeys[item.id]) {
-                   var newItem = item
-                   newItem.isSelected = true
-                   newItems.push(newItem)
-                } else {
-                    newItem.isSelected = false
-                    newItems.push(newItem)
+                if (item) {
+                    if (item.id && filteredItemsKeys[item.id]) {
+                       var newItem = item
+                       newItem.isSelected = true
+                       newItems.push(newItem)
+                    } else {
+                        newItem.isSelected = false
+                        newItems.push(newItem)
+                    }
                 }
                 return null
             })

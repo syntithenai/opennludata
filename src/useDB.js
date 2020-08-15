@@ -4,42 +4,43 @@ import localforage from 'localforage'
 
 // handle list updates with minimum disruption to top level items
 function reducer(state, action) {
+    const index = parseInt(action.index)
  switch (action.type) {
     case "append":
       if (action.item) {
         return [...state, action.item];
       } else return state
     case "insert":
-      if (action.item && typeof action.index === "number" && action.index >= 0) {
+      if (action.item && typeof index === "number" ) {
           if (state.length > 0) {
               return [
-                ...state.slice(0, action.index),
+                ...state.slice(0, index),
                 action.item,
-                ...state.slice(action.index)
+                ...state.slice(index)
               ];
           } else return state
         } else return state
     case "remove":
-      if (typeof action.index === "number" && action.index >= 0) {
+      if (typeof index === "number" ) {
           return [
-            ...state.slice(0, action.index),
-            ...state.slice(action.index + 1)
+            ...state.slice(0, index),
+            ...state.slice(index + 1)
           ];
        } else return state 
     case "update":
-       if (action.item && typeof action.index === "number" && action.index >= 0) {
-            return [
-            ...state.slice(0, action.index),
+       if (action.item && typeof index === "number" ) {
+           return  [
+            ...state.slice(0, index),
             action.item,
-            ...state.slice(action.index + 1)
+            ...state.slice(index + 1)
           ];
-      } else return state
+        } else return state 
     case "replaceall":
         if (typeof action.items === "object") {
             return action.items
         } else return state
     default:
-      throw new Error();
+      throw new Error('Invalid reduction in useDB');
   }
 }
    
@@ -90,7 +91,7 @@ export default function useDB(database, databaseTable) {
     // save or create
     function saveItem(item,index) {
         if (item) {
-            //console.log(['SAVEDB',item,index])
+            console.log(['SAVEDB',item,index])
             // update sources and save text in seperate localstorage
             // ensure id
             var isNewItem = false;

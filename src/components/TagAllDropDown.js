@@ -16,7 +16,7 @@ const TagAllDropDown = function(props) {
               </form>
               {props.lookups.tagLookups && props.lookups.tagLookups.sort().map(function(skillKey,i) {
               return <Dropdown.Item key={i} value={skillKey}  >
-                <Button variant="success" onClick={function(e) {props.setTagAllValue(skillKey); props.tagAll(skillKey)}} >Add to {skillKey}</Button>
+                <Button variant="success" onClick={function(e) {props.setTagAllValue(skillKey); props.tagAll(skillKey)}} >Add {skillKey}</Button>
                 <Button variant="danger" onClick={function(e) { props.untagAll(skillKey)}} style={{marginLeft: '0.5em'}}>Remove</Button></Dropdown.Item>
     })}
           </Dropdown.Menu>

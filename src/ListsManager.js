@@ -1,6 +1,6 @@
 import React, { useEffect} from 'react';
 import './App.css';
-import {Link} from 'react-router-dom'
+import {Link, useParams, useHistory} from 'react-router-dom'
 import {Button } from 'react-bootstrap'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { VariableSizeList as List } from 'react-window';
@@ -21,12 +21,12 @@ const RenderRow = function(props) {
 }
 
 export default  function ListsManager(props) {
-    const {loadAll, deleteItem ,items, findKeyBy, searchFilter, setSearchFilter, tagAllValue, setTagAllValue, listRef, tagAll,untagAll, resetSelection, selectAll, saveItemWrap, getItemSize,  filteredItems, listFilterValue, setListFilterValue, deleteAll, createEmptyItem} = useListItemEditor('nlutool','lists','alldata', props.updateLists)
+    const {listFilterValue, setListFilterValue, loadAll, deleteItem ,items, findKeyBy, searchFilter, setSearchFilter, tagAllValue, setTagAllValue, listRef, tagAll,untagAll, resetSelection, selectAll, saveItemWrap, getItemSize,  filteredItems, deleteAll, createEmptyItem} = useListItemEditor('nlutool','lists','alldata', props.updateFunctions.updateLists)
     //const [currentList, setCurrentList] = useState('')
-   
+
     useEffect(() => {
         loadAll()
-        props.updateLists(items)
+        props.updateFunctions.updateLists(items)
     // eslint-disable-next-line react-hooks/exhaustive-deps
     },[])
     
@@ -162,7 +162,6 @@ export default  function ListsManager(props) {
   
     return <div>
        
-        <Link style={{float:'right'}} to="/sources" ><Button variant="success" >Sources</Button></Link>
                    
         {<ListsManagerSearchBar {...props} searchFilter={searchFilter} setSearchFilter={setSearchFilter} listFilterValue={listFilterValue} setListFilterValue={setListFilterValue} resetSelection={resetSelection} selectAll={selectAll} createEmptyItem={createEmptyItem} />}
          

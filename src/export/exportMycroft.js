@@ -1,79 +1,97 @@
-import { generateObjectId } from '../utils';
+import { generateObjectId, uniquifyArray, replaceEntities } from '../utils';
 import {createZip} from './createZip'
 import localforage from 'localforage'
 
 
-// just the models subfolder
-// one file per intent
-// one file per entity
-function exportMycroft(skill) {
-    var modelFiles=[]
-    var listsStorage = localforage.createInstance({
-       name: "nlutool",
-       storeName   : "lists",
-     });
-     listsStorage.getItem('alldata').then(function(lists) {
-        console.log(['GOTDATA',lists])
-         //if (err) throw new Error(err)
-        //var itemsManager = useDBSingleKey('nlutool','lists','alldata')
-        //itemsManager.loadAll()
-        var usedLists = {}
-        if (skill.entities) {
-            Object.keys(skill.entities).map(function(entity,i) {
-                if (skill.entities[entity] && Array.isArray(skill.entities[entity].lists)) {
-                    skill.entities[entity].lists.map(function(list) {
-                       usedLists[list] = true  
-                    })
-                }
-            })
-        }
-        console.log(['USELISTS',usedLists])
-       
-        var skillLists = {}
-        Object.keys(usedLists).map(function(listKey) {
-          skillLists[listKey] = []  
+
+
+async function exportMycroft(skill) {
+    return new Promise(function(resolve,reject) {
+        var listsStorage = localforage.createInstance({
+           name: "nlutool",
+           storeName   : "lists",
+         });
+         var modelFiles=[]
+         listsStorage.getItem('alldata').then(function(lists) {
+            //var usedLists = {}
+            //if (skill.entities) {
+                //Object.keys(skill.entities).map(function(entity,i) {
+                    //if (skill.entities[entity] && Array.isArray(skill.entities[entity].lists)) {
+                        //skill.entities[entity].lists.map(function(list) {
+                           //usedLists[list] = true  
+                        //})
+                    //}
+                    //return null
+                //})
+            //}
+           
+            
+            
+           
+             // intents - 
+             // collate examples, one file per intent
+             var intents={}
+             if (skill.intents) {
+                 Object.keys(skill.intents).map(function(intentKey) {
+                     var examples = skill.intents[intentKey]
+                     if (!Array.isArray(intents[intentKey]))  intents[intentKey] = []
+                     if (Array.isArray(examples)) {
+                         examples.map(function(example) {
+                            intents[intentKey].push(replaceEntities(example.example,example.entities))
+                         })
+                     }
+                     intents[intentKey] = uniquifyArray(intents[intentKey]).sort()
+                 }) 
+             }
+             // one per file
+             // entities - merge values and lists values , one entity per file
+             var entities={}
+             if (skill.entities) { 
+                 Object.keys(skill.entities).map(function(entityKey) {
+                     var combinedEntities = []
+                     var entity = skill.entities[entityKey]
+                     if (entity.values) {
+                         combinedEntities = combinedEntities.concat(entity.values)
+                     } 
+                     if (entity.lists) {
+                         //var skillLists = {}
+                         //Object.keys(usedLists).map(function(listKey) {
+                          //skillLists[listKey] = []  
+                          //return null
+                        //})
+                       
+                       console.log(['add from lists',entity.lists])
+                        lists.map(function(item) {
+                            entity.lists.map(function(listKey) {
+                                console.log([listKey,item.tags.indexOf(listKey) !== -1, item.tags])
+                                if (item && item.tags && item.tags.indexOf(listKey) !== -1) {
+                                    console.log('list item used ')
+                                    combinedEntities.push(item.value)
+                                }
+                            })
+                        })
+                     }
+                     entities[entityKey] = uniquifyArray(combinedEntities).sort()
+                 }) 
+             }
+             
+             Object.keys(intents).map(function(intent) {
+                 modelFiles.push({name:intent+'.intent',content: intents[intent].join("\n")})
+                 return null
+             })
+             Object.keys(entities).map(function(entity) {
+                 modelFiles.push({name: entity+'.entity',content: entities[entity].join("\n")})
+                 return null
+             })
+              resolve( modelFiles)
         })
-       
-       
-        lists.map(function(item) {
-            Object.keys(usedLists).map(function(listKey) {
-                if (item && item.tags && item.tags.indexOf(listKey) !== -1) {
-                    skillLists[listKey].push(item.value)
-                }
-            })
-        })
-         console.log(['SKILLLISTS',skillLists])
-        //Object.keys(usedLists).map(function(list) {
-              //skillLists[list] = lists.filter(function(item) {
-                 //if (item && item.tags && item.tags.indexOf(list) !== -1) return true
-                 //else return false  
-              //}).map(function(item) {
-                 //return item.value  
-              //})
-        //});
-        skill.lists = skillLists
-        console.log(['EXPPORT JSON with lists',skill])
     })
-    //var cleanIntents = {}
-    //if (skill.intents) {
-        //skill.intents.map(function(intent,intentKey) {
-            //cleanIntents[intentKey] = intent
-            //return null
-        //})
-    //}
-    //var cleanSkill = {title:skill.title, friendlyTitle: skill.friendlyTitle, intents: Object.values(cleanIntents) , entities: Object.values(cleanEntities)}
-    //var title = skill.friendlyTitle ? skill.friendlyTitle+'.json'  : (skill.title ? skill.title+'.json' : generateObjectId()+'.json') 
-    //var content = JSON.stringify(skill)
-    ////console.log(['EXPORT json',content])
-    console.log(["GENZIP",JSON.stringify(skill)])
-        
-    
-    return JSON.stringify(modelFiles)
 }
 
 
-function exportMycroftZip(skill) {
-    return createZip({files:[exportMycroft(skill)]})
+async function exportMycroftZip(skill) {
+    const files = await exportMycroft(skill)
+    return createZip({files:files})
 }
 
 export {exportMycroft, exportMycroftZip}

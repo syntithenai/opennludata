@@ -6,6 +6,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import ReactTags from 'react-tag-autocomplete'
 import useNluRow from './useNluRow'
 import SuggestionComponent from './components/SuggestionComponent'
+import checkImage from './images/check.svg'
+import thumbdownImage from './images/thumb-down.svg'
 
 export default function NluExampleRow(props) {
        const  {item, splitNumber , style} = props;
@@ -22,7 +24,7 @@ export default function NluExampleRow(props) {
           //return <Dropdown.Item key={i} value={skillKey} onClick={function(e) {setSkill(skillKey,props.splitNumber)}}  >{skillKey}</Dropdown.Item>
        //})
        // ONE PER ENTITY FOR THIS EXAMPLE
-       var entitiesDropdowns = item && item.entities && item.entities.map(function(entity,i) {
+       var entitiesDropdowns = item && item.entities ? item.entities.map(function(entity,i) {
            var entityOptions = props.lookups.entityLookups.sort().map(function(entityKey,j) {
               return <Dropdown.Item  key={j} value={entityKey} onClick={function(e) {entityTypeChanged(i,entityKey)}}  >{entityKey}</Dropdown.Item>
            })
@@ -44,7 +46,7 @@ export default function NluExampleRow(props) {
                   {entityOptions}
               </Dropdown.Menu>
             </Dropdown>
-       }) ;
+       }) : [];
         //PLUS CREATE NEW WHEN TEXT IS SELECTED
        if (selectionState  && selectionState.textSelection && selectionState.textSelection.length > 0 &&  selectionState.textSelectionFrom === splitNumber) {
            var entityOptions =  props.lookups.entityLookups && props.lookups.entityLookups.sort().map(function(entityKey,j) {
@@ -70,10 +72,10 @@ export default function NluExampleRow(props) {
        return item && <div style={style} className={splitNumber % 2 ? 'ListItemOdd' : 'ListItemEven'}>
                <div style={{position:'relative', width: '100%', textAlign:'left',  borderTop: '2px solid black'}}>
                   
-                   {!item.isSelected && <Button style={{float: 'left'}} size="lg" variant="secondary" onClick={function() {selectItem(splitNumber)}} ><img  style={{height:'1em'}} src='/check.svg' alt="Select" /></Button>}
-                  {item.isSelected && <Button style={{float: 'left'}} size="lg" variant="success" onClick={function() {deselectItem(splitNumber)}} ><img  style={{height:'1em'}} src='/check.svg' alt="Deselect" /></Button>}
+                   {!item.isSelected && <Button style={{float: 'left'}} size="lg" variant="secondary" onClick={function() {selectItem(splitNumber)}} ><img  style={{height:'1em'}} src={checkImage} alt="Select" /></Button>}
+                  {item.isSelected && <Button style={{float: 'left'}} size="lg" variant="success" onClick={function() {deselectItem(splitNumber)}} ><img  style={{height:'1em'}} src={checkImage} alt="Deselect" /></Button>}
                   
-                <Button  variant="danger" style={{float:'right'}} onClick={function(e) {if (window.confirm('Really delete')) {props.deleteItem(splitNumber,(item.id ? item.id : ''))}}} ><img src="/thumb-down.svg" alt="Delete" /> Delete</Button>
+                <Button  variant="danger" style={{float:'right'}} onClick={function(e) {if (window.confirm('Really delete')) {props.deleteItem(splitNumber,(item.id ? item.id : ''))}}} ><img src={thumbdownImage} alt="Delete" /> Delete</Button>
 
                   
                   <Dropdown  style={{float:'left'}} as={ButtonGroup}>

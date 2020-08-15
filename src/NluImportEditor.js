@@ -10,6 +10,9 @@ import useNluEditor from './useNluEditor'
 import TagAllDropDown from './components/TagAllDropDown'
 import IntentAllDropDown from './components/IntentAllDropDown'
 import SkillAllDropDown from './components/SkillAllDropDown'
+import arrowthickleftImage from './images/arrow-thick-left.svg'
+import arrowthickrightImage from './images/arrow-thick-right.svg'
+
 
 const RenderRow = function(props) {
     const index = props.index
@@ -19,14 +22,14 @@ const RenderRow = function(props) {
     return <NluImportRow  
          item={item}  splitNumber={index} style={style}
          saveItem={props.data.saveItem} deleteItem={props.data.deleteItem} saveNlu={props.data.saveNlu}
-         lookups={props.data.lookups} />
+         lookups={props.data.lookups}  setPageMessage={props.data.setPageMessage} />
 }
 
 
 export default function NluImportEditor(props) {
     
     //const examplesDB = useDBSingleKey('nlutool','examples','alldata')
-    const {loadAll, deleteItem ,items,  findKeyBy, searchFilter, setSearchFilter, tagAllValue, setTagAllValue, skillAllValue, setSkillAllValue, skillFilterValue, setSkillFilterValue, intentAllValue, setIntentAllValue, listRef, tagAll, untagAll, unskillAll, intentAll, resetSelection, selectAll,  skillSetAll, saveItemWrap, getItemSize, deleteAll, saveAll, saveNlu, filteredItems, createEmptyItem} = useNluEditor('nlutool','import','alldata', props.updateLookups)
+    const {loadAll, deleteItem ,items,  findKeyBy, searchFilter, setSearchFilter, tagAllValue, setTagAllValue, skillAllValue, setSkillAllValue, skillFilterValue, setSkillFilterValue, intentFilterValue, setIntentFilterValue, intentAllValue, setIntentAllValue, listRef, tagAll, untagAll, unskillAll, intentAll, resetSelection, selectAll,  skillSetAll, saveItemWrap, getItemSize, deleteAll, saveAll, saveNlu, filteredItems, createEmptyItem} = useNluEditor('nlutool','import','alldata', props.updateFunctions.updateLookups)
     useEffect(() => {
         loadAll()
         //examplesDB.loadAll()
@@ -67,9 +70,9 @@ export default function NluImportEditor(props) {
              <span style={{float:'left', fontWeight:'bold'}} >&nbsp;{filteredItems.length}/{items.length} matches </span>
              {props.lookups.selectedTally > 0 && <span style={{float:'right'}}> 
                 <span>With {props.lookups.selectedTally} selected&nbsp;
-              <SkillAllDropDown skillSetAll={skillSetAll} skillAllValue={skillAllValue}  setSkillAllValue={setSkillAllValue}  lookups={props.lookups}/>
-                <IntentAllDropDown intentAll={intentAll} intentAllValue={intentAllValue} setIntentAllValue={setIntentAllValue}  lookups={props.lookups}/>
-                <TagAllDropDown tagAll={tagAll} tagAllValue={tagAllValue} setTagAllValue={setTagAllValue}  lookups={props.lookups}/>
+              <SkillAllDropDown skillSetAll={skillSetAll} skillAllValue={skillAllValue}  setSkillAllValue={setSkillAllValue}  lookups={props.lookups}  untagAll={untagAll} unskillAll={unskillAll}/>
+                <IntentAllDropDown intentAll={intentAll} intentAllValue={intentAllValue} setIntentAllValue={setIntentAllValue}  lookups={props.lookups}  untagAll={untagAll} unskillAll={unskillAll}/>
+                <TagAllDropDown tagAll={tagAll} tagAllValue={tagAllValue} setTagAllValue={setTagAllValue}  lookups={props.lookups}  untagAll={untagAll} unskillAll={unskillAll}/>
                 
                 </span>
                 <Button style={{marginLeft:'1em'}} onClick={saveAll} variant="success"  >Save Selected</Button> 
@@ -81,7 +84,7 @@ export default function NluImportEditor(props) {
                 
                 <List
                     ref={listRef}
-                    itemData={{items: filteredItems, saveItem: saveItemWrap, saveNlu, deleteItem, findKeyBy, lookups:props.lookups}}
+                    itemData={{items: filteredItems, saveItem: saveItemWrap, saveNlu, deleteItem, findKeyBy, lookups:props.lookups, setPageMessage: props.setPageMessage}}
                     itemKey={index => index}  
                     className="List"
                     height={700}
@@ -96,15 +99,14 @@ export default function NluImportEditor(props) {
             //{JSON.stringify(filteredItems)}
             return <div >
                 <div style={{textAlign:'center'}}>
-            <br/><b>No more items to import</b><br/><br/>Open <Link to="/sources" ><Button><img style={{height:'1em', paddingRight:'1em'}}  src="/arrow-thick-left.svg" alt="Sources" />Sources</Button></Link> to create more or <Link to="/examples" ><Button>Organise<img src="/arrow-thick-right.svg" alt="Intents" style={{height:'1em', paddingLeft:'1em'}}  /></Button></Link> what you have imported into skills.
+            <br/><b>No more items to import</b><br/><br/>Open <Link to="/sources" ><Button><img style={{height:'1em', paddingRight:'1em'}}  src={arrowthickleftImage} alt="Sources" />Sources</Button></Link> to create more or <Link to="/examples" ><Button>Organise<img src={arrowthickrightImage} alt="Intents" style={{height:'1em', paddingLeft:'1em'}}  /></Button></Link> what you have imported into skills.
             </div></div>
         }
     }
     // {JSON.stringify(items)}
     return <div>
-        <Link style={{float:'right'}} to="/sources" ><Button variant="success" >Sources</Button></Link>
          
-        <EditorSearchBar {...props} searchFilter={searchFilter} setSearchFilter={setSearchFilter} skillFilterValue={skillFilterValue} setSkillFilterValue={setSkillFilterValue} resetSelection={resetSelection} selectAll={selectAll} createEmptyItem={createEmptyItem} untagAll={untagAll} unskillAll={unskillAll}  />
+        <EditorSearchBar {...props} searchFilter={searchFilter} setSearchFilter={setSearchFilter} skillFilterValue={skillFilterValue} setSkillFilterValue={setSkillFilterValue} resetSelection={resetSelection} selectAll={selectAll} createEmptyItem={createEmptyItem} untagAll={untagAll} unskillAll={unskillAll} intentFilterValue={intentFilterValue} setIntentFilterValue={setIntentFilterValue}  />
          {renderEditor(props)}
     </div>
     

@@ -37,7 +37,8 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
     var intentFilterValue = params.intentId ? params.intentId : '';
     
     function setIntentFilterValue(value) {
-        var parts=['/examples']
+        var root = history.location.pathname.split("/")
+        var parts=['/'+root[1]]
         intentFilterValue = value;
         if (skillFilterValue.length > 0) {
             parts.push('/skill/'+skillFilterValue)
@@ -186,13 +187,16 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
          if (items) {
             var newItems = []
             items.map(function(item,i) {
-                if (item.id && filteredItemsKeys[item.id]) {
-                   var newItem = item
-                   newItem.isSelected = true
-                   newItems.push(newItem)
-                } else {
-                    newItem.isSelected = false
-                    newItems.push(newItem)
+                if (item) {
+                    var newItem = item
+                       
+                    if (item.id && filteredItemsKeys[item.id]) {
+                       newItem.isSelected = true
+                       newItems.push(newItem)
+                    } else {
+                        newItem.isSelected = false
+                        newItems.push(newItem)
+                    }
                 }
                 return null
             })
@@ -308,15 +312,18 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
     }
     
     function saveLSItems(newItems) {
-        var localforageStorage = localforage.createInstance({
-           name: 'nlutool',
-           storeName   :'examples',
-         });
-         localforageStorage.getItem('alldata').then(function(exampleItems) {
-                newItems.map(function(newItem) { exampleItems.push(newItem ); return null})
-                localforageStorage.setItem('alldata',exampleItems)
-         })
-       
+        if (newItems) {
+            var localforageStorage = localforage.createInstance({
+               name: 'nlutool',
+               storeName   :'examples',
+             });
+             localforageStorage.getItem('alldata').then(function(exampleItems) {
+                 if (exampleItems) {
+                    newItems.map(function(newItem) { exampleItems.push(newItem ); return null})
+                    localforageStorage.setItem('alldata',exampleItems)
+                 }
+             })
+        }
     }
 
      

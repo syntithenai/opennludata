@@ -6,12 +6,17 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import ReactTags from 'react-tag-autocomplete'
 import useNluRow from './useNluRow'
 import SuggestionComponent from './components/SuggestionComponent'
+import checkImage from './images/check.svg'
+import thumbdownImage from './images/thumb-down.svg'
+import thumbupImage from './images/thumb-up.svg'
+
+
 export default function NluImportRow(props) {
      const  {item, splitNumber , style} = props;
        const {    
             intentTitle, setIntentTitle, selectionState, setSelectionState, newEntity, setNewEntity, tags, skills, reactTags, reactSkills, 
             onTagDelete, onTagAddition, onSkillDelete,onSkillAddition,  updateExampleContent, entityClicked, entityTypeChanged, intentChanged, entityDelete, selectItem,  deselectItem
-        } = useNluRow(props.item, props.saveItem, props.splitNumber, props.style)
+        } = useNluRow(props.item, props.saveItem, props.splitNumber, props.style, props.setPageMessage)
                 
        var intentOptions = props.lookups.intentLookups && props.lookups.intentLookups.sort().map(function(intentKey,i) {
           return <Dropdown.Item key={i} value={intentKey} onClick={function(e) {intentChanged(intentKey)}}  >{intentKey}</Dropdown.Item>
@@ -65,12 +70,12 @@ export default function NluImportRow(props) {
        return item && <div style={style} className={splitNumber % 2 ? 'ListItemOdd' : 'ListItemEven'}>
                <div style={{position:'relative', width: '100%', textAlign:'left',  borderTop: '2px solid black'}}>
                   
-                   {!item.isSelected && <Button style={{float: 'left'}} size="lg" variant="secondary" onClick={function() {selectItem(splitNumber)}} ><img style={{height:'1em'}} src='/check.svg' alt="Select" /></Button>}
-                  {item.isSelected && <Button style={{float: 'left'}} size="lg" variant="success" onClick={function() {deselectItem(splitNumber)}} ><img style={{height:'1em'}} src='/check.svg' alt="Deselect" /></Button>}
+                   {!item.isSelected && <Button style={{float: 'left'}} size="lg" variant="secondary" onClick={function() {selectItem(splitNumber)}} ><img style={{height:'1em'}} src={checkImage} alt="Select" /></Button>}
+                  {item.isSelected && <Button style={{float: 'left'}} size="lg" variant="success" onClick={function() {deselectItem(splitNumber)}} ><img style={{height:'1em'}} src={checkImage} alt="Deselect" /></Button>}
                   
-                  {item.intent && <Button  style={{float:'right', marginLeft:'0.2em'}}  variant="success"  onClick={function() {props.saveNlu(splitNumber)}} ><img src="/thumb-up.svg" alt="Save" /> Save</Button>}
-                  {!item && <Button   style={{float:'right', marginLeft:'0.2em'}} variant="secondary" ><img src="/thumb-up.svg" alt="Save" /> Import</Button>} 
-                  <Button  variant="danger" style={{float:'right'}} onClick={function(e) {props.deleteItem(splitNumber,(item.id ? item.id : ''))}} ><img src="/thumb-down.svg" alt="Delete" /> Delete</Button>
+                  {item.intent && <Button  style={{float:'right', marginLeft:'0.2em'}}  variant="success"  onClick={function() {props.saveNlu(splitNumber)}} ><img src={thumbupImage} alt="Save" /> Save</Button>}
+                  {!item && <Button   style={{float:'right', marginLeft:'0.2em'}} variant="secondary" ><img src={thumbupImage} alt="Save" /> Import</Button>} 
+                  <Button  variant="danger" style={{float:'right'}} onClick={function(e) {props.deleteItem(splitNumber,(item.id ? item.id : ''))}} ><img src={thumbdownImage} alt="Delete" /> Delete</Button>
                   
                  
                   <Dropdown  style={{float:'left'}} as={ButtonGroup}>

@@ -1,17 +1,20 @@
 import React, {useState, useEffect} from 'react';
 import './App.css';
 import {Link} from 'react-router-dom'
-import {Button, Dropdown, Badge,ButtonGroup, ListGroup } from 'react-bootstrap'
+import {Button, Dropdown, Badge,ButtonGroup, ListGroup , Tabs, Tab} from 'react-bootstrap'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import useNluEditor from './useNluEditor'
 import exportFormats from './export/index'
 import {exportJSON} from './export/exportJSON'
 import useDB from './useDB'
-import {generateObjectId, uniquifyArray} from './utils'
+import {generateObjectId, uniquifyArray, RASA, GoogleAssistant, Alexa} from './utils'
 import ReactTags from 'react-tag-autocomplete'
 import SuggestionComponent from './components/SuggestionComponent'
+import DropDownComponent from './components/DropDownComponent'
+import RASATemplates from './export/RASATemplates'
 //import ExportPage from './ExportPage'
 import { saveAs } from 'file-saver';
+
 
 import localforage from 'localforage'
 //const RenderRow = function(props) {
@@ -21,12 +24,12 @@ import localforage from 'localforage'
     //return <NluSkillsRow  
          //item={item}  splitNumber={index} style={style}
          //saveItem={props.data.saveItem} deleteItem={props.data.deleteItem} saveNlu={props.data.saveNlu}
-         //lookups={props.data.lookups} />
+         //lookups={props.data.lookups}  setPageMessage={props.setPageMessage} />
 //}
 
 
 export default  function NluSkillsEditor(props) {
-    const {items, loadAll, skillFilterValue, setSkillFilterValue, filteredItems} = useNluEditor('nlutool','examples','alldata', props.updateLookups)
+    const {items, loadAll, skillFilterValue, setSkillFilterValue, filteredItems} = useNluEditor('nlutool','examples','alldata', props.updateFunctions.updateLookups)
     const [currentIntent, setCurrentIntent] = useState('')
     const [invocation, setInvocation] = useState('')
     const [entitiesForSkill, setEntitiesForSkill] = useState({})
@@ -36,7 +39,9 @@ export default  function NluSkillsEditor(props) {
     const listsManager = useDB('nlutool','lists')
     const [showExportDialog, setShowExportDialog] = useState(false)
     const [collatedItems, setCollatedItems] = useState({})
+    const [collatedTags, setCollatedTags] = useState({})
     const [collatedCounts, setCollatedCounts] = useState({})
+    const [newSlotValue, setNewSlotValue] = useState('')
     var skillsStorage = localforage.createInstance({
        name: "nlutool",
        storeName   : "skills",
@@ -48,31 +53,7 @@ export default  function NluSkillsEditor(props) {
         //props.history.push('/skills/'+value)
     //}
     //const {loadAll, saveItem, deleteItem , items, setItems, findKeyBy, filter} = 
-    
-    // load all on init
-    useEffect(() => {
-        loadAll()
-        //skillsManager.loadAll()
-        if (skillFilterValue) {
-            //localforage.setItem('key', 'value', function (err) {
-              //// if err is non-null, we got an error
-              skillsStorage.getItem(skillFilterValue, function (err, skill) {
-                // if err is non-null, we got an error. otherwise, value is the value
-                if (err) throw new Error(err)
-                if (skill) {
-                    setCurrentSkill(skill)
-                    setInvocation(skill.invocation)
-                }
-              });
-            //});
-        } 
-        listsManager.loadAll()
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    },[])
-    
-    // load skill on change skillFilterValue
-    useEffect(() => {
-        //skillsManager.loadAll()
+    function loadSkill() {
         if (skillFilterValue) {
             //localforage.setItem('key', 'value', function (err) {
               //// if err is non-null, we got an error
@@ -87,36 +68,28 @@ export default  function NluSkillsEditor(props) {
             //});
         } 
         
+    }
+    
+    // load all on init
+    useEffect(() => {
+        loadAll()
+        loadSkill()
+        listsManager.loadAll()
+        props.updateFunctions.updateUtterances()
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },[])
+    
+    // load skill on change skillFilterValue
+    useEffect(() => {
+        loadSkill()
       // eslint-disable-next-line react-hooks/exhaustive-deps
     },[skillFilterValue])
-    //// set current skill
-    //useEffect(() => {
-       //if (skillFilterValue && skillFilterValue.length > 0) {
-            ////console.log(['LOAD ALL real ',skillFilterValue,skillsManager.items]) 
-            //var filtered = skillsManager.items.filter(function(item) {
-                ////console.log(['skill filter  ',item.title === skillFilterValue,item])
-                ////return true
-                //if (item.title === skillFilterValue) return true
-                //else return false
-            //})
-            ////console.log(['LOAD ALL filtered ',filtered])
-            //if (filtered.length > 0) {
-                //var skill = filtered[0]
-                ////skill.entities = Object.keys(entitiesForSkill).map(function(entity) {
-                    ////entity.lists = listsForEntity[entity] ? listsForEntity[entity] : []
-                    ////return entity
-                ////})
-                //setCurrentSkill(skill)
-                //setInvocation(skill.invocation)
-            //}
-        //}
-    //},[skillsManager.items,skillFilterValue])
-    
+ 
     // load list lookups
     useEffect(() => {
         if (listsManager.items.length > 0) { 
             //console.log(['UPD ITEMS',listsManager.items,listsManager.items[0]])
-            props.updateLists(listsManager.items[0])
+            props.updateFunctions.updateLists(listsManager.items[0])
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     },[listsManager.items])
@@ -124,20 +97,22 @@ export default  function NluSkillsEditor(props) {
     // collate entitiesForSkills from filtered example 
     useEffect(() => {
         var entities = {}
-        
-        filteredItems.map(function (item,itemKey) {
-          if (Array.isArray(item.entities)) {
-              item.entities.map(function(entity,entityKey) {
-                 if (entity && entity.type && entity.type.length > 0) {
-                     if (typeof entities[entity.type] !== "object") entities[entity.type] = {}
-                     if (!Array.isArray(entities[entity.type].values )) entities[entity.type].values = []
-                     entities[entity.type].values.push(entity.value)
-                 }
-                 return null
-              })
-          }
-          return null
-        })
+        // collate entities from filteredItems
+        if (Array.isArray(filteredItems)) {
+            filteredItems.map(function (item,itemKey) {
+              if (Array.isArray(item.entities)) {
+                  item.entities.map(function(entity,entityKey) {
+                     if (entity && entity.type && entity.type.length > 0) {
+                         if (typeof entities[entity.type] !== "object") entities[entity.type] = {}
+                         if (!Array.isArray(entities[entity.type].values )) entities[entity.type].values = []
+                         entities[entity.type].values.push(entity.value)
+                     }
+                     return null
+                  })
+              }
+              return null
+            })
+        }
         // sort and uniquify
         Object.keys(entities).map(function(entityName,entityKey) {
            const entity = entities[entityName]
@@ -146,9 +121,10 @@ export default  function NluSkillsEditor(props) {
         })
         setEntitiesForSkill(entities)
         
-        // examples collated by intent
+        // collate intents and tags from items
          var newCollatedItems = collatedItems
          var newCollatedCounts = collatedCounts
+         var newCollatedTags = {}
          if (filteredItems) {
              filteredItems.map(function(item) {
                 if (item.intent) {
@@ -159,19 +135,34 @@ export default  function NluSkillsEditor(props) {
                     //}
                     
                 }
+                if (Array.isArray(item.tags)) {
+                    item.tags.map(function(tag) {
+                        newCollatedTags[tag] = true
+                    })
+                } 
                return null;  
              })
              setCollatedItems(newCollatedItems)
              setCollatedCounts(newCollatedCounts)
-             console.log(['UDPATE SKILL WITH INTENTS',currentSkill, collatedItems])
+             setCollatedTags(newCollatedTags)
              var newSkill = currentSkill;
-             newSkill.intents = collatedItems
+             if (!newSkill.intents) {
+                console.log(['UPDATE INTENTS WITH COLLATED ITEMS',collatedItems])
+                 newSkill.intents = collatedItems
+            }
+             newSkill.tags = Object.keys(collatedTags)
              setCurrentSkill(newSkill)
-             console.log(['UDPATE SKILL WITH INTENTS',JSON.parse(JSON.stringify(newSkill))])
+             //console.log(['UDPATE SKILL WITH INTENTS',currentSkill, collatedItems])
+             
          }   
         
         
     },[filteredItems])
+    
+    useEffect(() => {
+        
+        //console.log(['UDPATE SKILL WITH INTENTS',JSON.parse(JSON.stringify(newSkill))])  
+    },[collatedItems,collatedTags])
     
      // load invocation into skill
     useEffect(() => {
@@ -186,7 +177,7 @@ export default  function NluSkillsEditor(props) {
     },[invocation])
     
     useEffect(() => {
-        console.log('change cs or inv',currentSkill)
+        //console.log('change cs or inv',currentSkill)
         if (currentSkill && currentSkill.title && currentSkill.title.length > 0) {
             console.log('change cs or inv real')
             //var index = skillsManager.findKeyBy('id',newCurrentSkill.id)
@@ -222,7 +213,7 @@ export default  function NluSkillsEditor(props) {
             
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    },[currentSkill,listsForEntity, invocation])
+    },[currentSkill,currentSkill.rasaActions,currentSkill.rasaExtraSlots,listsForEntity, invocation])
     
   
   
@@ -235,8 +226,12 @@ export default  function NluSkillsEditor(props) {
           ////setCurrentSkill(skill)
       ////}
   //}
-    
-  function addListToSkillEntity(entity,list) {
+
+    function forceReload() {
+        setListsForEntity(JSON.stringify([currentSkill.rasaConfig,currentSkill.rasaActions,currentSkill.rasaExtraSlots,currentSkill.entities,currentSkill.utterances,currentSkill.utterancesLists, currentSkill.slots]))  
+    }
+
+    function addListToSkillEntity(entity,list) {
       //console.log(['ADSKOI',currentSkill,currentSkill.entities,entity,list])
       if (entity && list && list.name) {
             var skill = currentSkill;
@@ -250,7 +245,7 @@ export default  function NluSkillsEditor(props) {
            //newListsForEntity[entity] = uniquifyArray(newListsForEntity).sort()
             setCurrentSkill(skill)  
             // force render
-            setListsForEntity(JSON.stringify(skill.entities))  
+            forceReload()  
             //} else {
                 //console.log(['ADSKOI new'])
                //newListsForEntity[entity] = [list.name]
@@ -260,9 +255,9 @@ export default  function NluSkillsEditor(props) {
        } else {
            console.log([' missing data'])
        }
-  }
+    }
   
-  function removeListFromSkillEntity(entity, listIndex) {
+    function removeListFromSkillEntity(entity, listIndex) {
       var skill = currentSkill
       //console.log(['REMOVESKILLFROMLIST',entity,listIndex])
       if (skill && skill.entities && entity && skill.entities[entity] && skill.entities[entity].lists) {
@@ -272,7 +267,7 @@ export default  function NluSkillsEditor(props) {
           
           skill.entities[entity].lists = lists
           setCurrentSkill(skill)  
-          setListsForEntity(JSON.stringify(skill.entities))  
+          forceReload()  
           //console.log(['REMOVESKILLFROMLIST ddd',lists])
       } 
        //var newEntitiesForSkill = entitiesForSkill
@@ -281,89 +276,224 @@ export default  function NluSkillsEditor(props) {
            //newEntitiesForSkill[entity].lists = uniquifyArray([lists.slice(0, listIndex),lists.slice(listIndex + 1)]).sort()
            //setEntitiesForSkill(newEntitiesForSkill)
        //}
-  }
+    }
   
+    function setGoogleAssistantEntityType(entity, type) {
+        if (currentSkill && entity && type) {
+            var skill = currentSkill;
+            if (!skill.entities) skill.entities={}
+            if (!skill.entities[entity]) skill.entities[entity] = {}
+            skill.entities[entity].googleType = type
+            setCurrentSkill(skill)  
+           forceReload()  
+       } 
+    }
+    
+    function setAlexaEntityType(entity, type) {
+        if (currentSkill && entity && type) {
+            var skill = currentSkill;
+            if (!skill.entities) skill.entities={}
+            if (!skill.entities[entity]) skill.entities[entity] = {}
+            skill.entities[entity].alexaType = type
+            setCurrentSkill(skill)  
+            console.log('ALEXA')
+            console.log(skill)
+            forceReload()  
+       } 
+    }
+    
+    function setRASASlotType(entity, type, slots) {
+        if (currentSkill && entity && type) {
+            var skill = currentSkill;
+            slots[entity].slotType = type
+            skill.slots = slots
+            setCurrentSkill(skill)  
+            console.log('RASA')
+            console.log(skill)
+            forceReload()  
+       } 
+    }
+       
+    function setRASASlotAutofill(entity, type, slots) {
+        if (currentSkill && entity && type) {
+            var skill = currentSkill;
+            slots[entity].slotAutofill = type
+            skill.slots = slots
+            setCurrentSkill(skill)  
+            console.log('RASA autofill')
+            console.log(skill)
+            forceReload()  
+       } 
+    }
+    
+    function newSlot(name,slots) {
+        if (name && name.trim().length > 0) {
+            if (!slots) slots = {}
+            slots[name] = {}
+            var skill = currentSkill;
+            skill.slots = slots
+            setCurrentSkill(skill)  
+            setNewSlotValue('')
+            console.log('new slot')
+            console.log(skill)
+            forceReload()  
+        }
+    }
+    
+    function deleteSlot(slot, slots) {
+        if (currentSkill && slot && slots ) {
+            var skill = currentSkill;
+            delete slots[slot]
+            skill.slots = slots
+            setCurrentSkill(skill)  
+            console.log('del slot')
+            console.log(skill)
+            forceReload()  
+        }
+    }
+
+    function setRASAActions(data) {
+          if (currentSkill && data) {
+            var skill = currentSkill;
+            skill.rasaActions = data
+            setCurrentSkill(skill)  
+            forceReload()  
+       }
+    }
+    
+    function setRASAConfig(data) {
+          if (currentSkill) {
+            var skill = currentSkill;
+            skill.rasaConfig = data
+            setCurrentSkill(skill)  
+            forceReload()  
+       }
+    }
+    
+    
+    function addUtterance(utterance) {
+       
+        if (currentSkill && utterance) {
+            var skill = currentSkill;
+            if (!Array.isArray(skill.utterances)) skill.utterances=[]
+            skill.utterances.push(utterance.name)
+            skill.utterances = uniquifyArray(skill.utterances)
+            setCurrentSkill(skill)  
+            console.log('RASA')
+            console.log(skill)
+            // if this is a new utterance, add it to the main database
+            if (!props.lookups.utteranceListsLookups[utterance.name] && !props.lookups.utterancesLookups[utterance.name]) {
+                var utteranceStorage = localforage.createInstance({
+                   name: "nlutool",
+                   storeName   : "utterances",
+                 });
+                 utteranceStorage.getItem('alldata', function (err,utterances) {
+                     if (err) throw new Error(err)
+                     if (Array.isArray(utterances)) {
+                         utterances.unshift({id:generateObjectId(), value:utterance.name, synonyms:'', tags:[]})
+                         utteranceStorage.setItem('alldata',utterances)
+                     }
+                 })
+            }
+            forceReload()
+       } 
+    }
+    
+    function removeUtterance(index) {
+        console.log(['RE UTTERANCE',index])
+        if (typeof index === "number" && currentSkill && currentSkill.utterances && currentSkill.utterances.length > index) {
+            var skill = currentSkill;
+            skill.utterances = [...skill.utterances.slice(0,index),...skill.utterances.slice(index+1)]
+            setCurrentSkill(skill)  
+            console.log('RASA')
+            console.log(skill)
+            forceReload()
+        }
+    }
+    function addUtteranceList(utterance) {
+          console.log(['ADD UTTERANCE LIST',utterance, currentSkill])
+          if (currentSkill && utterance) {
+            var skill = currentSkill;
+            if (!Array.isArray(skill.utterancesLists)) skill.utterancesLists=[]
+            skill.utterancesLists.push(utterance.name)
+            skill.utterancesLists = uniquifyArray(skill.utterancesLists)
+            setCurrentSkill(skill)  
+            console.log('add ut list')
+            console.log(skill.utterancesLists)
+            forceReload()
+       } 
+    }
+     
+    function removeUtteranceList(index) {
+        if (typeof index === "number" && currentSkill && currentSkill.utterancesLists) {
+            var skill = currentSkill;
+            skill.utterancesLists = [...skill.utterancesLists.slice(0,index),...skill.utterancesLists.slice(index+1)]
+            setCurrentSkill(skill)  
+            console.log('RASA')
+            console.log(skill)
+            forceReload()
+        }
+    }    
     
     function renderEditor(props) {
        
         if (skillFilterValue && skillFilterValue.length > 0) {
-            
-            // filter rendered list using callback 
-            //var filteredItems = filter(function(item) {
-                //if (!searchFilter || searchFilter.length <=0 ) return true;
-                //const matchSearchFilter = item.example.indexOf(searchFilter) !== -1 
-                        //|| item.intent.indexOf(searchFilter) !== -1 
-                        //|| (item.tags && item.tags.indexOf(searchFilter) !== -1)
-                //return matchSearchFilter && skillFilterValue && item.skills && item.skills.indexOf(skillFilterValue) !== -1
-                
-            //})
-             
-                
+               
                 
             if (filteredItems && filteredItems.length > 0) {
                
-               //var tagOptions = props.lookups.tagLookups && props.lookups.tagLookups.sort().map(function(tagKey,i) {
-                  //return <Dropdown.Item key={i} value={tagKey} onClick={function(e) {setTagAllValue(tagKey); tagAll(tagKey)}}  >{tagKey}</Dropdown.Item>
-               //})
-               //var intentOptions = props.lookups.intentLookups && props.lookups.intentLookups.sort().map(function(intentKey,i) {
-                  //return <Dropdown.Item key={i} value={intentKey} onClick={function(e) {setIntentAllValue(intentKey);intentAll(intentKey)}}  >{intentKey}</Dropdown.Item>
-               //})
-                //CURRENT SKILL: {JSON.stringify(currentSkill)}
-                //<hr/>
-                
-                
-                //GENENT: {JSON.stringify(entitiesForSkill)}
-                //<hr/>
-                //LISTS: {JSON.stringify(listsForEntity)}
-                //<hr/>
-                
-                // {<ExportPage showExportDialog={showExportDialog} setShowExportDialog={setShowExportDialog} currentSkill={currentSkill} />}
-                 return <div>
-                    CURRENT SKILL: {JSON.stringify(currentSkill.intents)}
-                <hr/>
-                
-                       <div><h3>{skillFilterValue} </h3></div>
+                   const utteranceTags = currentSkill && currentSkill.utterances ? currentSkill.utterances.map(function(listItem,listItemKey) {return {id:listItemKey, name:listItem} }) : []
+                const utteranceListTags = currentSkill && currentSkill.utterancesLists ? currentSkill.utterancesLists.map(function(listItem,listItemKey) {return {id:listItemKey, name:listItem} }) : []
+                const slots = currentSkill.slots ? currentSkill.slots : entitiesForSkill;
+                return <div>
+                     <div><h3>{skillFilterValue} </h3></div>
                         <div>
+                       
                         <label style={{fontWeight:'bold', marginLeft:'0.5em'}} > Invocation <input type='text' value={invocation} onChange={function(e) {setInvocation(e.target.value)}} /></label>
                         </div>
-                        
-                        
-                        <b style={{marginRight:'1em', marginLeft:'0.5em'}} >Intents</b>
-                        <span>{Object.keys(collatedItems).sort().map(function(collatedIntent, i) {
-                                var useCurrentIntent = currentIntent ? currentIntent : Object.keys(collatedItems)[0]
-                                var completionVariant = 'danger'
-                                if (collatedItems[collatedIntent].length > 300) {
-                                    completionVariant = 'success'
-                                } else if (collatedItems[collatedIntent].length > 100) {
-                                    completionVariant = 'primary'
-                                } else if (collatedItems[collatedIntent].length > 10) {
-                                    completionVariant = 'warning'
-                                } 
-                                
-                                
-                                if (collatedItems[collatedIntent].length  === collatedCounts[collatedIntent]) {
-                                        return <Link key={collatedIntent} to={"/examples/skill/"+skillFilterValue+"/intent/"+collatedIntent} ><Button key={collatedIntent} variant={collatedIntent === useCurrentIntent ? "primary" : "outline-primary"} onClick={function() {setCurrentIntent(collatedIntent)}}>
-                                            <Badge variant={completionVariant} > {collatedItems[collatedIntent].length} </Badge>
-                                            &nbsp;{collatedIntent}
-                                        </Button></Link>
-                                } else {
-                                    return <Link key={collatedIntent} to={"/examples/skill/"+skillFilterValue+"/intent/"+collatedIntent} ><Button variant={collatedIntent === useCurrentIntent ? "primary" : "outline-primary"} onClick={function() {setCurrentIntent(collatedIntent)}}>
-                                            <Badge variant="danger" > {collatedItems[collatedIntent].length}/{collatedCounts[collatedIntent]} </Badge>
-                                            &nbsp;{collatedIntent}
-                                        </Button></Link>
-                                }
-                                
-                        })}</span>
-                        <div style={{marginTop:'0.7em'}} >
+                        <div style={{marginTop:'0.7em', marginBottom:'0.7em'}} >
+                            <b style={{marginRight:'1em', marginLeft:'0.5em'}} >Tags</b>
+                            <span>{currentSkill.tags.join(", ")}</span>
+                        </div>
+                        <div style={{marginTop:'0.7em', marginBottom:'0.7em', borderTop: '2px solid black'}} >
+                            <b style={{marginRight:'1em', marginLeft:'0.5em'}} >Intents</b>
+                            <span>{Object.keys(collatedItems).sort().map(function(collatedIntent, i) {
+                                    var useCurrentIntent = currentIntent ? currentIntent : Object.keys(collatedItems)[0]
+                                    var completionVariant = 'danger'
+                                    if (collatedItems[collatedIntent].length > 300) {
+                                        completionVariant = 'success'
+                                    } else if (collatedItems[collatedIntent].length > 100) {
+                                        completionVariant = 'primary'
+                                    } else if (collatedItems[collatedIntent].length > 10) {
+                                        completionVariant = 'warning'
+                                    } 
+                                    
+                                    
+                                    if (collatedItems[collatedIntent].length  === collatedCounts[collatedIntent]) {
+                                            return <Link key={collatedIntent} to={"/examples/skill/"+skillFilterValue+"/intent/"+collatedIntent} ><Button key={collatedIntent} variant={collatedIntent === useCurrentIntent ? "primary" : "outline-primary"} onClick={function() {setCurrentIntent(collatedIntent)}}>
+                                                <Badge variant={completionVariant} > {collatedItems[collatedIntent].length} </Badge>
+                                                &nbsp;{collatedIntent}
+                                            </Button></Link>
+                                    } else {
+                                        return <Link key={collatedIntent} to={"/examples/skill/"+skillFilterValue+"/intent/"+collatedIntent} ><Button variant={collatedIntent === useCurrentIntent ? "primary" : "outline-primary"} onClick={function() {setCurrentIntent(collatedIntent)}}>
+                                                <Badge variant="danger" > {collatedItems[collatedIntent].length}/{collatedCounts[collatedIntent]} </Badge>
+                                                &nbsp;{collatedIntent}
+                                            </Button></Link>
+                                    }
+                                    
+                            })}</span>
+                        </div>
+                        <div style={{marginTop:'0.7em', borderTop: '2px solid black'}} >
                       <b style={{marginRight:'1em', marginLeft:'0.5em'}} >Entities</b><ListGroup>{Object.keys(entitiesForSkill).map(function(collatedEntity, i) {
                                 
+                               
                                 const listTags = currentSkill && currentSkill.entities && currentSkill.entities[collatedEntity] && currentSkill.entities[collatedEntity].lists ? currentSkill.entities[collatedEntity].lists.map(function(listItem,listItemKey) {return {id:listItemKey, name:listItem} }) : []
                                 //console.log(listTags)
                                     return <ListGroup.Item key={collatedEntity} >
                                             
                                              <span style={{marginLeft:'1em', float:'left', fontWeight:'bold'}}>&nbsp;{collatedEntity}</span>
                                           
-                                            <span style={{marginLeft:'1em', float:'left'}}>&nbsp;{entitiesForSkill[collatedEntity].values.slice(0,5).join(", ")}</span>
+                                            <span style={{marginLeft:'1em', float:'left'}}>&nbsp;{entitiesForSkill[collatedEntity] && entitiesForSkill[collatedEntity].values && entitiesForSkill[collatedEntity].values.slice(0,5).join(", ")}{entitiesForSkill[collatedEntity] && entitiesForSkill[collatedEntity].values && entitiesForSkill[collatedEntity].values.length > 5 ? <Badge>... {entitiesForSkill[collatedEntity] && entitiesForSkill[collatedEntity].values && entitiesForSkill[collatedEntity].values.length - 5} more </Badge> : ''}</span>
                                             <span style={{marginLeft:'1em', float:'left'}}>
                                            <label><i></i> <ReactTags
                                             placeholderText="Also use values from "
@@ -377,14 +507,126 @@ export default  function NluSkillsEditor(props) {
                                             onDelete={function(index) {removeListFromSkillEntity(collatedEntity, index)}}
                                             onAddition={function(tag) {addListToSkillEntity(collatedEntity, tag)}} /> </label>
                                             </span>
+                                            
+                                            <div style={{float:'right'}} >
+                                                <DropDownComponent options={Alexa.entityTypes} title="Alexa" value={currentSkill.entities && currentSkill.entities[collatedEntity] && currentSkill.entities[collatedEntity].alexaType ? currentSkill.entities[collatedEntity].alexaType : ''} selectItem={function(entityType) {
+                                                    setAlexaEntityType(collatedEntity,entityType)
+                                                }} />
+                                                &nbsp;&nbsp;<DropDownComponent options={GoogleAssistant.entityTypes} title="Google" value={currentSkill.entities && currentSkill.entities[collatedEntity] &&  currentSkill.entities[collatedEntity].googleType ? currentSkill.entities[collatedEntity].googleType : ''}  selectItem={function(entityType) {
+                                                    setGoogleAssistantEntityType(collatedEntity,entityType)
+                                                }} />
+                                            </div>
                                         </ListGroup.Item>
                                 //}
                                 
                         })}</ListGroup>
                         </div>
                
+                        <div style={{marginTop:'0.7em', marginLeft:'0.4em', borderTop: '2px solid black'}} >
+                            <div ><b>Utterances</b></div>
+                          <div style={{clear:'both'}}>
+                                 <div style={{marginLeft:'1em'}}>
+                                <label>Utterances
+                                <ReactTags
+                                placeholderText="Use utterance "
+                                minQueryLength={0}
+                                maxSuggestionsLength={50}
+                                autoresize={true}
+                                allowNew={true}
+                                tags={utteranceTags}
+                                suggestionComponent={SuggestionComponent}
+                                suggestions={props.lookups.utterancesLookups ? props.lookups.utterancesLookups.map(function(tag,i) {return {id: i, name: tag}}):[]}
+                                onDelete={function(index) {removeUtterance(index)}}
+                                onAddition={function(tag) {addUtterance(tag)}} /> </label>
+                                </div>
+                                
+                                 <div style={{marginLeft:'1em'}}>
+                                <label>Utterance Lists
+                                <ReactTags
+                                placeholderText="Use utterances from "
+                                minQueryLength={0}
+                                maxSuggestionsLength={50}
+                                autoresize={true}
+                                allowNew={false}
+                                tags={utteranceListTags}
+                                suggestionComponent={SuggestionComponent}
+                                suggestions={props.lookups.utteranceTagsLookups ? props.lookups.utteranceTagsLookups.map(function(tag,i) {return {id: i, name: tag}}) : []}
+                                onDelete={function(index) {removeUtteranceList(index)}}
+                                onAddition={function(tag) {addUtteranceList(tag)}} /> </label>
+                                </div>
+                                
+                                
+                            </div>
+                    </div>
+                   
+                      <div style={{marginTop:'0.7em', borderTop: '2px solid black'}} >
+                        <div><b>Platform</b></div>
+                        <Tabs defaultActiveKey="rasa" id="platform-tabs">
+                          <Tab eventKey="rasa" title="RASA">
+                                <Tabs defaultActiveKey="slots" id="platform-rasa">
+                                    <Tab eventKey="slots" title="Slots">
+                                         <div style={{marginLeft:'1.4em', marginTop:'0.7em', borderTop: '2px solid black'}} >
+                                             <form onSubmit={function(e) {e.preventDefault(); newSlot(newSlotValue,slots)}} ><input value={newSlotValue} onChange={function(e) {setNewSlotValue(e.target.value)}} /><Button size="sm" onClick={function() {newSlot(newSlotValue,slots)}}>New Slot</Button>
+                                             </form>
+                                              <ListGroup>{Object.keys(slots).map(function(collatedEntity, i) { 
+                                                    return <ListGroup.Item key={collatedEntity} >
+                                                                     <span style={{marginLeft:'1em', float:'left', fontWeight:'bold'}}>&nbsp;{collatedEntity}</span>
+                                                                    
+                                                                    <div style={{float:'right'}} >
+                                                                         {entitiesForSkill[collatedEntity] &&  <DropDownComponent options={RASA.autofillOptions} title="Autofill" value={currentSkill.entities && currentSkill.entities[collatedEntity] && currentSkill.entities[collatedEntity].slotAutofill ? currentSkill.entities[collatedEntity].slotAutofill : 'Yes'} selectItem={function(entityType) {
+                                                                            setRASASlotAutofill(collatedEntity,entityType,slots)
+                                                                        }} />}
+                                                                        &nbsp;&nbsp;
+                                                                        <DropDownComponent options={Object.keys(RASA.slotTypes)} title="Slot" value={currentSkill.slots && currentSkill.slots[collatedEntity] && currentSkill.slots[collatedEntity].slotType ? currentSkill.slots[collatedEntity].slotType : 'unfeaturized'} selectItem={function(entityType) {
+                                                                            setRASASlotType(collatedEntity,entityType,slots)
+                                                                        }} />
+                                                                        <Button variant="danger"  size="sm" style={{marginLeft:'0.5em', float:'right', fontWeight:'bold', borderRadius:'15px', marginTop:'0.2em'}} onClick={function(e) {deleteSlot(collatedEntity,slots)}}>X</Button>
+                                                                    </div>
+                                                                </ListGroup.Item>
+                                                        //}
+                                                        
+                                                })}</ListGroup>
+                                        </div>
+                               
+                          
+                                 </Tab>
+                                  <Tab eventKey="actions" title="Actions">
+                                    <div style={{marginTop:'0.7em', marginLeft:'1.4em', borderTop: '2px solid black'}} >
+                                      <label>
+                                      
+                                        <div style={{fontStyle:'italic'}}>One per line, _action will be appended to each line</div>
+                                        <textarea style={{width:'40em', height:'10em'}}  value={Array.isArray(currentSkill.rasaActions) ? currentSkill.rasaActions.join("\n") : ''} onChange={function(e) {setRASAActions(e.target.value ? e.target.value.split("\n") : [])}} placeholder={`fred
+findSname
+is_whatsi
+blah name`} ></textarea>
+                                      </label>
+                                </div>
+                                  </Tab>
+                                   <Tab eventKey="config" title="Config">
+                                    <div style={{marginTop:'0.7em', marginLeft:'1.4em', borderTop: '2px solid black'}} >
+                                      <label>
+                                    
+                                        <textarea style={{width:'40em', height:'10em'}}  value={currentSkill.rasaConfig ? currentSkill.rasaConfig : ''} onChange={function(e) {setRASAConfig(e.target.value)}} placeholder={RASATemplates.config} ></textarea>
+                                      </label>
+                                </div>
+                                  </Tab>
+                                  
+                                  
+                                  
+                                  
+                                </Tabs>
+                                
+                          </Tab>
+                          <Tab eventKey="jovo" title="JOVO">
+                            <b>not yet</b>
+                          </Tab>
+                          <Tab eventKey="mycroft" title="Mycroft">
+                            <b>not yet</b>
+                          </Tab>
+                        </Tabs>
+                     </div>
+                     
                 </div>
-
             }
             
         } else {
@@ -414,9 +656,16 @@ export default  function NluSkillsEditor(props) {
           <Dropdown.Menu variant="success" >
               {exportFormats.map(function(exportFormat,i) {
                   var title = 'opennludata_'+exportFormat.name+'_'+Date.now()
-                return <Dropdown.Item variant="success" key={i} value={exportFormat.name} onClick={function(e) {exportFormat.exportFunction(currentSkill).then(function(zipBody) {
-                saveAs(zipBody, title)
-            })}}  >{exportFormat.name}</Dropdown.Item>
+                return <Dropdown.Item variant="success" key={i} value={exportFormat.name} 
+                onClick={function(e) {
+                    exportFormat.exportFunction(currentSkill).then(function(zipBody) {
+                        console.log(['TRIGGER DL',title,zipBody])
+                        if (exportFormat.name==='JSON') {
+                            saveAs(zipBody, title+'.json')
+                        } else {
+                            saveAs(zipBody, title+'.zip')
+                        }
+                })}}  >{exportFormat.name}</Dropdown.Item>
            })}
           </Dropdown.Menu>
         </Dropdown>}

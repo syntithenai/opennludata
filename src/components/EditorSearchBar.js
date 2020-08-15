@@ -2,6 +2,7 @@ import React from 'react';
 //import {Link} from 'react-router-dom'
 import {Button, Dropdown, ButtonGroup} from 'react-bootstrap'
 import SearchInput from './SearchInput'
+import checkImage from '../images/check.svg'
 
 const EditorSearchBar = function(props) {
     var topskillOptions = props.lookups.skillLookups && props.lookups.skillLookups.sort().map(function(skillKey,i) {
@@ -17,8 +18,8 @@ const EditorSearchBar = function(props) {
     return <div>
             {<span>
             
-                {props.lookups.selectedTally > 0 && <Button size="lg"  onClick={function(e) { props.resetSelection(e) }} variant="success"  ><img style={{height:'1em'}} src='/check.svg' alt="Deselect" /></Button> }
-                {props.lookups.selectedTally <= 0 && <Button size="lg" onClick={function(e) { props.selectAll(e) }} variant="secondary"  ><img style={{height:'1em'}} src='/check.svg' alt="Select" /></Button> }
+                {props.lookups.selectedTally > 0 && <Button size="lg"  onClick={function(e) { props.resetSelection(e) }} variant="success"  ><img style={{height:'1em'}} src={checkImage} alt="Deselect" /></Button> }
+                {props.lookups.selectedTally <= 0 && <Button size="lg" onClick={function(e) { props.selectAll(e) }} variant="secondary"  ><img style={{height:'1em'}} src={checkImage} alt="Select" /></Button> }
                 
                 
            </span>}   

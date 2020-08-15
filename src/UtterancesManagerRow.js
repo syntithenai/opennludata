@@ -8,7 +8,7 @@ import useListItemRow from './useListItemRow'
 import SuggestionComponent from './components/SuggestionComponent'
 import checkImage from './images/check.svg'
 
-export default function ListsManagerRow(props) {
+export default function UtterancesManagerRow(props) {
         const  {item, splitNumber , style} = props;
        const {    
             tags, reactTags, 
@@ -34,10 +34,8 @@ export default function ListsManagerRow(props) {
                        type='text'  value={item.value}  onChange={function(e) { updateExampleContent(e.target.value)}} />
                     
                      
-                   
-                     <label style={{float:'left', marginLeft:'0.5em'}} >Synonym <input size='15' type='text' value={item.synonym} onChange={function(e) {updateExampleSynonym(e.target.value)}} /></label>
                      <label style={{float:'left', marginLeft:'0.5em'}} >
-                     <span  style={{float:'left', marginRight:'0.5em'}}>Tags </span>
+                     <span  style={{float:'left', marginRight:'0.5em'}}>Lists </span>
                      <span  style={{float:'left'}}>
                        <ReactTags
                         placeholderText="Add to list"
@@ -48,10 +46,16 @@ export default function ListsManagerRow(props) {
                         ref={reactTags}
                         tags={tags}
                         suggestionComponent={SuggestionComponent}
-                        suggestions={props.lookups.listsLookups.map(function(listName,i) {return {id: i, name: listName}})}
+                        suggestions={props.lookups.utteranceTagsLookups.map(function(listName,i) {return {id: i, name: listName}})}
                         onDelete={onTagDelete}
                         onAddition={onTagAddition} /> 
                         </span>
+                        </label>
+                        
+                        
+                        
+                    <label style={{float:'left', marginLeft:'0.5em'}} ><span style={{float:'left', marginRight:'0.5em'}}>Alternatives</span> 
+                        <textarea style={{width:"34em", height:"5em"}} type='text' value={item.synonym} onChange={function(e) {updateExampleSynonym(e.target.value)}} />
                     </label>
                   </div> 
                

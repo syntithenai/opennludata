@@ -5,11 +5,11 @@ import SearchInput from './SearchInput'
 import checkImage from '../images/check.svg'
 
 
-const ListsManagerSearchBar = function(props) {
+const UtterancesManagerSearchBar = function(props) {
     const [topTagOptions,setTopTagOptions] = useState([])
     useEffect(() => {
         //console.log(['kust nabager ',props.lookups.listsLookups])
-        var topTagOptionss = props.lookups.listsLookups && props.lookups.listsLookups.sort().map(function(listKey,i) {
+        var topTagOptionss = props.lookups.utteranceTagsLookups && props.lookups.utteranceTagsLookups.sort().map(function(listKey,i) {
               return <Dropdown.Item key={i} value={listKey} onClick={function(e) {props.setListFilterValue(listKey)}}  >{listKey}</Dropdown.Item>
         })
         topTagOptionss.unshift(<Dropdown.Item key={'empty_key_value_empty'} value={''} onClick={function(e) {props.setListFilterValue('')}}  >&nbsp;</Dropdown.Item>)
@@ -34,7 +34,7 @@ const ListsManagerSearchBar = function(props) {
                       {topTagOptions}
                   </Dropdown.Menu>
                 </Dropdown>}
-              <Button  style={{marginLeft:'1em'}} variant="success" onClick={function(e) {props.createEmptyItem(props.listFilterValue)}} >New Entity</Button>
+              <Button  style={{marginLeft:'1em'}} variant="success" onClick={function(e) {props.createEmptyItem(props.listFilterValue)}} >New Utterance</Button>
         </div>
 }
-export default ListsManagerSearchBar
+export default UtterancesManagerSearchBar
