@@ -1,6 +1,6 @@
 import React, { useEffect} from 'react';
 import './App.css';
-import {Link, useParams, useHistory} from 'react-router-dom'
+//import {Link, useParams, useHistory} from 'react-router-dom'
 import {Button } from 'react-bootstrap'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { VariableSizeList as List } from 'react-window';

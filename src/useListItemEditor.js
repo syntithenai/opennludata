@@ -84,7 +84,7 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists) {
     }
     
     function tagAll(val) {
-        //console.log(['tagall',tagAllValue,val])
+        console.log(['tagall',tagAllValue,val])
         var tagValue = val ? val : tagAllValue;
         if (items) {
             var newItems = []
@@ -105,7 +105,7 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists) {
     }
 
     function untagAll(val) {
-        //console.log(['untagall',tagAllValue,val])
+        console.log(['untagall',tagAllValue,val])
         //var tagValue = val ? val : tagAllValue;
         if (items) {
             var newItems = []

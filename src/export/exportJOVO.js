@@ -1,4 +1,4 @@
-import { generateObjectId, uniquifyArray, replaceEntities } from '../utils';
+import {  uniquifyArray, replaceEntities } from '../utils';
 import {createZip} from './createZip'
 import localforage from 'localforage'
 
@@ -26,8 +26,10 @@ async function exportJOVO(skill) {
                                    inputs[entity.type] = true  
                                    if (!Array.isArray(entityTypes[entity.type])) entityTypes[entity.type] = []
                                    entityTypes[entity.type].push(entity.value)
+                                   return null
                                 })
                             }
+                            return null
                          })
                      }
                      intents[intentKey].phrases = uniquifyArray(intents[intentKey].phrases).sort()
@@ -40,6 +42,7 @@ async function exportJOVO(skill) {
                          } 
                          return {name: entityType, type: entityTypeName} 
                     })
+                    return null
                  }) 
              }
              jovo.intents = Object.values(intents)
@@ -82,10 +85,13 @@ async function exportJOVO(skill) {
                                     //console.log(['USE ENTITY',entityType, entityExtrasList,lists[entityExtrasList]])
                                     entityTypes[entityType].push(item.value)
                                }
+                               return null
                             })
                         }
+                        return null
                     })
                 }
+                return null
             })
              
             console.log(['synonyms',synonyms, synonymsIndex])

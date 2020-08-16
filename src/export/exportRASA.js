@@ -1,4 +1,4 @@
-import {  uniquifyArray, snakeToCamelCase, camelToSnakeCase, toSnakeCase} from '../utils';
+import { replaceEntitiesWithValues, uniquifyArray, snakeToCamelCase, camelToSnakeCase, toSnakeCase} from '../utils';
 import {createZip} from './createZip'
 import localforage from 'localforage'
 import RASATemplates from './RASATemplates'
@@ -28,7 +28,7 @@ import RASATemplates from './RASATemplates'
 // just the models subfolder
 // one file per intent
 // one file per entity
-function exportRASA(skill) {
+function exportRASA(skill,useMD = false) {
     //"rasa_nlu_data": {
         //"common_examples": [],
         //"regex_features" : [],
@@ -82,9 +82,12 @@ function exportRASA(skill) {
              console.log(['LISTS2',entityLists])
              // lookup lists
              var fileLookups=[]
+             var lookups = []
              Object.keys(entityLists).map(function(entity) {
                  var values = entityLists[entity]
                  fileLookups.push({name:entity+".txt",content:values.join("\n")})
+                 lookups.push('## lookup:'+entity)
+                 lookups.push("data/lookups/"+entity+".txt")
              })
              
             
@@ -120,20 +123,23 @@ function exportRASA(skill) {
             if (skill.intents) {
                 console.log(['have intents',skill.intents])
                 Object.keys(skill.intents).map(function(intentKey) {
-                    console.log('have intent '+intentKey)
-                    const intent = skill.intents[intentKey]
+                    const intentItem = skill.intents[intentKey]
+                    console.log('have intent ',intentKey,intentItem)
                     nluOut.push('## intent:'+intentKey)
-                    uniquifyArray(intent).sort().map(function(intentItem) {
+                    var examples = []
+                    intentItem.map(function(example) {
                         // TODO CONVERT TO RASA MD EXAMPLE WITH ENTITIES
-                        nluOut.push('- todo ENTITIES '+intentItem.example)
+                        console.log(['INTY',example])
+                        examples.push('- '+replaceEntitiesWithValues(example.example, example.entities))
                         return null
                     }) 
+                    nluOut=[...nluOut, ...uniquifyArray(examples)]
                     nluOut.push("\n")
                     return null
                 })
             }
-            var nluContent = nluOut.join("\n")+"\n"+synonymsOut.join("\n")
-            
+            var nluContent = nluOut.join("\n")+"\n"+synonymsOut.join("\n")+lookups.join("\n")
+            console.log(nluContent)
             // CONSTANTS
             var configContent = RASATemplates.config
             var domainContent = ''

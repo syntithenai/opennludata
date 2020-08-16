@@ -9,6 +9,7 @@ import IntentAllDropDown from './IntentAllDropDown'
 import SkillAllDropDown from './SkillAllDropDown'
 
 import ImportListsDropDown from './ImportListsDropDown'
+import helpSVG from '../images/helpoverview.svg'
 
 function MatchesTallies(props) {
     return <span style={{float:'left', fontWeight:'bold'}} >&nbsp;{props.filteredItems.length}/{props.items.length} matches </span>
@@ -27,6 +28,7 @@ function HelpText(props) {
     return <div style={{marginLeft:'0.5em'}}>
         <HelpMenu/>
         <h1>NLU tool</h1>
+        <img src={helpSVG} style={{width: '80%', height:'15em' }} alt="Help Overview"/>
         <div>This tool is intended to help collect open licensed NLU data. Specifically, it captures sentences with related intent and entity maps.</div>
         <div>Examples can be tagged for organisation and collected into your own skills for export into various NLU training data formats including RASA, JOVO (Alexa, Google), Mycroft and native JSON.</div>
         <hr/>
@@ -72,7 +74,11 @@ function HelpTextAbout(props) {
             <hr/>
             <div>MIT Licenced Open Source Licence  - CopyLeft Steve Ryan (syntithenai@gmail.com)</div>
             
-             <div>Icons from  <a href='https://thenounproject.com/term/man-singing/642288/' target="_new" >The Noun Project</a> and others.</div>
+             <div>Icons from  The Noun Project and others.</div>
+             <ul>
+             <li>Man Singing by Gan Khoon Lay from  <a href='https://thenounproject.com/term/man-singing/642288/' target="_new" >The Noun Project</a></li>
+             <li>Head by hunotika from <a href='https://thenounproject.com/term/head/184237/' target="_new" >The Noun Project</a></li>
+             </ul>
             <hr/>
         </div>
 }

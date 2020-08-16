@@ -5,7 +5,7 @@ import {Button, Dropdown, Badge,ButtonGroup, ListGroup , Tabs, Tab} from 'react-
 import 'bootstrap/dist/css/bootstrap.min.css';
 import useNluEditor from './useNluEditor'
 import exportFormats from './export/index'
-import {exportJSON} from './export/exportJSON'
+//import {exportJSON} from './export/exportJSON'
 import useDB from './useDB'
 import {generateObjectId, uniquifyArray, RASA, GoogleAssistant, Alexa} from './utils'
 import ReactTags from 'react-tag-autocomplete'
@@ -29,7 +29,7 @@ import localforage from 'localforage'
 
 
 export default  function NluSkillsEditor(props) {
-    const {items, loadAll, skillFilterValue, setSkillFilterValue, filteredItems} = useNluEditor('nlutool','examples','alldata', props.updateFunctions.updateLookups)
+    const {loadAll, skillFilterValue, setSkillFilterValue, filteredItems} = useNluEditor('nlutool','examples','alldata', props.updateFunctions.updateLookups)
     const [currentIntent, setCurrentIntent] = useState('')
     const [invocation, setInvocation] = useState('')
     const [entitiesForSkill, setEntitiesForSkill] = useState({})
@@ -37,7 +37,7 @@ export default  function NluSkillsEditor(props) {
     const [currentSkill, setCurrentSkill] = useState({id:generateObjectId(), invocation:'', title:skillFilterValue, entities:{}})
     //const skillsManager = useDB('nlutool','skills')
     const listsManager = useDB('nlutool','lists')
-    const [showExportDialog, setShowExportDialog] = useState(false)
+    //const [showExportDialog, setShowExportDialog] = useState(false)
     const [collatedItems, setCollatedItems] = useState({})
     const [collatedTags, setCollatedTags] = useState({})
     const [collatedCounts, setCollatedCounts] = useState({})
@@ -54,26 +54,29 @@ export default  function NluSkillsEditor(props) {
     //}
     //const {loadAll, saveItem, deleteItem , items, setItems, findKeyBy, filter} = 
     function loadSkill() {
-        if (skillFilterValue) {
-            //localforage.setItem('key', 'value', function (err) {
-              //// if err is non-null, we got an error
-              skillsStorage.getItem(skillFilterValue, function (err, skill) {
-                // if err is non-null, we got an error. otherwise, value is the value
-                if (err) throw new Error(err)
-                if (skill) {
-                    setCurrentSkill(skill)
-                    setInvocation(skill.invocation)
-                }
-              });
-            //});
-        } 
-        
+        return new Promise(function(resolve,reject) { 
+            if (skillFilterValue) {
+                //localforage.setItem('key', 'value', function (err) {
+                  //// if err is non-null, we got an error
+                  skillsStorage.getItem(skillFilterValue, function (err, skill) {
+                    // if err is non-null, we got an error. otherwise, value is the value
+                    if (err) throw new Error(err)
+                    if (skill) {
+                        setCurrentSkill(skill)
+                        setInvocation(skill.invocation)
+                    }
+                    resolve(skill)
+                  });
+                //});
+            } 
+        })
     }
     
     // load all on init
     useEffect(() => {
+        loadSkill().then(function() {
+        })
         loadAll()
-        loadSkill()
         listsManager.loadAll()
         props.updateFunctions.updateUtterances()
       // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -103,8 +106,12 @@ export default  function NluSkillsEditor(props) {
               if (Array.isArray(item.entities)) {
                   item.entities.map(function(entity,entityKey) {
                      if (entity && entity.type && entity.type.length > 0) {
-                         if (typeof entities[entity.type] !== "object") entities[entity.type] = {}
+                         if (typeof entities[entity.type] !== "object") entities[entity.type] = {} //
+                         //currentSkill.entities && currentSkill.entities[entity.type] ?  currentSkill.entities[entity.type] : {}
                          if (!Array.isArray(entities[entity.type].values )) entities[entity.type].values = []
+                         if (currentSkill && currentSkill.entities && currentSkill.entities[entity.type]&& currentSkill.entities[entity.type].alexaType) entities[entity.type].alexaType = currentSkill.entities[entity.type].alexaType
+                         if (currentSkill && currentSkill.entities && currentSkill.entities[entity.type]&& currentSkill.entities[entity.type].googleType) entities[entity.type].googleType = currentSkill.entities[entity.type].googleType
+                         if (currentSkill && currentSkill.entities && currentSkill.entities[entity.type]&& currentSkill.entities[entity.type].lists) entities[entity.type].lists = currentSkill.entities[entity.type].lists
                          entities[entity.type].values.push(entity.value)
                      }
                      return null
@@ -114,13 +121,23 @@ export default  function NluSkillsEditor(props) {
             })
         }
         // sort and uniquify
+        var slots = currentSkill.slots ? currentSkill.slots : {}
         Object.keys(entities).map(function(entityName,entityKey) {
            const entity = entities[entityName]
            entity.values = uniquifyArray(entity.values).sort()
+           
+           if (slots[entityName]) {
+           } else {
+               slots[entityName] = {values:[]}
+           }
            return null
         })
         setEntitiesForSkill(entities)
+        var updatedSkill = currentSkill
+        updatedSkill.entities = entities
+        updatedSkill.slots = slots
         
+        setCurrentSkill(entities)
         // collate intents and tags from items
          var newCollatedItems = collatedItems
          var newCollatedCounts = collatedCounts
@@ -138,6 +155,7 @@ export default  function NluSkillsEditor(props) {
                 if (Array.isArray(item.tags)) {
                     item.tags.map(function(tag) {
                         newCollatedTags[tag] = true
+                        return null
                     })
                 } 
                return null;  
@@ -152,11 +170,8 @@ export default  function NluSkillsEditor(props) {
             }
              newSkill.tags = Object.keys(collatedTags)
              setCurrentSkill(newSkill)
-             //console.log(['UDPATE SKILL WITH INTENTS',currentSkill, collatedItems])
-             
          }   
-        
-        
+    // eslint-disable-next-line react-hooks/exhaustive-deps   
     },[filteredItems])
     
     useEffect(() => {
@@ -178,20 +193,24 @@ export default  function NluSkillsEditor(props) {
     
     useEffect(() => {
         //console.log('change cs or inv',currentSkill)
-        if (currentSkill && currentSkill.title && currentSkill.title.length > 0) {
+        var skill = currentSkill
+        if (skill && skill.title && skill.title.length > 0) {
             console.log('change cs or inv real')
+            
             //var index = skillsManager.findKeyBy('id',newCurrentSkill.id)
             //if (index != null) {
             // merge in entity values
             if (entitiesForSkill) {
                 Object.keys(entitiesForSkill).map(function(entity) {
-                   if (currentSkill.entities && currentSkill.entities[entity]) {
-                       currentSkill.entities[entity].values = entitiesForSkill[entity].values;
+                   if (skill.entities && skill.entities[entity]) {
+                       skill.entities[entity].values = entitiesForSkill[entity].values;
                    }  
+                   return null
                 })
             }
             // merge in intents
-            
+            skill.invocation = invocation;
+            skill.intents = collatedItems
             console.log(['save skill ',skillFilterValue,currentSkill])
             skillsStorage.setItem(skillFilterValue, currentSkill, function (err) {
                 console.log(['saved skill '])
@@ -213,7 +232,7 @@ export default  function NluSkillsEditor(props) {
             
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    },[currentSkill,currentSkill.rasaActions,currentSkill.rasaExtraSlots,listsForEntity, invocation])
+    },[currentSkill,listsForEntity, invocation])
     
   
   
@@ -228,7 +247,7 @@ export default  function NluSkillsEditor(props) {
   //}
 
     function forceReload() {
-        setListsForEntity(JSON.stringify([currentSkill.rasaConfig,currentSkill.rasaActions,currentSkill.rasaExtraSlots,currentSkill.entities,currentSkill.utterances,currentSkill.utterancesLists, currentSkill.slots]))  
+        setListsForEntity(JSON.stringify([currentSkill.rasaSession, currentSkill.rasaEndpoint,currentSkill.rasaCredentials,currentSkill.rasaStories,currentSkill.rasaConfig,currentSkill.rasaActions,currentSkill.rasaExtraSlots,currentSkill.entities,currentSkill.utterances,currentSkill.utterancesLists, currentSkill.slots]))  
     }
 
     function addListToSkillEntity(entity,list) {
@@ -279,7 +298,7 @@ export default  function NluSkillsEditor(props) {
     }
   
     function setGoogleAssistantEntityType(entity, type) {
-        if (currentSkill && entity && type) {
+        if (currentSkill && entity) {
             var skill = currentSkill;
             if (!skill.entities) skill.entities={}
             if (!skill.entities[entity]) skill.entities[entity] = {}
@@ -290,7 +309,7 @@ export default  function NluSkillsEditor(props) {
     }
     
     function setAlexaEntityType(entity, type) {
-        if (currentSkill && entity && type) {
+        if (currentSkill && entity) {
             var skill = currentSkill;
             if (!skill.entities) skill.entities={}
             if (!skill.entities[entity]) skill.entities[entity] = {}
@@ -315,12 +334,14 @@ export default  function NluSkillsEditor(props) {
     }
        
     function setRASASlotAutofill(entity, type, slots) {
+        
+            
         if (currentSkill && entity && type) {
             var skill = currentSkill;
             slots[entity].slotAutofill = type
             skill.slots = slots
+            console.log(['RASA autofill',currentSkill ,entity,type, slots])
             setCurrentSkill(skill)  
-            console.log('RASA autofill')
             console.log(skill)
             forceReload()  
        } 
@@ -370,7 +391,40 @@ export default  function NluSkillsEditor(props) {
        }
     }
     
+    function setRASAStories(data) {
+          if (currentSkill) {
+            var skill = currentSkill;
+            skill.rasaStories = data
+            setCurrentSkill(skill)  
+            forceReload()  
+       }
+    }
+    function setRASAEndpoint(data) {
+          if (currentSkill) {
+            var skill = currentSkill;
+            skill.rasaEndpoint = data
+            setCurrentSkill(skill)  
+            forceReload()  
+       }
+    }
+    function setRASACredentials(data) {
+          if (currentSkill) {
+            var skill = currentSkill;
+            skill.rasaCredentials = data
+            setCurrentSkill(skill)  
+            forceReload()  
+       }
+    }  
     
+    function setRASASession(data) {
+       if (currentSkill) {
+            var skill = currentSkill;
+            skill.rasaSession = data
+            setCurrentSkill(skill)  
+            forceReload()  
+       }
+    }  
+        
     function addUtterance(utterance) {
        
         if (currentSkill && utterance) {
@@ -509,10 +563,10 @@ export default  function NluSkillsEditor(props) {
                                             </span>
                                             
                                             <div style={{float:'right'}} >
-                                                <DropDownComponent options={Alexa.entityTypes} title="Alexa" value={currentSkill.entities && currentSkill.entities[collatedEntity] && currentSkill.entities[collatedEntity].alexaType ? currentSkill.entities[collatedEntity].alexaType : ''} selectItem={function(entityType) {
+                                                <DropDownComponent options={["",...Alexa.entityTypes]} title="Alexa" value={currentSkill.entities && currentSkill.entities[collatedEntity] && currentSkill.entities[collatedEntity].alexaType ? currentSkill.entities[collatedEntity].alexaType : ''} selectItem={function(entityType) {
                                                     setAlexaEntityType(collatedEntity,entityType)
                                                 }} />
-                                                &nbsp;&nbsp;<DropDownComponent options={GoogleAssistant.entityTypes} title="Google" value={currentSkill.entities && currentSkill.entities[collatedEntity] &&  currentSkill.entities[collatedEntity].googleType ? currentSkill.entities[collatedEntity].googleType : ''}  selectItem={function(entityType) {
+                                                &nbsp;&nbsp;<DropDownComponent options={["",...GoogleAssistant.entityTypes]} title="Google" value={currentSkill.entities && currentSkill.entities[collatedEntity] &&  currentSkill.entities[collatedEntity].googleType ? currentSkill.entities[collatedEntity].googleType : ''}  selectItem={function(entityType) {
                                                     setGoogleAssistantEntityType(collatedEntity,entityType)
                                                 }} />
                                             </div>
@@ -563,65 +617,113 @@ export default  function NluSkillsEditor(props) {
                         <div><b>Platform</b></div>
                         <Tabs defaultActiveKey="rasa" id="platform-tabs">
                           <Tab eventKey="rasa" title="RASA">
-                                <Tabs defaultActiveKey="slots" id="platform-rasa">
-                                    <Tab eventKey="slots" title="Slots">
-                                         <div style={{marginLeft:'1.4em', marginTop:'0.7em', borderTop: '2px solid black'}} >
-                                             <form onSubmit={function(e) {e.preventDefault(); newSlot(newSlotValue,slots)}} ><input value={newSlotValue} onChange={function(e) {setNewSlotValue(e.target.value)}} /><Button size="sm" onClick={function() {newSlot(newSlotValue,slots)}}>New Slot</Button>
-                                             </form>
-                                              <ListGroup>{Object.keys(slots).map(function(collatedEntity, i) { 
-                                                    return <ListGroup.Item key={collatedEntity} >
-                                                                     <span style={{marginLeft:'1em', float:'left', fontWeight:'bold'}}>&nbsp;{collatedEntity}</span>
-                                                                    
-                                                                    <div style={{float:'right'}} >
-                                                                         {entitiesForSkill[collatedEntity] &&  <DropDownComponent options={RASA.autofillOptions} title="Autofill" value={currentSkill.entities && currentSkill.entities[collatedEntity] && currentSkill.entities[collatedEntity].slotAutofill ? currentSkill.entities[collatedEntity].slotAutofill : 'Yes'} selectItem={function(entityType) {
-                                                                            setRASASlotAutofill(collatedEntity,entityType,slots)
-                                                                        }} />}
-                                                                        &nbsp;&nbsp;
-                                                                        <DropDownComponent options={Object.keys(RASA.slotTypes)} title="Slot" value={currentSkill.slots && currentSkill.slots[collatedEntity] && currentSkill.slots[collatedEntity].slotType ? currentSkill.slots[collatedEntity].slotType : 'unfeaturized'} selectItem={function(entityType) {
-                                                                            setRASASlotType(collatedEntity,entityType,slots)
-                                                                        }} />
-                                                                        <Button variant="danger"  size="sm" style={{marginLeft:'0.5em', float:'right', fontWeight:'bold', borderRadius:'15px', marginTop:'0.2em'}} onClick={function(e) {deleteSlot(collatedEntity,slots)}}>X</Button>
-                                                                    </div>
-                                                                </ListGroup.Item>
-                                                        //}
-                                                        
-                                                })}</ListGroup>
-                                        </div>
-                               
-                          
-                                 </Tab>
-                                  <Tab eventKey="actions" title="Actions">
-                                    <div style={{marginTop:'0.7em', marginLeft:'1.4em', borderTop: '2px solid black'}} >
-                                      <label>
-                                      
-                                        <div style={{fontStyle:'italic'}}>One per line, _action will be appended to each line</div>
-                                        <textarea style={{width:'40em', height:'10em'}}  value={Array.isArray(currentSkill.rasaActions) ? currentSkill.rasaActions.join("\n") : ''} onChange={function(e) {setRASAActions(e.target.value ? e.target.value.split("\n") : [])}} placeholder={`fred
-findSname
-is_whatsi
-blah name`} ></textarea>
-                                      </label>
-                                </div>
-                                  </Tab>
-                                   <Tab eventKey="config" title="Config">
-                                    <div style={{marginTop:'0.7em', marginLeft:'1.4em', borderTop: '2px solid black'}} >
-                                      <label>
-                                    
-                                        <textarea style={{width:'40em', height:'10em'}}  value={currentSkill.rasaConfig ? currentSkill.rasaConfig : ''} onChange={function(e) {setRASAConfig(e.target.value)}} placeholder={RASATemplates.config} ></textarea>
-                                      </label>
-                                </div>
-                                  </Tab>
+                                <div style={{marginTop:'0.7em', marginLeft:'1.4em'}} >
+                                    <Tabs defaultActiveKey="slots" id="platform-rasa">
+                                        <Tab eventKey="slots" title="Slots">
+                                             <div style={{marginLeft:'1.4em', marginTop:'0.7em', borderTop: '2px solid black'}} >
+                                                 <form onSubmit={function(e) {e.preventDefault(); newSlot(newSlotValue,slots)}} ><input value={newSlotValue} onChange={function(e) {setNewSlotValue(e.target.value)}} /><Button size="sm" onClick={function() {newSlot(newSlotValue,slots)}}>New Slot</Button>
+                                                 </form>
+                                                  <ListGroup>{Object.keys(slots).map(function(collatedEntity, i) { 
+                                                        return <ListGroup.Item key={collatedEntity} >
+                                                                         <span style={{marginLeft:'1em', float:'left', fontWeight:'bold'}}>&nbsp;{collatedEntity}</span>
+                                                                        
+                                                                        <div style={{float:'right'}} >
+                                                                             {entitiesForSkill[collatedEntity] &&  <DropDownComponent options={RASA.autofillOptions} title="Autofill" value={currentSkill.slots && currentSkill.entities[collatedEntity] && currentSkill.slots[collatedEntity].slotAutofill && currentSkill.slots[collatedEntity].slotAutofill.trim().length > 0 ? currentSkill.slots[collatedEntity].slotAutofill : 'Yes'} selectItem={function(entityType) {
+                                                                                setRASASlotAutofill(collatedEntity,entityType,slots)
+                                                                            }} />}
+                                                                            &nbsp;&nbsp;
+                                                                            <DropDownComponent options={Object.keys(RASA.slotTypes)} title="Slot" value={currentSkill.slots && currentSkill.slots[collatedEntity] && currentSkill.slots[collatedEntity].slotType ? currentSkill.slots[collatedEntity].slotType : 'unfeaturized'} selectItem={function(entityType) {
+                                                                                setRASASlotType(collatedEntity,entityType,slots)
+                                                                            }} />
+                                                                            <Button variant="danger"  size="sm" style={{marginLeft:'0.5em', float:'right', fontWeight:'bold', borderRadius:'15px', marginTop:'0.2em'}} onClick={function(e) {deleteSlot(collatedEntity,slots)}}>X</Button>
+                                                                        </div>
+                                                                    </ListGroup.Item>
+                                                            //}
+                                                            
+                                                    })}</ListGroup>
+                                            </div>
+                                   
+                              
+                                     </Tab>
+                                      <Tab eventKey="actions" title="Actions">
+                                        <div style={{marginTop:'0.7em', marginLeft:'1.4em', borderTop: '2px solid black'}} >
+                                          <label>
+                                          
+                                            <div style={{fontStyle:'italic'}}>One per line, _action will be appended to each line</div>
+                                            <textarea style={{width:'40em', height:'10em'}}  value={Array.isArray(currentSkill.rasaActions) ? currentSkill.rasaActions.join("\n") : ''} onChange={function(e) {setRASAActions(e.target.value ? e.target.value.split("\n") : [])}} placeholder={`fred
+    findSname
+    is_whatsi
+    blah name`} ></textarea>
+                                          </label>
+                                    </div>
+                                      </Tab>
+                                       <Tab eventKey="config" title="Config">
+                                        <div style={{marginTop:'0.7em', marginLeft:'1.4em', borderTop: '2px solid black'}} >
+                                          <label>
+                                        
+                                            <textarea style={{width:'60em', height:'30em'}}  value={currentSkill.rasaConfig ? currentSkill.rasaConfig : ''} onChange={function(e) {setRASAConfig(e.target.value)}} placeholder={RASATemplates.config} ></textarea>
+                                          </label>
+                                    </div>
+                                      </Tab>
+                                     <Tab eventKey="stories" title="Stories">
+                                        <div style={{marginTop:'0.7em', marginLeft:'1.4em', borderTop: '2px solid black'}} >
+                                          <label>
+                                        
+                                            <textarea style={{width:'60em', height:'30em'}}  value={currentSkill.rasaStories ? currentSkill.rasaStories : ''} onChange={function(e) {setRASAStories(e.target.value)}} placeholder={RASATemplates.stories} ></textarea>
+                                          </label>
+                                    </div>
+                                      </Tab> 
+                                     <Tab eventKey="credentials" title="Credentials">
+                                        <div style={{marginTop:'0.7em', marginLeft:'1.4em', borderTop: '2px solid black'}} >
+                                          <label>
+                                        
+                                            <textarea style={{width:'60em', height:'30em'}}  value={currentSkill.rasaCredentials ? currentSkill.rasaCredentials : RASATemplates.credentials} onChange={function(e) {setRASACredentials(e.target.value)}}  ></textarea>
+                                          </label>
+                                    </div>
+                                      </Tab> 
+                                                            
+                                    <Tab eventKey="endpoints" title="Endpoints">
+                                        <div style={{marginTop:'0.7em', marginLeft:'1.4em', borderTop: '2px solid black'}} >
+                                          <label>
+                                        
+                                            <textarea style={{width:'60em', height:'30em'}}  value={currentSkill.rasaEndpoint ? currentSkill.rasaEndpoint : RASATemplates.endpoint} onChange={function(e) {setRASAEndpoint(e.target.value)}}  ></textarea>
+                                          </label>
+                                    </div>
+                                      </Tab> 
                                   
-                                  
-                                  
+                                   <Tab eventKey="session" title="Session Config">
+                                        <div style={{marginTop:'0.7em', marginLeft:'1.4em', borderTop: '2px solid black'}} >
+                                          <label>
+                                        
+                                            <textarea style={{width:'60em', height:'30em'}}  value={currentSkill.rasaSession ? currentSkill.rasaSession : RASATemplates.session} onChange={function(e) {setRASASession(e.target.value)}}  ></textarea>
+                                          </label>
+                                    </div>
+                                      </Tab> 
                                   
                                 </Tabs>
-                                
+                                      
+                              </div>  
                           </Tab>
-                          <Tab eventKey="jovo" title="JOVO">
-                            <b>not yet</b>
-                          </Tab>
+                          
                           <Tab eventKey="mycroft" title="Mycroft">
-                            <b>not yet</b>
+                            <div style={{marginTop:'0.7em', marginLeft:'1.4em'}} >
+                                <b>not yet</b>
+                            </div>
+                          </Tab>
+                           <Tab eventKey="jovo" title="JOVO">
+                            <div style={{marginTop:'0.7em', marginLeft:'1.4em'}} >
+                                <b>not yet</b>
+                            </div>
+                          </Tab>
+                          <Tab eventKey="alex" title="Alexa">
+                            <div style={{marginTop:'0.7em', marginLeft:'1.4em'}} >
+                                <b>not yet</b>
+                            </div>
+                          </Tab>
+                          <Tab eventKey="google_assistant" title="Google Assistant">
+                            <div style={{marginTop:'0.7em', marginLeft:'1.4em'}} >
+                                <b>not yet</b>
+                            </div>
                           </Tab>
                         </Tabs>
                      </div>
@@ -658,6 +760,9 @@ blah name`} ></textarea>
                   var title = 'opennludata_'+exportFormat.name+'_'+Date.now()
                 return <Dropdown.Item variant="success" key={i} value={exportFormat.name} 
                 onClick={function(e) {
+                    var skill = currentSkill
+                    //skill.intents = 
+                    //skill.entities = 
                     exportFormat.exportFunction(currentSkill).then(function(zipBody) {
                         console.log(['TRIGGER DL',title,zipBody])
                         if (exportFormat.name==='JSON') {

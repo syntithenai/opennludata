@@ -26,11 +26,13 @@ function useNluRow(item, saveItem, splitNumber, style, setPageMessage) {
       }
      
      function onTagAddition (tag) {
-        const newTags = [].concat(tags, tag)
-        setTags(uniquifyArrayOfObjects(newTags,'name').sort(function(a,b) {if (a.name > b.name) return 1; else return -1} ))
-        var newItem = item
-        newItem.tags = uniquifyArray(newTags.map(function(newTag) { return newTag.name})).sort()
-        saveItem(newItem,splitNumber)
+        if (tag && tag.name.trim().length > 0) {
+            const newTags = [].concat(tags, tag)
+            setTags(uniquifyArrayOfObjects(newTags,'name').sort(function(a,b) {if (a.name > b.name) return 1; else return -1} ))
+            var newItem = item
+            newItem.tags = uniquifyArray(newTags.map(function(newTag) { return newTag.name})).sort()
+            saveItem(newItem,splitNumber)
+        }
       }
       
       function onSkillDelete (i) {
@@ -43,11 +45,13 @@ function useNluRow(item, saveItem, splitNumber, style, setPageMessage) {
       }
      
      function onSkillAddition (skill) {
-        const newSkills = [].concat(skills, skill)
-        setSkills(uniquifyArrayOfObjects(newSkills,'name').sort(function(a,b) {if (a.name > b.name) return 1 ;else return -1} ))
-        var newItem = item
-        newItem.skills = uniquifyArray(newSkills.map(function(newSkill) { return newSkill.name})).sort()
-        saveItem(newItem,splitNumber)
+         if (skill && skill.name.trim().length > 0) {
+            const newSkills = [].concat(skills, skill)
+            setSkills(uniquifyArrayOfObjects(newSkills,'name').sort(function(a,b) {if (a.name > b.name) return 1 ;else return -1} ))
+            var newItem = item
+            newItem.skills = uniquifyArray(newSkills.map(function(newSkill) { return newSkill.name})).sort()
+            saveItem(newItem,splitNumber)
+        }
      }
     
         
@@ -145,49 +149,54 @@ function useNluRow(item, saveItem, splitNumber, style, setPageMessage) {
     }
     
     function entityTypeChanged(entityNumber,type) {
+        console.log(['ENTY TYPE CHANGE',entityNumber,type])
         var newItem = item
-        if (Array.isArray(item.entities)) {
-            var newEntities = item.entities 
-            var entity = newEntities[entityNumber] ? newEntities[entityNumber] : {}
-            const typeChanged = !(type && type.length > 0 && type === entity.type)
-        
-            entity.type = type
-            if (selectionState && selectionState.textSelection) {
-                const start = selectionState.startTextSelection
-                const end = selectionState.endTextSelection
-                var isOverlapProblem = false;
-                //if (start > 0 && end > 0) {
-                    //item.entities.map(function(entity) {
-                        //// is OK if updating entity 
-                        //const bypass = !typeChanged && entity.type == type
-                        //const isOverlap = (start > entity.start && start < entity.end) || (end > entity.start && end < entity.end)
-                        //console.log(['CHECK ENTITY',entity.type,start,end,entity.start,entity.end,bypass, isOverlap])
-                        //if (!bypass && isOverlap) isOverlapProblem = true
-                    //})
-                //}
-                if (isOverlapProblem) {
-                    setPageMessage('Overlap with existing entity !')
-                    setTimeout(function() {
-                        setPageMessage('')
-                    },2000)
-                } else {
-                    entity.value = selectionState.textSelection
-                    entity.start = selectionState.startTextSelection
-                    entity.end = selectionState.endTextSelection
-                    if (!newEntities[entityNumber]) newEntities.push(entity)
-                    else newEntities[entityNumber] = entity
-                    newItem.entities = newEntities
-                    setSelectionState(null)
-                    saveItem(newItem,splitNumber)
-                }
+        if (!Array.isArray(item.entities)) {
+            item.entities = []
+        }
+         console.log(['ENTY TYPE CHANGE ITEM ENT',item.entities])
+        var newEntities = item.entities 
+        var entity = newEntities[entityNumber] ? newEntities[entityNumber] : {}
+        //const typeChanged = !(type && type.length > 0 && type === entity.type)
+    
+        entity.type = type
+        if (selectionState && selectionState.textSelection) {
+            console.log(['HAVE SLE',selectionState.textSelection])
+            //const start = selectionState.startTextSelection
+            //const end = selectionState.endTextSelection
+            var isOverlapProblem = false;
+            //if (start > 0 && end > 0) {
+                //item.entities.map(function(entity) {
+                    //// is OK if updating entity 
+                    //const bypass = !typeChanged && entity.type == type
+                    //const isOverlap = (start > entity.start && start < entity.end) || (end > entity.start && end < entity.end)
+                    //console.log(['CHECK ENTITY',entity.type,start,end,entity.start,entity.end,bypass, isOverlap])
+                    //if (!bypass && isOverlap) isOverlapProblem = true
+                //})
+            //}
+            if (isOverlapProblem) {
+                setPageMessage('Overlap with existing entity !')
+                setTimeout(function() {
+                    setPageMessage('')
+                },2000)
             } else {
+                entity.value = selectionState.textSelection
+                entity.start = selectionState.startTextSelection
+                entity.end = selectionState.endTextSelection
                 if (!newEntities[entityNumber]) newEntities.push(entity)
                 else newEntities[entityNumber] = entity
                 newItem.entities = newEntities
                 setSelectionState(null)
                 saveItem(newItem,splitNumber)
             }
+        } else {
+            if (!newEntities[entityNumber]) newEntities.push(entity)
+            else newEntities[entityNumber] = entity
+            newItem.entities = newEntities
+            setSelectionState(null)
+            saveItem(newItem,splitNumber)
         }
+        
     }
     
     function intentChanged(intent) {

@@ -1,10 +1,10 @@
-import React, {useState} from 'react';
-import {CopyToClipboard} from 'react-copy-to-clipboard';
-import {Button, Modal} from 'react-bootstrap'
-import { Link  } from 'react-router-dom'
+import React from 'react';
+//import {CopyToClipboard} from 'react-copy-to-clipboard';
+import {Button} from 'react-bootstrap'
+//import { Link  } from 'react-router-dom'
 
 function SearchPage(props) {
-    const [copied, setCopied] = useState(false)
+    //const [copied, setCopied] = useState(false)
     
     
     return <div>

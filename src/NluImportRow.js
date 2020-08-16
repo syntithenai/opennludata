@@ -22,10 +22,10 @@ export default function NluImportRow(props) {
           return <Dropdown.Item key={i} value={intentKey} onClick={function(e) {intentChanged(intentKey)}}  >{intentKey}</Dropdown.Item>
        })
        // ONE PER ENTITY FOR THIS EXAMPLE
-       var entitiesDropdowns = item && item.entities && item.entities.map(function(entity,i) {
+       var entitiesDropdowns = item && item.entities ? item.entities.map(function(entity,i) {
            var entityOptions = props.lookups.entityLookups.sort().map(function(entityKey,j) {
               return <Dropdown.Item  key={j} value={entityKey} onClick={function(e) {entityTypeChanged(i,entityKey)}}  >{entityKey}</Dropdown.Item>
-           })
+           }) 
            return<Dropdown style={{marginLeft:'0.2em'}} variant='info'  key={i}  as={ButtonGroup}>
               <Dropdown.Toggle variant='info'  split  size="sm"  id="dropdown-split-basic" ></Dropdown.Toggle>
               <Button variant='info'   size="sm"  onClick={function(e) {entityClicked(i,entity.type)}} >
@@ -44,7 +44,7 @@ export default function NluImportRow(props) {
                   {entityOptions}
               </Dropdown.Menu>
             </Dropdown>
-       }) ;
+       }): [] ;
         //PLUS CREATE NEW WHEN TEXT IS SELECTED
        if (selectionState  && selectionState.textSelection && selectionState.textSelection.length > 0 &&  selectionState.textSelectionFrom === splitNumber) {
            var entityOptions =  props.lookups.entityLookups && props.lookups.entityLookups.sort().map(function(entityKey,j) {

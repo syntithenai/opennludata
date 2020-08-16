@@ -1,4 +1,4 @@
-import { generateObjectId, uniquifyArray, replaceEntities } from '../utils';
+import {  uniquifyArray, replaceEntities } from '../utils';
 import {createZip} from './createZip'
 import localforage from 'localforage'
 
@@ -38,9 +38,11 @@ async function exportMycroft(skill) {
                      if (Array.isArray(examples)) {
                          examples.map(function(example) {
                             intents[intentKey].push(replaceEntities(example.example,example.entities))
+                            return null
                          })
                      }
                      intents[intentKey] = uniquifyArray(intents[intentKey]).sort()
+                    return null
                  }) 
              }
              // one per file
@@ -68,10 +70,13 @@ async function exportMycroft(skill) {
                                     console.log('list item used ')
                                     combinedEntities.push(item.value)
                                 }
+                                return null
                             })
+                            return null
                         })
                      }
                      entities[entityKey] = uniquifyArray(combinedEntities).sort()
+                     return null
                  }) 
              }
              

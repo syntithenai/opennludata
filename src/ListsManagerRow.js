@@ -37,7 +37,7 @@ export default function ListsManagerRow(props) {
                    
                      <label style={{float:'left', marginLeft:'0.5em'}} >Synonym <input size='15' type='text' value={item.synonym} onChange={function(e) {updateExampleSynonym(e.target.value)}} /></label>
                      <label style={{float:'left', marginLeft:'0.5em'}} >
-                     <span  style={{float:'left', marginRight:'0.5em'}}>Tags </span>
+                     <span  style={{float:'left', marginRight:'0.5em'}}>Lists </span>
                      <span  style={{float:'left'}}>
                        <ReactTags
                         placeholderText="Add to list"

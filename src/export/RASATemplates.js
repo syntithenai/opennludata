@@ -103,6 +103,23 @@ session_config:
   carry_over_slots_to_new_session: true
   session_expiration_time: 5    
 
-`   
+`,
+    stories:`
+## greet + location/price + cuisine + num people    <!-- name of the story - just for debugging -->
+* greet
+   - action_ask_howcanhelp
+* inform{"location": "rome", "price": "cheap"}  <!-- user utterance, in format intent{entities} -->
+   - action_on_it
+   - action_ask_cuisine
+* inform{"cuisine": "spanish"}
+   - action_ask_numpeople        <!-- action that the bot should execute -->
+* inform{"people": "six"}
+   - action_ack_dosearch    
+`,
+    session:`
+session_config:
+  carry_over_slots_to_new_session: true
+  session_expiration_time: 5
+`
 }
 export default RASATemplates

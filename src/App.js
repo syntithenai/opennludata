@@ -291,6 +291,9 @@ function App() {
                  <Route exact path='/search' component={SearchPage}     />
                 <Route exact path='/' component={HelpText} />
         </Router>
+        <br/>
+        <br/>
+        <br/>
     </div>
   );
 }

@@ -22,11 +22,13 @@ function useListItemRow(item, saveItem, splitNumber, style) {
       }
      
      function onTagAddition (tag) {
-        const newTags = [].concat(tags, tag)
-        setTags(uniquifyArrayOfObjects(newTags,'name').sort(function(a,b) {if (a.name > b.name) return 1; else return -1} ))
-        var newItem = item
-        newItem.tags = uniquifyArray(newTags.map(function(newTag) { return newTag.name})).sort()
-        saveItem(newItem,splitNumber)
+         if (tag && tag.name.trim().length > 0) {
+            const newTags = [].concat(tags, tag)
+            setTags(uniquifyArrayOfObjects(newTags,'name').sort(function(a,b) {if (a.name > b.name) return 1; else return -1} ))
+            var newItem = item
+            newItem.tags = uniquifyArray(newTags.map(function(newTag) { return newTag.name})).sort()
+            saveItem(newItem,splitNumber)
+        }
       }
     
     function updateExampleContent(content) {

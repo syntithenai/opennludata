@@ -129,5 +129,28 @@ function splitSentences(text) {
         return newExample
     }
     
+    function replaceEntitiesWithValues(example,entities) {
+        // replace entity values with {entityName}
+        // first sort entities by start key
+        if (example && Array.isArray(entities)) {
+                entities = entities.sort(function(a,b) {
+              if (a.start < b.start) return -1
+              else return 1  
+            })
+            var offset = 0
+            var newExample = example
+            entities.map(function(entity) {
+                var replacement = "["+entity.value+"]("+entity.type+")"
+                newExample = newExample.slice(0,entity.start + offset)+replacement+newExample.slice(entity.end + offset)
+                var diff = (entity.end - entity.start) - (replacement.length)
+                offset -= diff
+                return null
+            })
+            return newExample
+        } else {
+            return example
+        }
+    }
     
-export {generateObjectId, parentUrl, concatText , findFirstDiffPos, splitSentences,uniquifyArray, uniquifyArrayOfObjects, replaceEntities, RASA, GoogleAssistant, Alexa, snakeToCamelCase, camelToSnakeCase, toSnakeCase }
+    
+export {generateObjectId, parentUrl, concatText , findFirstDiffPos, splitSentences,uniquifyArray, uniquifyArrayOfObjects, replaceEntities,replaceEntitiesWithValues,  RASA, GoogleAssistant, Alexa, snakeToCamelCase, camelToSnakeCase, toSnakeCase }

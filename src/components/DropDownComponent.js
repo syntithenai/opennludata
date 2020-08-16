@@ -19,8 +19,8 @@ const DropDownComponent = function(props) {
               {Array.isArray(props.options) && props.options.map(function(optionKey,i) {
                   //console.log([optionKey, filterValue])
                    //if (filterValue.trim().length == 0 || optionKey.toLowerCase().indexOf(filterValue.toLowerCase()) !== -1) {
-                       return <Dropdown.Item key={i} value={optionKey} onClick={function(e) {setFilterValue(optionKey); props.selectItem(optionKey)}}  >
-                            {optionKey}
+                       return <Dropdown.Item style={{minHeight:'1.4em'}} key={i} value={optionKey} onClick={function(e) {setFilterValue(optionKey); props.selectItem(optionKey)}}  >
+                            {optionKey ? optionKey : <b>None</b>}
                         </Dropdown.Item>
                     //} else return null;
               })}

@@ -1,7 +1,7 @@
 /* global window */
 import React, { useEffect} from 'react';
 import './App.css';
-import {Link, useParams, useHistory} from 'react-router-dom'
+//import {Link, useParams, useHistory} from 'react-router-dom'
 import {Button } from 'react-bootstrap'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { VariableSizeList as List } from 'react-window';
@@ -22,7 +22,7 @@ const RenderRow = function(props) {
 }
 
 export default  function UtterancesManager(props) {
-    const {listFilterValue, setListFilterValue, loadAll, deleteItem ,items, findKeyBy, searchFilter, setSearchFilter, tagAllValue, setTagAllValue, listRef, tagAll,untagAll, resetSelection, selectAll, saveItemWrap,  filteredItems, deleteAll, createEmptyItem} = useListItemEditor('nlutool','utterances','alldata', props.updateFunctions.updateUtterances)
+    const {listFilterValue, setListFilterValue, loadAll, deleteItem , findKeyBy, searchFilter, setSearchFilter, tagAllValue, setTagAllValue, listRef, tagAll,untagAll, resetSelection, selectAll, saveItemWrap,  filteredItems, deleteAll, createEmptyItem} = useListItemEditor('nlutool','utterances','alldata', props.updateFunctions.updateUtterances)
     //const [currentList, setCurrentList] = useState('')
 
     function getItemSize() {

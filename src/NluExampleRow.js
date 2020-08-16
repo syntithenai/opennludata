@@ -75,9 +75,9 @@ export default function NluExampleRow(props) {
                    {!item.isSelected && <Button style={{float: 'left'}} size="lg" variant="secondary" onClick={function() {selectItem(splitNumber)}} ><img  style={{height:'1em'}} src={checkImage} alt="Select" /></Button>}
                   {item.isSelected && <Button style={{float: 'left'}} size="lg" variant="success" onClick={function() {deselectItem(splitNumber)}} ><img  style={{height:'1em'}} src={checkImage} alt="Deselect" /></Button>}
                   
-                <Button  variant="danger" style={{float:'right'}} onClick={function(e) {if (window.confirm('Really delete')) {props.deleteItem(splitNumber,(item.id ? item.id : ''))}}} ><img src={thumbdownImage} alt="Delete" /> Delete</Button>
-
-                  
+                <Button  variant="danger" style={{float:'right'}} size="sm" style={{float:'right', fontWeight:'bold', borderRadius:'15px', marginTop:'0.2em'}}onClick={function(e) {if (window.confirm('Really delete')) {props.deleteItem(splitNumber,(item.id ? item.id : ''))}}} >X</Button>
+                 
+                 
                   <Dropdown  style={{float:'left'}} as={ButtonGroup}>
                   <Dropdown.Toggle split  size="sm"  id="dropdown-split-basic" ></Dropdown.Toggle>
                   <Button   size="sm" >{item.intent ? item.intent.toString() : 'Select Intent'} </Button>

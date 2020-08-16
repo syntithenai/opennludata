@@ -1,5 +1,4 @@
 import JSZip from 'jszip'
-import { saveAs } from 'file-saver';
 
 function createZip(zipStructure) {
     var zip = new JSZip();

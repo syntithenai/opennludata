@@ -1,5 +1,3 @@
-import { generateObjectId } from '../utils';
-import {createZip} from './createZip'
 import localforage from 'localforage'
 
 function exportJSON(skill) {
@@ -21,13 +19,16 @@ function exportJSON(skill) {
                     if (skill.entities[entity] && Array.isArray(skill.entities[entity].lists)) {
                         skill.entities[entity].lists.map(function(list) {
                            usedLists[list] = true  
+                           return null
                         })
                     }
+                    return null
                 })
             }
             var skillLists = {}
             Object.keys(usedLists).map(function(listKey) {
               skillLists[listKey] = []  
+              return null
             })
             lists.map(function(item) {
                 Object.keys(usedLists).map(function(listKey) {
@@ -36,7 +37,9 @@ function exportJSON(skill) {
                         //console.log('list item used ')
                         skillLists[listKey].push(item.value)
                     }
+                    return null
                 })
+                return null
             })
             skill.lists = skillLists
             
@@ -50,16 +53,18 @@ function exportJSON(skill) {
                             if (skill.utterances) { 
                                 skill.utterances.map(function(listKey) {
                                     if (thisUtterance.value === listKey) utterances[thisUtterance.value] = thisUtterance  
+                                    return null
                                 })
                                 
                             }
                             if (skill.utterancesLists) { 
                                 skill.utterancesLists.map(function(listKey) {
                                     if (thisUtterance.tags && thisUtterance.tags.indexOf(listKey) !== -1) utterances[thisUtterance.value] = thisUtterance  
+                                    return null
                                 })
                                 
                             }
-                             
+                            return null 
                         })
                          console.log(['SET UITTER GLOLBA',utterances])
                          skill.utteranceLookups = utterances
