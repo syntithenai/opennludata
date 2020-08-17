@@ -219,57 +219,53 @@
              style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8.46666622px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.26458332">Examples</tspan></text>
       </g>
       <g
-         id="g4939"
-         transform="translate(-7.1815476,28.348214)">
-        <g
-           id="g4666"
-           transform="translate(12.851191,97.895831)">
-          <ellipse
-             id="path3786-9"
-             style="fill:none;stroke:#000000;stroke-width:0.87022215;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.98930485"
-             ry="7.4186497"
-             rx="18.416916"
-             cy="134.4726"
-             cx="49.223724" />
-          <text
-             transform="scale(1.0137004,0.98648475)"
-             xml:space="preserve"
-             style="font-style:normal;font-weight:normal;font-size:8.64162636px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.21604066"
-             x="32.818352"
+         transform="translate(5.6696434,126.24405)"
+         id="g4666">
+        <ellipse
+           cx="49.223724"
+           cy="134.4726"
+           rx="18.416916"
+           ry="7.4186497"
+           style="fill:none;stroke:#000000;stroke-width:0.87022215;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.98930485"
+           id="path3786-9" />
+        <text
+           id="text4595-7"
+           y="138.93826"
+           x="32.818352"
+           style="font-style:normal;font-weight:normal;font-size:8.64162636px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.21604066"
+           xml:space="preserve"
+           transform="scale(1.0137004,0.98648475)"><tspan
              y="138.93826"
-             id="text4595-7"><tspan
-               style="stroke-width:0.21604066"
-               sodipodi:role="line"
-               id="tspan4593-53"
-               x="32.818352"
-               y="138.93826">Entities</tspan></text>
-        </g>
+             x="32.818352"
+             id="tspan4593-53"
+             sodipodi:role="line"
+             style="stroke-width:0.21604066">Entities</tspan></text>
+      </g>
+      <g
+         id="g4928"
+         transform="translate(-9.0714284,17.386905)">
         <g
-           transform="translate(15.497024,-6.047619)"
-           id="g4928">
-          <g
-             id="g4922">
-            <ellipse
-               cx="33.450893"
-               cy="249.75298"
-               rx="13.376958"
-               ry="7.4813704"
-               style="fill:none;stroke:#000000;stroke-width:0.74478084;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.98930485"
-               id="path3786-9-0" />
-          </g>
-          <text
-             transform="scale(1.0137004,0.98648476)"
-             xml:space="preserve"
-             style="font-style:normal;font-weight:normal;font-size:8.64162636px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.21604066"
-             x="22.665276"
-             y="255.79803"
-             id="text4595-7-6"><tspan
-               style="stroke-width:0.21604066"
-               sodipodi:role="line"
-               id="tspan4593-53-4"
-               x="22.665276"
-               y="255.79803">Lists</tspan></text>
+           id="g4922">
+          <ellipse
+             id="path3786-9-0"
+             style="fill:none;stroke:#000000;stroke-width:0.74478084;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.98930485"
+             ry="7.4813704"
+             rx="13.376958"
+             cy="249.75298"
+             cx="33.450893" />
         </g>
+        <text
+           id="text4595-7-6"
+           y="255.79803"
+           x="22.665276"
+           style="font-style:normal;font-weight:normal;font-size:8.64162636px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.21604066"
+           xml:space="preserve"
+           transform="scale(1.0137004,0.98648476)"><tspan
+             y="255.79803"
+             x="22.665276"
+             id="tspan4593-53-4"
+             sodipodi:role="line"
+             style="stroke-width:0.21604066">Lists</tspan></text>
       </g>
     </g>
   </g>
