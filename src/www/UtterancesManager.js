@@ -49,9 +49,9 @@ export default  function UtterancesManager(props) {
                 return <div>
                     <span style={{float:'left', fontWeight:'bold'}} >&nbsp;{filteredItems.length} matches </span>
                      
-                     {props.lookups.selectedListTally > 0 && <span style={{float:'right'}}> 
+                     {props.lookups.selectedUtteranceTally > 0 && <span style={{float:'right'}}> 
                         
-                        <span>With {props.lookups.selectedListTally} selected&nbsp;</span>
+                        <span>With {props.lookups.selectedUtteranceTally} selected&nbsp;</span>
                         <ListAllDropDown tagAll={tagAll} tagAllValue={tagAllValue} setTagAllValue={setTagAllValue} untagAll={untagAll} lookups={props.lookups}/>
                         <Button style={{marginLeft:'1em'}} onClick={deleteAll} variant="danger"  >Delete Selected</Button> 
                     </span>} 

@@ -38,12 +38,10 @@ function HelpText(props) {
         <div>React window is used to allow the tool to work with tens of thousands of example and entity records.</div>
         <div>When the Internet is available, <b>this site uses Google Analytics to measure engagement and improve future versions.</b></div>
        <hr/>
-       
-        <p>Create <Link to="/sources" ><Button>Sources</Button></Link> from pasted text or uploaded files.</p>
-        <p>Use the <Link to="/import" ><Button>Import</Button></Link> page to break text into sentences and create NLU example records.</p>
+       <p><Link to="/search" ><Button>Search </Button></Link> the community database of NLU example records.</p>
+         <p><Link to="/sources" ><Button>Sources</Button></Link> to edit and import skills, pasted text or uploaded files.</p>
         <p><Link to="/examples" ><Button>Organise</Button></Link> your examples using tags and cleanup untagged examples.</p>
-        <p><Link to="/search" ><Button>Search </Button></Link> the community database of NLU example records.</p>
-        <p><Link to="/skills" ><Button>Collect </Button></Link> examples into a skill for export in various training formats.</p>
+        <p><Link to="/skills" ><Button>Skills</Button></Link> to add platform metadata for export in various training formats or publishing to the community database.</p>
         </div>
 }
 

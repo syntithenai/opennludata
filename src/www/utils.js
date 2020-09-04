@@ -56,18 +56,6 @@ function concatText(text,words) {
    return (shorter.length < text.length) ? shorter + '...' : shorter;
 }
 
-function splitSentences(text) {
-      var final = []
-      if (text) {
-          // split by newline and full stop
-         var splits = text.split('\n').join('::::').split('.').join('::::').split('::::') //.map(function(value) { return value.trim()})
-        // trim all splits
-        for (var splitText in splits) {
-            if(splitText.trim().length > 0) final.push(splits[splitText])
-        }
-     }
-     return final;
-}
 
 
     
@@ -153,4 +141,4 @@ function splitSentences(text) {
     }
     
     
-export {generateObjectId, parentUrl, concatText , findFirstDiffPos, splitSentences,uniquifyArray, uniquifyArrayOfObjects, replaceEntities,replaceEntitiesWithValues,  RASA, GoogleAssistant, Alexa, snakeToCamelCase, camelToSnakeCase, toSnakeCase }
+export {generateObjectId, parentUrl, concatText , findFirstDiffPos,uniquifyArray, uniquifyArrayOfObjects, replaceEntities,replaceEntitiesWithValues,  RASA, GoogleAssistant, Alexa, snakeToCamelCase, camelToSnakeCase, toSnakeCase }

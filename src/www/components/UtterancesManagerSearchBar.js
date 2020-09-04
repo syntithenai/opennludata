@@ -21,8 +21,8 @@ const UtterancesManagerSearchBar = function(props) {
     return <div>
             {<span>
             
-                {props.lookups.selectedListTally > 0 && <Button size="lg"  onClick={function(e) { props.resetSelection(e) }} variant="success"  ><img style={{height:'1em'}} src={checkImage} alt="Deselect" /></Button> }
-                {props.lookups.selectedListTally <= 0 && <Button size="lg" onClick={function(e) { props.selectAll(e) }} variant="secondary"  ><img style={{height:'1em'}} src={checkImage} alt="Select" /></Button> }
+                {props.lookups.selectedUtteranceTally > 0 && <Button size="lg"  onClick={function(e) {console.log(['reset sel']); props.resetSelection(e) }} variant="success"  ><img style={{height:'1em'}} src={checkImage} alt="Deselect" /></Button> }
+                {props.lookups.selectedUtteranceTally <= 0 && <Button size="lg" onClick={function(e) {console.log(['sel all']); props.selectAll(e) }} variant="secondary"  ><img style={{height:'1em'}} src={checkImage} alt="Select" /></Button> }
                 
                 
            </span>}   

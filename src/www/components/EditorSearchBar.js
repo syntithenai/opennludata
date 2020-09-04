@@ -27,19 +27,20 @@ const EditorSearchBar = function(props) {
             
             {<Dropdown style={{marginLeft:'0.5em'}}  as={ButtonGroup}>
                   <Dropdown.Toggle split   id="dropdown-split-basic" ></Dropdown.Toggle>
+                  <Button  >{'Skill '+(props.skillFilterValue ? ' - '+ props.skillFilterValue : '')} </Button>
+                  <Dropdown.Menu>
+                      {topskillOptions}
+                  </Dropdown.Menu>
+                </Dropdown>}
+                
+            {<Dropdown style={{marginLeft:'0.5em'}}  as={ButtonGroup}>
+                  <Dropdown.Toggle split   id="dropdown-split-basic" ></Dropdown.Toggle>
                   <Button  >{'Intent '+(props.intentFilterValue ? ' - '+ props.intentFilterValue : '')} </Button>
                   <Dropdown.Menu>
                       {intentOptions}
                   </Dropdown.Menu>
                 </Dropdown>}
             
-            {<Dropdown style={{marginLeft:'0.5em'}}  as={ButtonGroup}>
-                  <Dropdown.Toggle split   id="dropdown-split-basic" ></Dropdown.Toggle>
-                  <Button  >{'Skill '+(props.skillFilterValue ? ' - '+ props.skillFilterValue : '')} </Button>
-                  <Dropdown.Menu>
-                      {topskillOptions}
-                  </Dropdown.Menu>
-                </Dropdown>}
              <Button  style={{marginLeft:'1em'}} variant="success" onClick={function(e) {props.createEmptyItem(props.skillFilterValue, props.intentFilterValue)}} >New Intent</Button>
              <Button  style={{marginLeft:'1em'}} variant="primary" onClick={function(e) {props.sort(function(a,b) { if (a.value < b.value) return -1; else return 1;})}} >Sort</Button>
         </div>

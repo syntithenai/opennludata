@@ -1,96 +1,7 @@
 import {splitSentences, generateObjectId} from './utils'
 import JSZip from 'jszip'
 
-function cleanListItem(text) {
-    return text ? text.replace(/[^0-9a-z ,]/gi, '') : ''
-}
 
-function extractSynonym(text) {
-    if (text) { 
-        var parts = text.split(':')
-        if (parts.length > 1) {
-           return [parts[0],parts.slice(1).join(":")]   
-        } else {
-            return ['',text]
-        }
-    } else {
-        return ['','']
-    }
-}
-
-function sortListSplits(a,b) {
-    if (a.value < b.value) return -1;  else return 1;
-}
-
-function sortExampleSplits(a,b) {
-    if (a.example < b.example) return -1 ;else return 1;
-}
-
-function detectFileType(item) {
-    return new Promise(function(resolve,reject) {
-        console.log(['DETECT FILE TYPE',item])
-        try {
-            var json = JSON.parse(item.data)
-            // RASA JSON FORMAT
-            if (json && json.rasa_nlu_data && json.rasa_nlu_data.common_examples) {
-                resolve( {type: 'rasa.json'})
-            // JOVO JSON { "invocation": "my test app", "intents": [{"name": "HelloWorldIntent","phrases": ["hello","say hello"]}] } ,
-            } else if (json && json.invocation && json.intents) {
-                resolve({type: 'jovo.lang'})
-            } else if (json && json.title && json.intents && json.entities && json.id) {
-                resolve({type: 'opennlu.skill'})
-            } else if (json && json.utterances) {
-                resolve({type: 'opennlu.utterances'})
-            } else if (json && json.lists) {
-                resolve({type: 'opennlu.lists'})
-            } else if (json && json.regexps) {
-                resolve({type: 'opennlu.regexps'})
-            } else {
-                resolve({type: 'json'})
-            }
-        } catch (e) {
-            // try zip file
-             JSZip.loadAsync(item.data)                                   // 1) read the Blob
-            .then(function(zip) {
-                var found={}
-                zip.forEach(function (relativePath, zipEntry) {  // 2) print entries
-                    console.log( zipEntry.name)
-                    // rasa
-                    if (zipEntry.name.indexOf('/domain.yml') !== -1) found['rasa_domain'] = true 
-                    if (zipEntry.name.indexOf('/data/nlu.md') !== -1) found['rasa_data'] = true
-                    // jovo
-                    if (zipEntry.name.indexOf('/project.js') !== -1) found['jovo_project'] = true
-                    if (zipEntry.name.indexOf('/models/en-US.js') !== -1) found['jovo_lang'] = true
-                    // mycroft
-                    if (zipEntry.name.indexOf('/__init__.py') !== -1) found['mycroft_index'] = true
-                    if (zipEntry.name.indexOf('/vocab') !== -1) found['mycroft_vocab'] = true
-                    console.log(['FOUND',found])
-                });
-                console.log(['FOUND',found])
-                if (found['rasa_domain'] && found['rasa_data']) {
-                    resolve({type: 'rasa.zip'})
-                } else if (found['rasa_domain'] && found['rasa_data']) {
-                    resolve({type: 'jovo.zip'})
-                } else if (found['mycroft_index'] && found['mycroft_vocab']) {
-                    resolve({type: 'mycroft.zip'})
-                } else {
-                    resolve()
-                }
-            }, function (e) {
-                console.log('NOT ZIP')
-                console.log(e)
-                
-                if (item.data && item.data.indexOf('## intent:') !== -1) {
-                    resolve({type: 'rasa.markdown'})
-                } else {
-                    resolve({type: 'text'})
-                }
-            });
-            
-        }  
-    })
-           
-}
 
 function importSkill(item) {
     console.log(['importSkill',item])
@@ -237,20 +148,12 @@ function parseLists(text,listName) {
         }  
 }
 
+        
+
 
 function parseImportText(text) {
         var items = []
-        function generateSplits() {
-            const splits = splitSentences(text)
-            var newSplits=[]
-            splits.map(function(text,i) {
-                if (text && text.trim().length > 0) {
-                 newSplits.push({'id':generateObjectId(), 'example':text,'intent':'',"entities":[], "tags":[]})
-                }
-                return null
-            })
-            return newSplits.sort(sortExampleSplits)
-        }
+        
         try {
             var json = JSON.parse(text)
             // RASA JSON FORMAT

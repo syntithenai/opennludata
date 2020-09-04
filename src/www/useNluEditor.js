@@ -5,7 +5,9 @@ import {uniquifyArray} from './utils'
 import {useParams, useHistory} from 'react-router-dom'
 
 function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
+    //console.log(["USENLUEDITOR",database, databaseTable, databaseKey])
     const {loadAll, saveItem, deleteItem , items, setItems, findKeyBy, filter, sort} = useDBSingleKey(database, databaseTable, databaseKey)
+    //console.log(["USENLUEDITOR items",items])
     const [filteredItems, setFilteredItems] = useState([])
     const [filteredItemsKeys, setFilteredItemsKeys] = useState([])
     const [searchFilter, setSearchFilter] = useState('')
@@ -295,7 +297,7 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
         
        
     function saveAll(e)  {
-        //console.log(['save akk',filteredItems])
+        console.log(['save akk',filteredItems])
         if (items) {
             var newItems = []
             var lsItems = []
@@ -311,7 +313,7 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
                }
                return null
             })
-            saveLSItems(lsItems)
+            //saveLSItems(lsItems)
             setItems(newItems)
             listRef.current.resetAfterIndex(0);
         }
@@ -319,13 +321,15 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
     }
    
     function createEmptyItem(skill, intent) {
+        console.log(['CREATE EMPTY EXAMPLE'])
         setSearchFilter('')
         var skills=[]
         if (skill && skill.trim().length > 0) skills.push(skill)
         var newIntent=''
         if (intent && intent.trim().length > 0) newIntent = intent
-        saveItem({id:null, example:'', intent:newIntent, skills:skills,tags:[]})
-   }
+        saveItemWrap({id:null, example:'', intent:newIntent, skills:skills,tags:[]},0)
+        console.log(['SAVED NEW EXAMPLE',{id:null, example:'', intent:newIntent, skills:skills,tags:[]}])
+    }
     
     function saveItemWrap(item,index) {
         saveItem(item,index)

@@ -1,5 +1,5 @@
 /* global window */
-import React  from 'react';
+import React , {useState, useEffect} from 'react';
 import {Button, Navbar } from 'react-bootstrap'
 import {Link} from 'react-router-dom'
 import fireImage from '../images/singingman.svg'
@@ -7,26 +7,37 @@ import waitingImage from '../images/waiting.gif'
 import ReactGA from 'react-ga';
 
 
-ReactGA.initialize('UA-3712973-4');
+//ReactGA.initialize('UA-3712973-4');
 
 export default function NavbarComponent(props) {
     //console.log(props)
-    ReactGA.pageview(props.history.location.pathname);
+    //ReactGA.pageview(props.history.location.pathname);
     var astyle={paddingLeft:'0.3em'}
     const currentPage = props.history && props.history.location && props.history.location.pathname ? props.history.location.pathname : '/'
     const pages = {
         '/': {name: 'NLU Tool',show: false},
         '/search': {name: 'Search',show: true},//link:'https://github.com/syntithenai/opennludata/wiki'
-        '/sources': {name: 'Sources',show: true},
-        '/import': {name: 'Import',show: true},
+        '/sources': {name: 'Import',show: true},
         '/regexps': {name: 'RegExps',show: true},
         '/lists': {name: 'Entities',show: true},
         '/utterances': {name: 'Utterances',show: true},
         '/examples': {name: 'Intents',show: true},
         '/skills': {name: 'Skills',show: true},
-        '/help': {name: 'Help',show: false},
+        '/help': {name: 'Help',show: true},
         
     }
+     var [stuff, setStuff] = useState('')
+   
+    useEffect(() => {
+        if (props.user && props.user.token && props.user.token.access_token) { 
+             console.log('GETresS' )
+            var axiosClient = props.getAxiosClient(props.user.token.access_token)
+            axiosClient.get('http://localhost:5000/api/v1/skill/count').then(function(res) {
+                setStuff(res)
+                console.log(res)
+            })
+        }
+    },[(props.user && props.user.token && props.user.token.access_token ? props.user.token.access_token: '')])
     
     const links = Object.keys(pages).map(function(link,k) {
         const page = pages[link]
@@ -40,25 +51,36 @@ export default function NavbarComponent(props) {
         return null
     })
     
-    const helpButton = pages[currentPage] && pages[currentPage].helpComponent ? pages[currentPage].helpComponent : <Link to="/help" ><Button>Help</Button></Link>
+    //const helpButton = pages[currentPage] && pages[currentPage].helpComponent ? pages[currentPage].helpComponent : <Link to="/help" ><Button>Help</Button></Link>
     
 //        <Navbar.Text><Button><img src='/menu.svg' alt='menu' /></Button></Navbar.Text>
 
-    return <Navbar  bg="dark" variant="dark"  >
-        {props.message && <div style={{position:'fixed',top:5,left:window.innerWidth ? (window.innerWidth /2 - 40) : 100, border: '2px solid red', background: 'pink', padding: '0.5em', minWidth:'400px' ,borderRadius:'5px'}} >
+    return <Navbar  bg="dark" variant="dark"  style={{width:'100%', border:''}} >
+        
+        {props.message && <div style={{position:'fixed',top:100,left:window.innerWidth ? (window.innerWidth /2 - 40) : 100, border: '2px solid red', background: 'pink', padding: '0.5em', minWidth:'400px' ,borderRadius:'5px'}} >
             <Button variant="danger" size="sm"  style={{float:'right', fontWeight: 'bold',borderRadius:'20px',marginLeft:'1em'}} onClick={function(e) {props.setPageMessage('')}}>X</Button>{props.message} 
         </div>}
-    
-        <img src={fireImage}  style={{height:'5em', marginRight:'0.4em'}} alt="logo"/>
         
-         
-        <div style={{width: '100%'}}>
+        <img src={fireImage}  style={{height:'5em', marginRight:'0.4em'}} alt="logo"/>
+         <div style={{width: '100%'}}>
+        
         {links}
         </div>
         
-        {props.message}
-        <Navbar.Text style={{position:'fixed', top:'2px', right:'2px'}} className="justify-content-end" >{helpButton}</Navbar.Text>
-        <img src={waitingImage} alt='waiting' style={{position:'fixed', top:5, right:5, zIndex:99, display: props.waiting ? 'block' : 'none' }} />
+         <div style={{float:'right', vAlign:'top', minWidth:'10em', marginRight:'0em'}}>
+        {props.isLoggedIn() && 
+            <div>
+                <a style={{display:'inline'}}  href="/login/profile" ><Button variant="primary" >{'Profile'}</Button></a>
+                <a style={{display:'inline'}}  href="/login/logout" ><Button variant="danger" >Logout</Button></a>
+            </div>
+        }
+        { !props.isLoggedIn() && 
+            <a href="/login/login" ><Button variant="success" >Login</Button></a>
+        }
+        
+        </div>
+        
+         <img src={waitingImage} alt='waiting' style={{position:'fixed', top:5, right:5, zIndex:99, display: props.waiting ? 'block' : 'none' }} />
     </Navbar>
 }
 

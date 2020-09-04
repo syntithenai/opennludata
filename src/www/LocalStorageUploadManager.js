@@ -3,16 +3,16 @@ import React, {useEffect} from 'react';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import useDB from './useDB'
-import {parseImportText, parseLists, detectFileType} from './parsers'
-
-import localforage from 'localforage'
+import useImportFunctions from './useImportFunctions'
+import { saveAs } from 'file-saver';
+import JSZip from 'jszip'
 import {NewFileButtons} from './components/Components'
 import JSONTextEditor from './components/JSONTextEditor'
-import {generateObjectId, uniquifyArray } from './utils'
+//import {generateObjectId, uniquifyArray } from './utils'
 import {Link} from 'react-router-dom'
 import {Button, ListGroup } from 'react-bootstrap'
-import ImportListsDropDown from './components/ImportListsDropDown'
-
+//import ImportListsDropDown from './components/ImportListsDropDown'
+import localforage from 'localforage'
 
 // COMPONENTS
 function IndexPage(props) {
@@ -28,21 +28,63 @@ function IndexPage(props) {
 
 function FilesList(props) {
     //console.log(['man fl ',props])
+       
+    var localforageStorageImport = localforage.createInstance({
+        name: 'nlutool',
+        storeName   :'importing',
+    });
+    
+    
      const { items} = props  
+     var saveSkill=function (skill) {
+        localforageStorageImport.setItem('alldata',skill).then(function() {
+            props.history.push('/importreview')
+        })
+     }
+     var showError = function(e) {
+         props.setPageMessage(e.toString(),2000)
+     }
+     
+    function downloadZip(item) {
+        var zip = new JSZip();
+        zip.loadAsync(item.data)
+        .then(function(zip) {
+            zip.generateAsync({type:"blob"}).then(function (blob) { // 1) generate the zip file
+                saveAs(blob, item.title);      
+            })
+        });
+     }
+     
      if (items) {
-       const list = Object.values(items).map(function(item,i) {
+       const list = Object.values(items).sort(function(a,b) {if (a.updated_date < b.updated_date) return 1; else return -1}).map(function(item,i) {
             return <ListGroup.Item  key={i}  >
+
                    
                    <Button style={{float:'right', marginLeft:'0.5em'}} variant="danger" onClick={function(e) {if(window.confirm('Really delete source '+items[i].title)) props.deleteItem(i)}} >Delete</Button>
+                    
+                    {item.fileType.endsWith(".zip") && <Button style={{float:"right", marginLeft:'0.5em'}} onClick={function() {downloadZip(item)}}>Download</Button>}
+
+                    {!item.fileType.endsWith(".zip") && <Button style={{float:"right", marginLeft:'0.5em'}} onClick={function() {saveAs(new Blob([item.data], {type: 'application/'+item.fileType}), item.title+'.'+item.fileType)}}>Download</Button>}
+    
                    {/* Can't edit zip files*/}
                    {!item.fileType.endsWith('.zip') && <Link to={props.match.url+"/text/"+item.id} ><Button style={{float:'right',marginLeft:'0.5em'}}  >Edit</Button></Link>}
                    
-                    {/* Only import utterances */}
-                   {(item.fileType !== "rasa.md" && item.fileType !== "rasa.json" && item.fileType !== "jovo.lang"  && item.fileType !== "opennlu.regexps"  && item.fileType !== "opennlu.lists") && <Button style={{float:'right', marginLeft:'0.5em'}} variant="success" onClick={function(e) { props.importFunctions.importUtterances(items[i]) }}    >Import Utterances</Button>}
-                   {/* Only import entities */}
-                   <ImportListsDropDown lookups={props.lookups} importListTo={function(listName) {props.importFunctions.importEntities(items[i],listName)}} importTo={items[i].title} />
-                   {/* Import whatever is available */}
-                   {<Button style={{float:'right', marginLeft:'0.5em'}} variant="success" onClick={function(e) { props.importFunctions.importAll(items[i]) }}    >Import</Button>}
+                   {item.fileType === "text" && <div className="textimportbuttons" >
+                       <Button style={{float:'right', marginLeft:'0.5em'}} variant="success" onClick={function(e) { props.importFunctions.importIntents(items[i]).then(saveSkill).catch(showError)  }}    >Import Intents</Button>
+                       <Button style={{float:'right', marginLeft:'0.5em'}} variant="success" onClick={function(e) { props.importFunctions.importEntities(items[i]).then(saveSkill).catch(showError)  }}    >Import Entities</Button>
+                       <Button style={{float:'right', marginLeft:'0.5em'}} variant="success" onClick={function(e) { props.importFunctions.importUtterances(items[i]).then(saveSkill).catch(showError)  }}    >Import Utterances</Button>
+                    </div>}
+                    
+                    {item.fileType !== "text" && <>
+                       {/* Import whatever is available */}
+                       {<Button style={{float:'right', marginLeft:'0.5em'}} variant="success" 
+                           onClick={function(e) { 
+                               props.importFunctions.importAll(items[i])
+                               // save import results and redirect to import overview
+                               .then(saveSkill).catch(showError) 
+                            }}    >Import</Button>}
+                    </>}
+                    
                    
                    <span style={{width:'90%'}}  > {item.fileType && <Button>{item.fileType}</Button>}&nbsp;&nbsp;&nbsp;{item.title}</span>
                   
@@ -53,19 +95,16 @@ function FilesList(props) {
         return null
     }
 }
-
+ //{/* Only import utterances */}
+                       //{(item.fileType === "rasa.zip" || item.fileType === "mycroft.zip"  || item.fileType === "opennlu.zip"  || item.fileType !== "opennlu.lists") && <Button style={{float:'right', marginLeft:'0.5em'}} variant="success" onClick={function(e) { props.importFunctions.importUtterances(items[i]) }}    >Import Utterances</Button>}
+                       //{/* Only import entities */}
+                       //{<ImportListsDropDown lookups={props.lookups} importListTo={function(listName) {props.importFunctions.importEntities(items[i],listName)}} importTo={items[i].title} /> }
 export default function LocalStorageUploadManager(props) {
     //console.log('man')
     //console.log(props)
-     var localforageStorageImport = localforage.createInstance({
-       name: 'nlutool',
-       storeName   :'import',
-     });
-     var localforageStorageLists = localforage.createInstance({
-       name: 'nlutool',
-       storeName   :'lists',
-     });
-
+     
+    var importFunctions = useImportFunctions()
+     
 
      const {loadAll, saveItem, deleteItem ,items, findKeyBy, findBy} = useDB('nlutool','sources');
     
@@ -84,9 +123,13 @@ export default function LocalStorageUploadManager(props) {
               const [e, file] = result;
               console.log(['upl result',e, file,e.target.result])
                var item = {id:null, data:e.target.result, title:file.name}
-               detectFileType(item).then(function(fileData) {
+               importFunctions.detectFileType(item).then(function(fileData) {
                     if (fileData && fileData.type) {
                         item.fileType = fileData.type
+                        item.created_date = new Date().getTime()
+                        //if (item.fileType.endsWith('.zip')) {
+                            //item.data = new File([item.data],'application/zip')
+                        //}
                         console.log(['SET ITEM TYPE', item.fileType])
                         saveItem(item)
                     } else {
@@ -101,130 +144,15 @@ export default function LocalStorageUploadManager(props) {
         }
     }    
   
-    function importExamples(item) {
-         //console.log(['import examples',item])
-        if (item && item.id && item.data) {
-            var parsed = parseImportText(item.data)
-            localforageStorageImport.getItem('alldata').then(function(res) {
-                //console.log('IMPORT MERGE',res,parsed,[].concat(parsed,res))
-                localforageStorageImport.setItem('alldata',[].concat(parsed,res)) 
-                props.history.push('/import') 
-            })
-          } else {
-            throw new Error("Missing import data")
-        }
-    }
-
-    function importEntities(item) {
-         //console.log(['import examples',item])
-         //if (item && item.fileType  && item.fileType.endsWith('.zip'))  {
-             //if (item.fileType === "mycroft.zip") {
-                 
-             //} else if (item.fileType === "rasa.zip") {
-                 
-             //} else if (item.fileType === "jovo.zip") {
-                 
-             //} 
-         //} else {
-             //if () 
-         //}
-    }
-
-    function importUtterances(item) {
-         //console.log(['import examples',item])
-    }
-    
-    function importAll(item) {
-         //console.log(['import examples',item])
-    }
-    
     function saveItemWrap(item,index) {
-        detectFileType(item).then(function(fileData) {
+        importFunctions.detectFileType(item).then(function(fileData) {
             item.fileType = fileData.type
+            item.created_date = new Date().getTime()
             console.log(['SET ITEM TYPE', item.fileType])
             saveItem(item,index)
         })
     }
     
-    function importLists(item,title) {
-        //console.log(['import lists',item,title])
-        if (item && item.id && item.data) {
-            var parsed = parseLists(item.data)
-            //console.log(['import lists',parsed])
-            if (parsed) {
-                localforageStorageLists.getItem('alldata').then(function(allLists) {
-                    //console.log(['got list ',allLists])
-                    var allListsIndex = {}
-                    if (!allLists) {
-                        allLists = []
-                    }
-                    // index by value
-                    allLists.map(function(listItem) {
-                        if (listItem && listItem.value && listItem.value.trim().length > 0)  {
-                            allListsIndex[listItem.value] = listItem
-                        }
-                        return null
-                    })
-                    // update incoming list values
-                    Object.keys(parsed).map(function(listName,i) {
-                        var list = parsed[listName]  
-                        if (list) {
-                            list.map(function(listItem,listItemIndex) {
-                                var newListItem = listItem;
-                                // already there, just update tags
-                                if (allListsIndex[listItem.value]) {
-                                    if (listName !== '___') {
-                                        if (listItem.tags) newListItem.tags.push(listName)
-                                        else newListItem.tags = [listName]
-                                    } else {
-                                        newListItem.tags = []
-                                    }
-                                    if (title && title.trim().length > 0) newListItem.tags.push(title.trim())
-                                    // uniquify and sort tags
-                                    newListItem.tags = uniquifyArray(newListItem.tags).sort()
-                                    //var tagsClean = {}
-                                    //newListItem.tags.map(function(tag) {
-                                        //tagsClean[tag] = true 
-                                    //})
-                                    //newListItem.tags = Object.keys(tagsClean).sort()
-                                    
-                                    allListsIndex[newListItem.value] = newListItem
-                                // new list item    
-                                } else {
-                                    newListItem = {id: generateObjectId() , value: newListItem.value, synonym: newListItem.synonym ? newListItem.synonym : '', tags:[]}
-                                    
-                                    if (listName !== '___') {
-                                        if (listItem.tags) newListItem.tags.push(listName)
-                                        else newListItem.tags = [listName]
-                                    }
-                                    if (title && title.trim().length > 0) newListItem.tags.push(title.trim())
-                                    // uniquify and sort tags
-                                    newListItem.tags = uniquifyArray(newListItem.tags).sort()
-                                    
-                                    allListsIndex[newListItem.value] = newListItem
-                                }
-                                return null
-                            })
-                        }
-                        return null
-                    })
-                    //console.log('IMPORT MERGE',res,parsed,[].concat(parsed,res))
-                    localforageStorageLists.setItem('alldata',Object.values(allListsIndex)) 
-                    props.history.push('/lists') 
-                    //props.setPageMessage(<div><b>sdfsdf</b><br/><b>sdfsdf</b><br/><b>sdfsdf</b><br/><b>sdfsdf</b><br/></div>)
-                    props.setPageMessage('Imported '+Object.keys(allListsIndex).length +' entities into the list '+ title)
-                    setTimeout(function() {
-                        props.setPageMessage('')
-                    },2000)
-                })
-            } else {
-                throw new Error("Failed import")
-            }
-        } else {
-            throw new Error("Missing import data")
-        }
-    }
-    var importFunctions = {importLists, importExamples, importUtterances, importEntities, importAll}
     //console.log(['RENDER LOMAN',props])
     return (
         <div className="LocalStorageUploadManager" >
@@ -240,7 +168,7 @@ export default function LocalStorageUploadManager(props) {
                 render={function(iprops) { return  <IndexPage {...props} 
                     items={items}
                     deleteItem={deleteItem} saveItem={saveItemWrap} importFunctions={importFunctions} 
-                    handleFileSelection={handleFileSelection}
+                    handleFileSelection={handleFileSelection} 
                 />}} 
             />
 

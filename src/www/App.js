@@ -1,5 +1,5 @@
 import React from 'react';
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import {BrowserRouter as  Router, Route, Link  } from 'react-router-dom'
 import LocalStorageUploadManager from './LocalStorageUploadManager'
 import ListsManager from './ListsManager'
@@ -7,44 +7,44 @@ import UtterancesManager from './UtterancesManager'
 import RegexpsManager from './RegexpsManager'
 import NluExampleEditor from './NluExampleEditor'
 import NavbarComponent from './components/NavbarComponent'
+import TestComponent from './components/TestComponent'
 import {HelpText, HelpTextImport, HelpTextExport, HelpTextAbout} from './components/Components'
 import NluImportEditor from './NluImportEditor'
 import NluSkillsEditor from './NluSkillsEditor'
 import SearchPage from './SearchPage'
+import ImportReviewPage from './ImportReviewPage'
+import SkillSearchPage from './SkillSearchPage'
 import {Button} from 'react-bootstrap'
 import localforage from 'localforage'
-
-//import images from './images'
-//console.log(images)
-//const axios = require('axios');
-  //axios.get('https://github.com/syntithenai/opennludata/wiki/test-skill')
-  //.then(function (response) {
-    //// handle success
-    //console.log(response);
-  //})
-  //.catch(function (error) {
-    //// handle error
-    //console.log(error);
-  //})
-//
-
+import {LoginSystem,LoginSystemContext}  from 'react-express-oauth-login-system-components'
+import 'bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
 function SiteMenu(props) {
     var astyle={paddingLeft:'0.3em'}
     return <div style={{marginLeft:'0.5em'}}>
-            <h1>Menu</h1>
-            
-                <Link style={astyle} to="/sources" ><Button>Sources</Button></Link>
-                <Link style={astyle} to="/import" ><Button>Import</Button></Link>
-                <Link style={astyle} to="/examples" ><Button>Organise</Button></Link>
-                <Link style={astyle} to="/skills" ><Button>Skills </Button></Link>
-                <Link style={astyle} to="/search" ><Button>Search Community </Button></Link>
-        </div>
+        <h1>Menu</h1>
+        <Link style={astyle} to="/sources" ><Button>Sources</Button></Link>
+        <Link style={astyle} to="/import" ><Button>Import</Button></Link>
+        <Link style={astyle} to="/examples" ><Button>Organise</Button></Link>
+        <Link style={astyle} to="/skills" ><Button>Skills </Button></Link>
+        <Link style={astyle} to="/search" ><Button>Search Community </Button></Link>
+    </div>
 }
 
 function App() {
-    
+   
     const [waiting, setWaiting] = useState(false)
-    const [pageMessage, setPageMessage] = useState('')  
+    const [pageMessage, setPageMessageInner] = useState('')  
+    var messageTimeout = null
+    
+    
+    function setPageMessage(message,timeout=0) {
+        setPageMessageInner(message)
+        if (timeout > 0) {
+            if (messageTimeout) clearTimeout(messageTimeout) 
+            messageTimeout = setTimeout(function() {setPageMessage('')},timeout)
+        }
+    }
     
     //const [importFrom, setImportFrom] = useState(null)
     // example summaries
@@ -67,12 +67,16 @@ function App() {
     const [listTallyByList, setListTallyByList] = useState({})
     const [selectedListTallyByList, setSelectedListTallyByList] = useState({})
     
+    const [regexTally, setRegexTally] = useState(0)
+    const [selectedRegexTally, setSelectedRegexTally] = useState(0)
+    const [utteranceTally, setUtteranceTally] = useState(0)
+    const [selectedUtteranceTally, setSelectedUtteranceTally] = useState(0)
+    
+    
     // search bar
-    //https://github.com/search?q=repo:syntithenai/opennludata&type=Wikis
     const [skillFilterValue, setSkillFilterValue] = useState('')
   
-
-    
+       
     function startWaiting() {
         setWaiting(true)
     }
@@ -85,11 +89,13 @@ function App() {
 
     
     function updateRegexps() {
-        console.log('UPDATE regexps')
+        //console.log('UPDATE regexps')
         var utteranceStorage = localforage.createInstance({
            name: "nlutool",
            storeName   : "regexps",
          });
+         var tally = 0;
+         var selectedTally = 0;
          utteranceStorage.getItem('alldata', function (err,utterances) {
                 var utteranceLists={}
                 var utteranceIndex={}
@@ -97,7 +103,11 @@ function App() {
                 //console.log(['UPDATE UTTERANCES',err,utterances])
                 if (Array.isArray(utterances)) {
                     utterances.map(function(utterance,i) {
-                        console.log(['UPDATE regexp',utterance])
+                        //console.log(['UPDATE regexp',utterance])
+                         if (utterance.isSelected) {
+                             selectedTally += 1
+                        }
+                        tally += 1;
                          if (utterance.value) {
                              utteranceIndex[utterance.value]=true
                          }
@@ -115,11 +125,13 @@ function App() {
                          }
                          return null
                     })
+                    setRegexTally(tally)
+                    setSelectedRegexTally(selectedTally)
                     setRegexpsLookups(Object.keys(utteranceIndex))
                     setRegexpTagsLookups(Object.keys(utteranceTags))
                     setRegexpListsLookups(Object.keys(utteranceLists))
                 }
-                console.log(['UPDATE UTTERANCES',utteranceIndex,utteranceLists])
+                //console.log(['UPDATE UTTERANCES',utteranceIndex,utteranceLists])
                     
               });
             //});
@@ -132,6 +144,8 @@ function App() {
            name: "nlutool",
            storeName   : "utterances",
          });
+         var tally = 0;
+         var selectedTally = 0;
          utteranceStorage.getItem('alldata', function (err,utterances) {
                 var utteranceLists={}
                 var utteranceIndex={}
@@ -139,7 +153,11 @@ function App() {
                 //console.log(['UPDATE UTTERANCES',err,utterances])
                 if (Array.isArray(utterances)) {
                     utterances.map(function(utterance,i) {
-                        console.log(['UPDATE UTTERANCE',utterance])
+                        if (utterance.isSelected) {
+                             selectedTally += 1
+                        }
+                        tally += 1;
+                        //console.log(['UPDATE UTTERANCE',utterance])
                          if (utterance.value) {
                              utteranceIndex[utterance.value]=true
                          }
@@ -157,11 +175,13 @@ function App() {
                          }
                          return null
                     })
+                    setUtteranceTally(tally)
+                    setSelectedUtteranceTally(selectedTally)
                     setUtterancesLookups(Object.keys(utteranceIndex))
                     setUtteranceTagsLookups(Object.keys(utteranceTags))
                     setUtteranceListsLookups(Object.keys(utteranceLists))
                 }
-                console.log(['UPDATE UTTERANCES',utteranceIndex,utteranceLists])
+                //console.log(['UPDATE UTTERANCES',utteranceIndex,utteranceLists])
                     
               });
             //});
@@ -169,16 +189,19 @@ function App() {
     }
 
     function updateLists(lists) {
+        console.log(['UPDATELISTS',lists])
         if (lists) {
             var newSelectedLists = {}
             var newLists = {}
             var tally = 0;
-             var selectedTally = 0;
+            var selectedTally = 0;
             lists.map(function(listItem) {
+                if (listItem.isSelected) {
+                         selectedTally += 1
+                }
+                tally += 1;
                 if (listItem && listItem.tags && listItem.tags.length > 0) {
-                    if (listItem.isSelected) {
-                             selectedTally += 1
-                    }
+                    
                     listItem.tags.map(function(tag) {
                         if (tag && tag.trim().length > 0) {
                             if (listItem.isSelected) {
@@ -190,10 +213,10 @@ function App() {
                         }
                         return null
                     })
-                    tally += 1;
                 }
                 return null
             })
+            console.log(['UPDATELISTS',tally, selectedTally])
             setListTally(tally)
             setSelectedListTally(selectedTally)
             setSelectedListTallyByList(newSelectedLists)
@@ -204,7 +227,7 @@ function App() {
     }
 
     function updateLookups(items) {
-        //console.log(['UPDATELOOKUPS',items])
+        console.log(['UPDATELOOKUPS',items])
         if (items && items.length > 0) {
             var tags = {}
             var intents = {}
@@ -236,7 +259,7 @@ function App() {
                        })
                    }
                 }
-               return null
+                return null
             })
             const distinct = function(value,index,self) {
                 return self.indexOf(value) === index;
@@ -248,109 +271,154 @@ function App() {
             setSelectedTally(selected)
         }
     }
-    const lookups = {regexpTagsLookups:regexpTagsLookups,regexpsLookups:regexpsLookups,regexpListsLookups:regexpListsLookups,    utteranceTagsLookups:utteranceTagsLookups,utterancesLookups:utterancesLookups,utteranceListsLookups:utteranceListsLookups,intentLookups,entityLookups,tagLookups,skillLookups, selectedTally, listsLookups, listTally, selectedListTally, listTallyByList, selectedListTallyByList}
+    const lookups = {regexpTagsLookups:regexpTagsLookups,regexpsLookups:regexpsLookups,regexpListsLookups:regexpListsLookups,    utteranceTagsLookups:utteranceTagsLookups,utterancesLookups:utterancesLookups,utteranceListsLookups:utteranceListsLookups,intentLookups,entityLookups,tagLookups,skillLookups, selectedTally, listsLookups, listTally, selectedListTally, listTallyByList, selectedListTallyByList, utteranceTally, selectedUtteranceTally,regexTally, selectedRegexTally}
     const updateFunctions = {updateLookups, updateLists, updateUtterances, updateRegexps}
+                
   return (
     <div className="OpenNluDataApp">
-           
-        <Router>
-                <Route exact path='*' render={
-                    (props) => {
-                        return <NavbarComponent waiting={waiting} history={props.history} message={pageMessage} setPageMessage={setPageMessage}    />
-                    }}
-                />
+         <LoginSystemContext  
+                authServer={process.env.REACT_APP_authServer} 
+                authServerHostname={process.env.REACT_APP_authServerHostname} 
+            >{(user,setUser,getAxiosClient,getMediaQueryString,getCsrfQueryString, isLoggedIn, loadUser, useRefreshToken, logout, saveUser) => {  
                 
-                <Route exact path='/menu' component={SiteMenu} />
-                <Route path='/sources' render={
-                    (props) => <LocalStorageUploadManager {...props}  startWaiting={startWaiting} stopWaiting={stopWaiting}   setPageMessage={setPageMessage}  updateFunctions={updateFunctions} lookups={lookups}  />
-                }/>
-                <Route exact path='/import' render={
-                    (props) => <NluImportEditor {...props}        lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}  updateFunctions={updateFunctions}  setPageMessage={setPageMessage}    />}
-                          
-                />
+                return <div  ><Router>
+                      
                 
-                <Route exact path='/import/skill/:skillId' render={
-                    (props) => <NluImportEditor {...props}        lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}  updateFunctions={updateFunctions}  setPageMessage={setPageMessage}    />}
-                          
-                />
-                
-                <Route exact path='/import/intent/:intentId' render={
-                    (props) => <NluImportEditor {...props}        lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}  updateFunctions={updateFunctions} setPageMessage={setPageMessage}    />}
-                          
-                />
-                
-                <Route path='/import/skill/:skillId/intent/:intentId' render={
-                    (props) => <NluImportEditor {...props}        lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}  updateFunctions={updateFunctions} setPageMessage={setPageMessage}    />}
-                          
-                />
-                
-                
-                <Route exact  path='/examples' render={(props) => <NluExampleEditor {...props}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}    />} 
-                />
-                
-                <Route exact path='/examples/skill/:skillId' render={(props) => <NluExampleEditor {...props}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}    />} 
-                />
-                
-                <Route path='/examples/intent/:intentId' render={(props) => <NluExampleEditor {...props}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}    />} 
-                />
-                
-                <Route exact path='/examples/skill/:skillId/intent/:intentId' render={(props) => <NluExampleEditor {...props}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}    />} 
-                />
-                
-                <Route exact path='/skills/:skillId' render={(props) => <NluSkillsEditor {...props}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}    />} 
-                />
-                
-                <Route exact path='/skills/skill/:skillId' render={(props) => <NluSkillsEditor {...props}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}    />} 
-                />
-                
-                <Route exact path='/skills/:skillId/publish' render={(props) => <NluSkillsEditor {...props}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}  publish={true}  />} 
-                />
-                
-                <Route exact path='/skills/skill/:skillId/publish' render={(props) => <NluSkillsEditor {...props}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}   publish={true} />} 
-                />
+                        <Route exact path='*' render={
+                            (props) => {
+                                return <NavbarComponent waiting={waiting} user={user} isLoggedIn={isLoggedIn} history={props.history} message={pageMessage} setPageMessage={setPageMessage}  getAxiosClient={getAxiosClient}  />
+                            }}
+                        />
+                        <div style={{marginLeft:'0.5em'}} >
+                            <Route exact path='/test' render={
+                                (props) => {
+                                    return <TestComponent waiting={waiting} user={user} isLoggedIn={isLoggedIn} history={props.history} message={pageMessage} setPageMessage={setPageMessage}  getAxiosClient={getAxiosClient}  />
+                                }}
+                            />
+                            
+                            
+                            <Route exact path='/menu' component={SiteMenu} />
+                            <Route path='/sources' render={
+                                (props) => <LocalStorageUploadManager {...props} startWaiting={startWaiting} stopWaiting={stopWaiting}   setPageMessage={setPageMessage}  updateFunctions={updateFunctions} lookups={lookups}  />
+                            }/>
+                            
+                            
+                            <Route path='/importreview' render={
+                                (props) => <ImportReviewPage {...props} startWaiting={startWaiting} stopWaiting={stopWaiting}   setPageMessage={setPageMessage}  updateFunctions={updateFunctions} lookups={lookups}  />
+                            }/>
+                            
+                            
+                            
+                            <Route exact path='/import' render={
+                                (props) => <NluImportEditor {...props}        lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}  updateFunctions={updateFunctions}  setPageMessage={setPageMessage}    />}
+                                      
+                            />
+                            
+                            <Route exact path='/import/skill/:skillId' render={
+                                (props) => <NluImportEditor {...props}        lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}  updateFunctions={updateFunctions}  setPageMessage={setPageMessage}    />}
+                                      
+                            />
+                            
+                            <Route exact path='/import/intent/:intentId' render={
+                                (props) => <NluImportEditor {...props}        lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}  updateFunctions={updateFunctions} setPageMessage={setPageMessage}    />}
+                                      
+                            />
+                            
+                            <Route path='/import/skill/:skillId/intent/:intentId' render={
+                                (props) => <NluImportEditor {...props}        lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}  updateFunctions={updateFunctions} setPageMessage={setPageMessage}    />}
+                                      
+                            />
+                            
+                            
+                            <Route exact  path='/examples' render={(props) => <NluExampleEditor {...props}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}    />} 
+                            />
+                            
+                            <Route exact path='/examples/skill/:skillId' render={(props) => <NluExampleEditor {...props}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}    />} 
+                            />
+                            
+                            <Route path='/examples/intent/:intentId' render={(props) => <NluExampleEditor {...props}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}    />} 
+                            />
+                            
+                            <Route exact path='/examples/skill/:skillId/intent/:intentId' render={(props) => <NluExampleEditor {...props}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}    />} 
+                            />
+                            
+                            <Route exact path='/skills/:skillId' render={(props) => <NluSkillsEditor {...props}    user={user}   lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}   getAxiosClient={getAxiosClient}  />} 
+                            />
+                            
+                            <Route exact path='/skills/skill/:skillId' render={(props) => <NluSkillsEditor {...props}    user={user}   lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}   getAxiosClient={getAxiosClient}  />} 
+                            />
+                            
+                            <Route exact path='/skills/:skillId/publish' render={(props) => <NluSkillsEditor {...props}   user={user}    lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}  publish={true}   getAxiosClient={getAxiosClient} />} 
+                            />
+                            
+                            <Route exact path='/skills/skill/:skillId/publish' render={(props) => <NluSkillsEditor {...props}    user={user}   lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}   publish={true}  getAxiosClient={getAxiosClient} />} 
+                            />
 
-                 <Route exact path='/skills' render={(props) => <NluSkillsEditor {...props} skillFilterValue={skillFilterValue} setSkillFilterValue={setSkillFilterValue}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}    />} 
-                />
-                
-               
-                <Route exact path='/lists' render={
-                    (props) => <ListsManager {...props}   lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}  updateFunctions={updateFunctions}  setPageMessage={setPageMessage}    />}
-                          
-                />
-                <Route exact path='/lists/:listId' render={
-                    (props) => <ListsManager {...props}   lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}  updateFunctions={updateFunctions}  setPageMessage={setPageMessage}   />}
-                          
-                />
-                
-                
-                <Route exact path='/utterances' render={
-                    (props) => <UtterancesManager {...props}   lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}   setPageMessage={setPageMessage}  updateFunctions={updateFunctions}   />}
-                          
-                />
-                <Route exact path='/utterances/:listId' render={
-                    (props) => <UtterancesManager {...props}   lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}   setPageMessage={setPageMessage}  updateFunctions={updateFunctions}  />}
-                          
-                />
-                
-                
-                <Route exact path='/regexps' render={
-                    (props) => <RegexpsManager {...props}   lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}   setPageMessage={setPageMessage}  updateFunctions={updateFunctions}   />}
-                          
-                />
-                <Route exact path='/regexps/:listId' render={
-                    (props) => <RegexpsManager {...props}   lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}   setPageMessage={setPageMessage}  updateFunctions={updateFunctions}  />}
-                />
-                <Route exact path='/help' component={HelpText}     />
-                <Route exact path='/helpimport' component={HelpTextImport}     />
-                <Route exact path='/helpexport' component={HelpTextExport}     />
-                <Route exact path='/helpabout' component={HelpTextAbout}     />
-                
-                 <Route exact path='/search' component={SearchPage}     />
-                <Route exact path='/' component={HelpText} />
-        </Router>
-        <br/>
-        <br/>
-        <br/>
+                             <Route exact path='/skills' render={(props) => <NluSkillsEditor {...props}  user={user}      lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage} getAxiosClient={getAxiosClient}   />} 
+                            />
+                            
+                           
+                            <Route exact path='/lists' render={
+                                (props) => <ListsManager {...props}   lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}  updateFunctions={updateFunctions}  setPageMessage={setPageMessage}    />}
+                                      
+                            />
+                            <Route exact path='/lists/:listId' render={
+                                (props) => <ListsManager {...props}   lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}  updateFunctions={updateFunctions}  setPageMessage={setPageMessage}   />}
+                                      
+                            />
+                            
+                            
+                            <Route exact path='/utterances' render={
+                                (props) => <UtterancesManager {...props}   lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}   setPageMessage={setPageMessage}  updateFunctions={updateFunctions}   />}
+                                      
+                            />
+                            <Route exact path='/utterances/:listId' render={
+                                (props) => <UtterancesManager {...props}   lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}   setPageMessage={setPageMessage}  updateFunctions={updateFunctions}  />}
+                                      
+                            />
+                            
+                            
+                            <Route exact path='/regexps' render={
+                                (props) => <RegexpsManager {...props}   lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}   setPageMessage={setPageMessage}  updateFunctions={updateFunctions}   />}
+                                      
+                            />
+                            <Route exact path='/regexps/:listId' render={
+                                (props) => <RegexpsManager {...props}   lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}   setPageMessage={setPageMessage}  updateFunctions={updateFunctions}  />}
+                            />
+                            <Route exact path='/help' component={HelpText}     />
+                            <Route exact path='/helpimport' component={HelpTextImport}     />
+                            <Route exact path='/helpexport' component={HelpTextExport}     />
+                            <Route exact path='/helpabout' component={HelpTextAbout}     />
+                            
+                            <Route exact path='/search' render={(props) => <SkillSearchPage user={user} getAxiosClient={getAxiosClient}   />} />
+                           
+                            <Route exact path='/' component={HelpText} />
+
+                            <Route path='/login'  render={
+                            (props) => <div style={{width:'90%', marginLeft:'1em', align:'center', marginTop:'1em'}}  ><LoginSystem  
+                               match={props.match}
+                               location={props.location}
+                               history={props.history}
+                               authServer={process.env.REACT_APP_authServer} 
+                                // also need external link to auth server (combind authServerHostname + authServer) for google, github, .. login buttons
+                                authServerHostname={process.env.REACT_APP_authServerHostname} 
+                                // update for login api location, use package.json proxy config to map other host/port to local link
+                               loginButtons={process.env.REACT_APP_loginButtons?process.env.REACT_APP_loginButtons.split(","):[]}
+                                // optional callbacks
+                                logoutRedirect={'/'}
+                               user={user} setUser={setUser} isLoggedIn={isLoggedIn} logout={logout} saveUser={saveUser} startWaiting={startWaiting} stopWaiting={stopWaiting} 
+                             /></div>}
+                             />
+                        </div>
+                </Router>
+              </div>
+                  }}
+
+        </LoginSystemContext>
+   
+                 <br/>
+                <br/>
+                <br/>
     </div>
   );
 }

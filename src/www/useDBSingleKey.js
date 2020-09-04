@@ -63,6 +63,7 @@ function reducer(state, action) {
 
 // state manager with local storage backing
 export default function useDB(database, databaseTable,singleKey) {
+    //console.log(['use db single key', database, databaseTable,singleKey])
     if (!singleKey) singleKey = 'data'
      const [items, dispatch] = useReducer(reducer,[]);
      var localforageStorage = localforage.createInstance({
@@ -70,7 +71,15 @@ export default function useDB(database, databaseTable,singleKey) {
        storeName   : databaseTable ? databaseTable : 'single_key_data',
      });
 
+    
     useEffect(function() {
+        //console.log(['dbsingle key items loaded',items])
+        //loadAll()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    },[])
+    
+    useEffect(function() {
+        //console.log(['dbsingle key items updated',items])
         localforageStorage.setItem(singleKey,items)  
     // eslint-disable-next-line react-hooks/exhaustive-deps
     },[items])
@@ -84,9 +93,12 @@ export default function useDB(database, databaseTable,singleKey) {
     }
 
     function loadAll() {
-        localforageStorage.getItem(singleKey).then(function(res) {
-          //console.log(['loadall',database, databaseTable,singleKey,res])
-          dispatch({ type: "replaceall", items: res ? res : []});
+        return new Promise(function(resolve, reject) {
+            localforageStorage.getItem(singleKey).then(function(res) {
+              //console.log(['loadall',database, databaseTable,singleKey,res])
+              dispatch({ type: "replaceall", items: res ? res : []});
+              resolve(res)
+            })
         })
     }
 
@@ -106,6 +118,14 @@ export default function useDB(database, databaseTable,singleKey) {
             if (isNewItem) {
                 dispatch({ type: "prepend",item: item });
             } else {
+                //var intIndex = parseInt(index)
+                //if (intIndex != NaN) {
+                    //if (intIndex > 0) {
+                        //dispatch({ type: "update",item: item , index: intIndex});
+                    //} else {
+                        //dispatch({ type: "prepend",item: item });
+                    //}
+                //} else 
                 if (items) {
                     var found = null
                     items.map(function(listItem,listItemIndex) {
@@ -119,6 +139,7 @@ export default function useDB(database, databaseTable,singleKey) {
                     } else {
                         dispatch({ type: "prepend",item: item });
                     }
+              
                 } 
             }  
             

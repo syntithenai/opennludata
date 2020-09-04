@@ -22,7 +22,6 @@ export default function UtterancesManagerRow(props) {
                    
                    <div style={{float:'right'}} > 
                         <Button  variant="danger"  size="sm" style={{float:'right', fontWeight:'bold', borderRadius:'15px', marginTop:'0.2em'}} onClick={function(e) {if (window.confirm('Really delete')) {props.deleteItem(splitNumber,(item.id ? item.id : ''))}}} >X</Button>
-               
                     </div>
                    
                   <div style={{float:'left'}}>
