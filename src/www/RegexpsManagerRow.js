@@ -56,7 +56,7 @@ export default function UtterancesManagerRow(props) {
                         
                       
                     <label style={{float:'left', marginLeft:'0.5em'}} ><span style={{float:'left', marginRight:'0.5em'}}>Regular Expression</span> 
-                        <textarea style={{width:'60em',height:'10em'}}  type='text' value={item.synonym} onChange={function(e) {updateExampleSynonym(e.target.value)}} />
+                        <textarea style={{width:'60em',height:'2em'}}  type='text' value={item.synonym} onChange={function(e) {updateExampleSynonym(e.target.value)}} />
                     </label>
                     
                     

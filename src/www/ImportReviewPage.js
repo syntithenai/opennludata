@@ -40,7 +40,8 @@ function ImportReviewPage(props) {
     const {mergeEntities, mergeIntents, mergeUtterances} = useImportMergeFunctions()
     const [skillTitle, setSkillTitle] = useState('')
     
-    
+    const [collatedIntents, setCollatedIntents] = useState({})
+    const [collatedEntities, setCollatedEntities] = useState({})
     const [importData, setImportData] = useState({})
     var localforageStorageImport = localforage.createInstance({
         name: 'nlutool',
@@ -52,33 +53,49 @@ function ImportReviewPage(props) {
              console.log(importData)  
              setImportData(importData)
              if (importData.title) setSkillTitle(importData.title)
+             if (importData.intents) {
+                 var collatedIntents = {}
+                 importData.intents.map(function(intent) {
+                     var key = intent.intent ? intent.intent : '_'
+                     collatedIntents[key] = collatedIntents[key] ? collatedIntents[key] : []
+                     collatedIntents[key].push(intent)
+                    return null
+                 })
+                 setCollatedIntents(collatedIntents)
+             }
+             if (importData.entities) {
+                 var collatedEntities = {}
+                 importData.entities.map(function(entity,index) {
+                     if (entity.tags  && entity.tags.length > 0) {
+                         entity.tags.map(function(tag) {
+                             collatedEntities[tag]  = collatedEntities[tag] ? collatedEntities[tag] : []
+                             collatedEntities[tag].push(index)
+                         })
+                     } else {
+                         collatedEntities["untagged"] = collatedEntities["untagged"] ? collatedEntities["untagged"] : []
+                         collatedEntities["untagged"].push(index)
+                     }
+                     return null
+                 })
+                 setCollatedEntities(collatedEntities)
+             }
         })
     },[])
     const blockStyle={borderTop: '2px solid black', minHeight:'5em'}
     const [visible, setVisible] = useState({})
-    
+    //<pre>{JSON.stringify(importData,null,2)}</pre>
+        
     return <div style={{marginLeft:'1em'}}>
         <h3>Import Review</h3>
-        {JSON.stringify(importData)}
         
-                                
-                                
-         <div id='skill' ><label>Title <input type='text' value={skillTitle} onChange={function(e) {setSkillTitle(e.target.value)}} />        &nbsp;&nbsp;<Button 
-            onClick={function(e) {
-                //mergeIntents([importData.utterances[utterance]], skillTitle)
-                //.then(function(intentCounts) {
-                    ////props.setPageMessage('Updated '+(counts.updated ? counts.updated : 0) +' and created '+(counts.created ? counts.created : 0),4000)
-                //})
-            }}>Import All</Button>
-            </label></div>
-       
-        <Accordion >
-              {/* INTENTS */}
-              <Card>
+          <Accordion >
+
+           {/* INTENTS */}
+              {importData.intents && <Card>
                 <Card.Header>
                   <ContextAwareToggle as={Button} variant="link" eventKey="root-0"  >
                   </ContextAwareToggle>
-                  {importData.intents && <span style={{marginLeft:'2em'}}  id='intents' >{importData.intents ? Object.keys(importData.intents).length : 0} intents <Button 
+                  {importData.intents && <span style={{marginLeft:'2em'}}  id='intents' >{Object.keys(collatedIntents).length } intents with {importData.intents ? Object.keys(importData.intents).length : 0} examples <Button 
                     style={{marginLeft:'2em'}} 
                     onClick={function(e) {
                                     mergeIntents(importData.intents , skillTitle)
@@ -89,19 +106,19 @@ function ImportReviewPage(props) {
                                 }}>Import All Intents</Button></span>}
                 </Card.Header>
                 
-                {<Accordion.Collapse eventKey="root-0"><Card.Body>{importData.intents &&  Object.keys(importData.intents).map(function(intent, key) {
-                    return <Card>
+                {<Accordion.Collapse eventKey="root-0"><Card.Body>{Object.keys(collatedIntents).map(function(intent, key) {
+                    return <Card key={key}>
                         <Accordion >
                                  
                             <Card.Header>
                                <ContextAwareToggle as={Button} variant="link" eventKey={"intent-"+key}  >
                                     </ContextAwareToggle>&nbsp;&nbsp;
                                     
-                              <b>{intent}</b> with {importData.intents[intent].length} examples
+                              <b>{intent}</b> with {collatedIntents[intent].length} examples
                               <Button 
                                 style={{marginLeft:'2em'}} 
                                 onClick={function(e) {
-                                    mergeIntents([importData.intents[intent]], skillTitle)
+                                    mergeIntents(collatedIntents[intent], skillTitle)
                                     .then(function(counts) {
                                         props.setPageMessage('Updated '+(counts.updated ? counts.updated : 0) +' and created '+(counts.created ? counts.created : 0),4000)
                                         // TODO remove item from import data
@@ -111,8 +128,8 @@ function ImportReviewPage(props) {
                             {<Accordion.Collapse eventKey={"intent-"+key}>
                             <Card.Body>
                                    
-                                        <ul>{importData.intents[intent].map(function(example) {
-                                            return <li>{example.example}</li> 
+                                        <ul>{collatedIntents[intent].map(function(example,iikey) {
+                                            return <li key={iikey}>{example.example}</li> 
                                         })}</ul>
                                     
                             </Card.Body>
@@ -124,14 +141,18 @@ function ImportReviewPage(props) {
                 })}
                 </Card.Body></Accordion.Collapse>}
                 
-              </Card>
+              </Card>}
+              
+              
+                             
+  
               
               {/* ENTITIES */}
-              <Card>
+              {importData.entities && <Card>
                 <Card.Header>
                   <ContextAwareToggle as={Button} variant="link" eventKey="root-1"  >
                   </ContextAwareToggle>
-                  {importData.entities && <span style={{marginLeft:'2em'}}  id='intents' >{importData.entities ? Object.keys(importData.entities).length : 0} entities <Button 
+                  {importData.entities && <span style={{marginLeft:'2em'}}  id='entities' >{importData.entities ? Object.keys(importData.entities).length : 0} entities <Button 
                     style={{marginLeft:'2em'}} 
                     onClick={function(e) {
                         mergeEntities(importData.entities, skillTitle)
@@ -140,29 +161,27 @@ function ImportReviewPage(props) {
                         })
                     }}>Import All Entities</Button></span>}
                 </Card.Header>
-                
-                {<Accordion.Collapse eventKey="root-1"><Card.Body>{importData.entities &&  Object.keys(importData.entities).map(function(entity, key) {
-                    return <Card>
+                {<Accordion.Collapse eventKey="root-1"><Card.Body>{Object.keys(collatedEntities).map(function(entityKey, key) {
+                    return <Card key={key}>
                         <Accordion >
-                                 
                             <Card.Header>
                                <ContextAwareToggle as={Button} variant="link" eventKey={"entity-"+key}  >
-                                    </ContextAwareToggle>&nbsp;&nbsp;
+                                </ContextAwareToggle>&nbsp;&nbsp;
                                     
                               {/*<b>{entity}</b> with {Object.values(importData.entities[entity].values).length} examples*/}
                               <Button 
                                 style={{marginLeft:'2em'}} 
                                 onClick={function(e) {
-                                    mergeIntents([importData.entities[entity]], skillTitle)
+                                    mergeEntities(collatedEntities[entityKey].map(function(i) {return importData.entities[i]}), skillTitle)
                                     .then(function(counts) {
                                         props.setPageMessage('Updated '+(counts.updated ? counts.updated : 0) +' and created '+(counts.created ? counts.created : 0),4000)
                                     })
-                                }}>Import {entity}</Button>
+                                }}>Import {entityKey}</Button>
                             </Card.Header>
                             {<Accordion.Collapse eventKey={"entity-"+key}>
                                 <Card.Body>
-                                    <ul>{importData.entities[entity] && importData.entities[entity].values && Object.values(importData.entities[entity].values).map(function(example) {
-                                        return <li>{JSON.stringify(example)}</li> 
+                                    <ul>{collatedEntities[entityKey] && collatedEntities[entityKey].map(function(example,ikey) {
+                                        return <li key={ikey}>{importData.entities[example].value}</li> 
                                     })}</ul>
                                 </Card.Body>
                             </Accordion.Collapse>}
@@ -173,14 +192,18 @@ function ImportReviewPage(props) {
                 })}
                 </Card.Body></Accordion.Collapse>}
                 
-              </Card>
+              </Card>}
               
-            {/* UTTERANCES */}
-              <Card>
+              
+              
+
+
+           {/* UTTERANCES */}
+              {importData.utterances && <Card>
                 <Card.Header>
                   <ContextAwareToggle as={Button} variant="link" eventKey="root-2"  >
                   </ContextAwareToggle>
-                  {importData.utterances && <span style={{marginLeft:'2em'}}  id='intents' >{importData.utterances ? Object.keys(importData.utterances).length : 0} utterances <Button 
+                  {importData.utterances && <span style={{marginLeft:'2em'}}  id='utterances' >{importData.utterances ? Object.keys(importData.utterances).length : 0} utterances <Button 
                     style={{marginLeft:'2em'}} 
                     onClick={function(e) {
                         mergeUtterances(importData.utterances, skillTitle)
@@ -190,45 +213,116 @@ function ImportReviewPage(props) {
                     }}>Import All Utterances</Button></span>}
                 </Card.Header>
                 
-                {<Accordion.Collapse eventKey="root-2"><Card.Body>{importData.utterances &&  Object.keys(importData.utterances).map(function(utterance, key) {
-                    return <Card>
-                        <Accordion >
+                {<Accordion.Collapse eventKey="root-2"><Card.Body>{importData.utterances &&  Object.values(importData.utterances).map(function(utterance, key) {
+                    return <Card key={key}>
                                  
                             <Card.Header>
-                               <ContextAwareToggle as={Button} variant="link" eventKey={"utterance-"+key}  >
-                                </ContextAwareToggle>&nbsp;&nbsp;
-                                    
-                              <b>{utterance}</b> with {importData.utterances[utterance].length} examples
+                              <b>{utterance.value}</b> 
                               <Button 
                                 style={{marginLeft:'2em'}} 
                                 onClick={function(e) {
-                                    mergeIntents([importData.utterances[utterance]], skillTitle)
+                                    mergeUtterances([utterance], skillTitle)
                                     .then(function(counts) {
                                         props.setPageMessage('Updated '+(counts.updated ? counts.updated : 0) +' and created '+(counts.created ? counts.created : 0),4000)
                                     })
-                                }}>Import {utterance}</Button>
+                                }}>Import</Button>
                             </Card.Header>
-                            {<Accordion.Collapse eventKey={"utterance-"+key}>
-                                <Card.Body>
-                                        <ul>{Object.keys(importData.utterances[utterance]).map(function(example) {
-                                            return <li>{example.example}</li> 
-                                        })}</ul>
-                                </Card.Body>
-                            </Accordion.Collapse>}
-                        </Accordion >
+                           
                     </Card>
                           
                     
                 })}
                 </Card.Body></Accordion.Collapse>}
                 
-              </Card>              
-        </Accordion>
+              </Card>   }           
+        </Accordion>    
         
     </div>   
 }
 
 export default ImportReviewPage
+
+
+
+
+
+                   
+         //<div id='skill' ><label>Title <input type='text' value={skillTitle} onChange={function(e) {setSkillTitle(e.target.value)}} />        &nbsp;&nbsp;<Button 
+            //onClick={function(e) {
+                ////mergeIntents([importData.utterances[utterance]], skillTitle)
+                ////.then(function(intentCounts) {
+                    //////props.setPageMessage('Updated '+(counts.updated ? counts.updated : 0) +' and created '+(counts.created ? counts.created : 0),4000)
+                ////})
+            //}}>Import All</Button>
+            //</label></div>
+       
+        //<Accordion >
+         
+              
+            //{/* UTTERANCES */}
+              //<Card>
+                //<Card.Header>
+                  //<ContextAwareToggle as={Button} variant="link" eventKey="root-2"  >
+                  //</ContextAwareToggle>
+                  //{importData.utterances && <span style={{marginLeft:'2em'}}  id='intents' >{importData.utterances ? Object.keys(importData.utterances).length : 0} utterances <Button 
+                    //style={{marginLeft:'2em'}} 
+                    //onClick={function(e) {
+                        //mergeUtterances(importData.utterances, skillTitle)
+                        //.then(function(counts) {
+                            //props.setPageMessage('Updated '+(counts.updated ? counts.updated : 0) +' and created '+(counts.created ? counts.created : 0),4000)
+                        //})
+                    //}}>Import All Utterances</Button></span>}
+                //</Card.Header>
+                
+                //{<Accordion.Collapse eventKey="root-2"><Card.Body>{importData.utterances &&  Object.keys(importData.utterances).map(function(utterance, key) {
+                    //return <Card>
+                        //<Accordion >
+                                 
+                            //<Card.Header>
+                               //<ContextAwareToggle as={Button} variant="link" eventKey={"utterance-"+key}  >
+                                //</ContextAwareToggle>&nbsp;&nbsp;
+                                    
+                              //<b>{utterance}</b> with {importData.utterances[utterance].length} examples
+                              //<Button 
+                                //style={{marginLeft:'2em'}} 
+                                //onClick={function(e) {
+                                    //mergeIntents([importData.utterances[utterance]], skillTitle)
+                                    //.then(function(counts) {
+                                        //props.setPageMessage('Updated '+(counts.updated ? counts.updated : 0) +' and created '+(counts.created ? counts.created : 0),4000)
+                                    //})
+                                //}}>Import {utterance}</Button>
+                            //</Card.Header>
+                            //{<Accordion.Collapse eventKey={"utterance-"+key}>
+                                //<Card.Body>
+                                        //<ul>{Object.keys(importData.utterances[utterance]).map(function(example) {
+                                            //return <li>{example.example}</li> 
+                                        //})}</ul>
+                                //</Card.Body>
+                            //</Accordion.Collapse>}
+                        //</Accordion >
+                    //</Card>
+                          
+                    
+                //})}
+                //</Card.Body></Accordion.Collapse>}
+                
+              //</Card>              
+        //</Accordion>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
  //<Card>
                 //<Card.Header>

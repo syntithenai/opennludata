@@ -3,79 +3,11 @@ import {Button } from 'react-bootstrap'
 import React, {useEffect} from 'react';
 import {Link} from 'react-router-dom'
 import localforage from 'localforage'
-
+import {exportJSON} from './export/exportJSON'
+ 
 export default  function PublishPage(props) {
+ 
 
-    var listsStorage = localforage.createInstance({
-       name: "nlutool",
-       storeName   : "lists",
-     });
-     var utterancesStorage = localforage.createInstance({
-       name: "nlutool",
-       storeName   : "utterances",
-     });
-     
-    useEffect(() => {
-        
-        // entities
-        if (props.currentSkill && props.currentSkill.entities) {
-             listsStorage.getItem('alldata').then(function(dbEntities) {
-                 var usedLists = {}
-                 var filledLists = {}
-                 console.log(props.currentSkill.entities)
-                 if (props.currentSkill && props.currentSkill.entities) {
-                     Object.values(props.currentSkill.entities).map(function(entity) {
-                        if (entity.lists) entity.lists.map(function(list) {
-                            usedLists[list] = true  
-                        })  
-                        return null
-                     })
-                     console.log(['USEDLISTS',usedLists])
-                     Object.keys(usedLists).map(function(useList) {
-                         filledLists[useList] = dbEntities.filter(function(item) {if (item.tags && item.tags.indexOf(useList) !== -1) return true; else return false }).map(function(iitem) {
-                             return {value:iitem.value, synonym: iitem.synonym}  
-                         })
-                     })
-                     console.log(['FILLEDLISTS',filledLists])
-                      var skill = props.currentSkill
-                      skill.entitiesListsData = filledLists
-                      props.setCurrentSkill(skill)
-                      props.forceReload()
-                      console.log(['SETSKILL',JSON.parse(JSON.stringify(skill))])
-                 }
-             })
-            
-        }
-        // utterances
-        if (props.currentSkill && props.currentSkill.utterances) {
-             utterancesStorage.getItem('alldata').then(function(dbUtterances) {
-                 var usedLists = {}
-                 var filledLists = {}
-                 console.log(props.currentSkill.utterances)
-                 if (props.currentSkill && props.currentSkill.utterancesLists) {
-                     Object.values(props.currentSkill.utterancesLists).map(function(utterance) {
-                        usedLists[utterance] = true  
-                        return null
-                     })
-                     console.log(['USEDLISTS',usedLists])
-                     Object.keys(usedLists).map(function(useList) {
-                         filledLists[useList] = dbUtterances.filter(function(item) {if (item.tags && item.tags.indexOf(useList) !== -1) return true; else return false }).map(function(iitem) {
-                             return {value:iitem.value, synonym: iitem.synonym}  
-                         })
-                     })
-                     console.log(['FILLEDLISTS',filledLists])
-                      var skill = props.currentSkill
-                      skill.utterancesListsData = filledLists
-                      props.setCurrentSkill(skill)
-                      props.forceReload()
-                      console.log(['SETSKILL',JSON.parse(JSON.stringify(skill))])
-                 }
-             })
-            
-        }
-        
-    },[])
-     
 
     return <div>
              <Link to={"/skills/skill/"+props.currentSkill.title} ><Button variant="success" style={{float:'right'}} >Back to Skill</Button></Link>
@@ -93,32 +25,36 @@ export default  function PublishPage(props) {
                
                 <div style={{width: '100%',textAlign:'center'}}>
                    {!props.currentSkill._id && <Button variant="success" style={{display:'inline'}} onClick={function(e) {
-                       props.saveItem('Skill',props.currentSkill)
-                       //{_id:props.currentSkill._id, id:props.currentSkill.id, title:props.currentSkill.title, json: JSON.stringify(props.currentSkill)})
-                       .then(function(res) {
-                           console.log(['SSKIL created',res]) 
-                           if (res && res.data && res.data._id) {
-                               props.setCurrentSkill(res.data)
-                               props.setMongoId(res.data._id)
-                               props.setPageMessage('Published',3000)
-                               props.history.push("/skills/skill/"+props.currentSkill.title)
-                               //console.log('updtecurrent skill ',currentSkill)
-                           } 
-                        })  
+                       exportJSON(props.currentSkill).then(function(skillToSave) {
+                           props.saveItem('Skill',skillToSave)
+                           //{_id:props.currentSkill._id, id:props.currentSkill.id, title:props.currentSkill.title, json: JSON.stringify(props.currentSkill)})
+                           .then(function(res) {
+                               console.log(['SSKIL created',res]) 
+                               if (res && res.data && res.data._id) {
+                                   props.setCurrentSkill(res.data)
+                                   props.setMongoId(res.data._id)
+                                   props.setPageMessage('Published',3000)
+                                   props.history.push("/skills/skill/"+props.currentSkill.title)
+                                   //console.log('updtecurrent skill ',currentSkill)
+                               } 
+                            })
+                        })
                     }} >Publish {props.currentSkill.title}</Button>}
                    
                    
                    {props.currentSkill._id && <Button variant="success" style={{display:'inline'}} onClick={function(e) {
-                       props.saveItem('Skill',props.currentSkill)
-                       //{_id:props.currentSkill._id, id:props.currentSkill.id, title:props.currentSkill.title, json: JSON.stringify(props.currentSkill)})
-                       .then(function(res) {
-                           console.log(['SSKIL updated',res]) 
-                           if (res && res.data && res.data._id) {
-                               props.setCurrentSkill(res.data)
-                               props.setMongoId(res.data._id)
-                               props.setPageMessage('Published',3000)
-                               props.history.push("/skills/skill/"+props.currentSkill.title)
-                           } 
+                       exportJSON(props.currentSkill).then(function(skillToSave) {
+                           props.saveItem('Skill',skillToSave)
+                           //{_id:props.currentSkill._id, id:props.currentSkill.id, title:props.currentSkill.title, json: JSON.stringify(props.currentSkill)})
+                           .then(function(res) {
+                               console.log(['SSKIL updated',res]) 
+                               if (res && res.data && res.data._id) {
+                                   props.setCurrentSkill(res.data)
+                                   props.setMongoId(res.data._id)
+                                   props.setPageMessage('Published',3000)
+                                   props.history.push("/skills/skill/"+props.currentSkill.title)
+                               } 
+                            })  
                         })  
                     }} >Publish Again</Button>}
                     

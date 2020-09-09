@@ -27,12 +27,12 @@ export default  function RegexpsManager(props) {
 
     function getItemSize() {
         if (window.innerWidth < 430) {
-               return 520
+               return 260
         // medium screen tablet
         } else if (window.innerWidth <= 768) {
-               return 370
+               return 185
         } else {
-            return 300
+            return 150
         }
     }
 

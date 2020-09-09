@@ -1,39 +1,25 @@
-import React, {useState, useEffect} from 'react';
+import React from 'react';
 import './App.css';
 import {Link} from 'react-router-dom'
-import {Button, Dropdown, Badge,ButtonGroup, ListGroup , Tabs, Tab} from 'react-bootstrap'
+import {Button, Dropdown, ButtonGroup} from 'react-bootstrap'
 import 'bootstrap/dist/css/bootstrap.min.css';
-import useNluEditor from './useNluEditor'
 import exportFormats from './export/index'
-//import {exportJSON} from './export/exportJSON'
-import useDB from './useDB'
-import {generateObjectId, uniquifyArray, RASA, GoogleAssistant, Alexa} from './utils'
-import ReactTags from 'react-tag-autocomplete'
-import SuggestionComponent from './components/SuggestionComponent'
-import TagComponent from './components/TagComponent'
-import DropDownComponent from './components/DropDownComponent'
-import RASATemplates from './export/RASATemplates'
-//import ExportPage from './ExportPage'
 import PublishPage from './PublishPage'
 import { saveAs } from 'file-saver';
-import useRestEndpoint from './useRestEndpoint'
 import NluSkillEditorComponent from './components/NluSkillEditorComponent'
 
 import useSkillsEditor from './useSkillsEditor'
 
-import localforage from 'localforage'
 
 export default  function NluSkillsEditor(props) {
 
     const skillsEditor = useSkillsEditor(Object.assign({},props,{user:props.user, lookups: props.lookups}))
     
-    const {setAlexaEntityType,setGoogleAssistantEntityType,  removeListFromSkillEntity, addListToSkillEntity,
-    currentSkill, setCurrentSkill, skillFilterValue, invocation, setInvocation, entitiesForSkill, collatedItems, collatedCounts, setCurrentIntent, setSkillFilterValue,
-     addRegexp, removeRegexp, setRegexpIntent, setRegexpEntity, addRegexpUtteranceTags, skillKeys,
-     removeUtterance, addUtterance,  addUtteranceList, removeUtteranceList, setMongoId, saveItem, deleteItem, searchItems,
-     newSlot, newSlotValue,    setNewSlotValue,  slots, setRASASlotAutofill, setRASASlotType, deleteSlot ,
-     setRASAActions, setRASASession , setRASAEndpoint , setRASACredentials  ,setRASAStories ,setRASAConfig,
-     filteredItems, currentIntent,  listsForEntity, listsManager, collatedTags, skillMatches, skillUpdatedMatches, setSkillMatches, setSkillUpdatedMatches, setSkill, forceReload
+    const {
+    currentSkill, setCurrentSkill, skillFilterValue, setSkillFilterValue,
+      skillKeys,
+     setMongoId, saveItem, deleteItem, 
+       listsForEntity, skillMatches, skillUpdatedMatches, setSkillMatches, setSkillUpdatedMatches, setSkill, forceReload
      } = skillsEditor
    
     
@@ -66,7 +52,8 @@ export default  function NluSkillsEditor(props) {
           <Dropdown.Menu variant="primary" >
               {exportFormats.map(function(exportFormat,i) {
                   var title = skillFilterValue+'_opennludata_'+exportFormat.name+'_'+Date.now()
-                return <Dropdown.Item variant="primary" key={i} value={exportFormat.name} 
+                  var variant= exportFormat.name === "JSON" ? "success" : "primary"
+                return <Dropdown.Item variant={variant} key={i} value={exportFormat.name} 
                 onClick={function(e) {
                     //var skill = currentSkill
                     //skill.intents = 
@@ -84,7 +71,10 @@ export default  function NluSkillsEditor(props) {
         </Dropdown>
        </>
          }
-         {(currentSkill && !props.publish ) && <Link to={"/skills/skill/"+currentSkill.title+"/publish"} ><Button variant="success" style={{float:'right'}} >Publish</Button></Link>}
+         {(currentSkill && !props.publish && props.user && props.user.token && props.user.token.access_token ) && <Link to={"/skills/skill/"+currentSkill.title+"/publish"} ><Button variant="success" style={{float:'right'}} >Publish</Button></Link>}
+       
+       {(currentSkill && !props.publish && !(props.user && props.user.token && props.user.token.access_token)) && <Link to={"/login/login"} ><Button variant="success" style={{float:'right'}} >Login to Publish</Button></Link>}
+       
        
         {currentSkill && !props.publish && <NluSkillEditorComponent user={props.user} lookups={props.lookups} {...skillsEditor  } />}
         {!currentSkill && <div>

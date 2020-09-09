@@ -31,32 +31,70 @@ function HelpText(props) {
         <HelpMenu/>
         <h1>NLU tool</h1>
         <img src={helpSVG} style={{width: '80%', height:'15em' }} alt="Help Overview"/>
-        <div>This tool is intended to help collect open licensed NLU data. Specifically, it captures sentences with related intent and entity maps.</div>
-        <div>Examples can be tagged for organisation and collected into your own skills for export into various NLU training data formats including RASA, JOVO (Alexa, Google), Mycroft and native JSON.</div>
-        <hr/>
-        <div>This tool is a Progressive Web Application. It works without the Internet. All data is stored locally in your web browser. Source Code at <a target="_new" href="https://github.com/syntithenai/opennludata" >Github</a></div>
-        <div>React window is used to allow the tool to work with tens of thousands of example and entity records.</div>
-        <div>When the Internet is available, <b>this site uses Google Analytics to measure engagement and improve future versions.</b></div>
+<br/><br/>        
+        <div>This tool helps voice developers build vocabularies for their applications by providing <b>import and export of various NLU training data formats</b>, and a <b>searchable database of community submitted, open licensed skills.</b>
+        </div>
+
        <hr/>
        <p><Link to="/search" ><Button>Search </Button></Link> the community database of NLU example records.</p>
          <p><Link to="/sources" ><Button>Sources</Button></Link> to edit and import skills, pasted text or uploaded files.</p>
         <p><Link to="/examples" ><Button>Organise</Button></Link> your examples using tags and cleanup untagged examples.</p>
         <p><Link to="/skills" ><Button>Skills</Button></Link> to add platform metadata for export in various training formats or publishing to the community database.</p>
-        </div>
+        
+        <hr/>
+        <h3>Features</h3>
+        <ul>
+            <li>Search for open licenced training data submitted by the community</li>
+            <li>Import training data from text files, RASA , JOVO (Alexa, Google), Mycroft and native JSON.</li>
+            <li>Edit training data and tag entities in intent examples</li>
+            <li>Filtering, tagging, multiple selection and bulk operations to quickly collect training data into an exportable skill</li>
+            <li>Virtual rendering with react-window is used to allow fast rendering of lists of intents and entities with many thousands of values</li>
+            <li>Export training data suitable for RASA, JOVO and Mycroft</li>
+            <li>Publish your skill to the community repository under an open source license</li>
+            
+        </ul>
+        <ul>
+            <li>This tool is a Progressive Web Application. Most features work without the Internet.</li>
+            <li>MIT Open Source licensed code at <a target="_new" href="https://github.com/syntithenai/opennludata" >Github</a></li>
+            <li>Cross platform nodejs server</li>
+            <li>Published skills are committed to Github to ensure long term availability of collected data.</li>
+            <li>To ensure ongoing availability, the web pages are hosted with github pages and the search interface relies on static data generated during publishing so a database/backend server is only required when publishing)</li>
+        </ul>
+        
+        
+        
+        <div>When the Internet is available, <b>this site uses Google Analytics to measure engagement and improve future versions.</b></div>
+        
+        
+    </div>
 }
 
 function HelpTextImport(props) { 
     return <div style={{marginLeft:'0.5em'}}>
     <HelpMenu/>
             <h1>Importing Data</h1>
-            <div>This tool can import files two types of data, entities and intents.
-            <ul>
-                <li><h3>Entity Values</h3>
+            <div>This tool can import files a variety of file formats and allows you to cherry pick intents, entities and utterances.
+            <br/>
+           <ul>
+                <li><h3>Text</h3>
                     
                 </li>
-                <li><h3>Intent Examples</h3>
+                <li><h3>JSON</h3>
                 
                 </li>
+                <li><h3>OpenNlu JSON</h3>
+                
+                </li>
+                <li><h3>RASA</h3>
+                
+                </li>
+                <li><h3>JOVO</h3>
+                
+                </li>
+                <li><h3>Mycroft</h3>
+                
+                </li>
+
             </ul>
             
             </div>
@@ -71,15 +109,25 @@ function HelpTextAbout(props) {
 <br/>
             <div><h3>Bugs/Feedback</h3>Please share any feedback on the <a target="_new" href="https://github.com/syntithenai/opennludata/issues" >Github Issues Page</a></div>
             <br/>
-             <div>The source code for this tools is available under an MIT Open Source Licence. It is built using create-react-app with localForage for cross platform local persistence.</div>
+             <div>The <a target="_new" href="https://github.com/syntithenai/opennludata" >source code</a> for this tool is available under an MIT Open Source Licence. </div>
             <hr/>
-            <div>MIT Licenced Open Source Licence  - CopyLeft Steve Ryan (syntithenai@gmail.com)</div>
             
              <div>Icons from  The Noun Project and others.</div>
              <ul>
              <li>Man Singing by Gan Khoon Lay from  <a href='https://thenounproject.com/term/man-singing/642288/' target="_new" >The Noun Project</a></li>
              <li>Head by hunotika from <a href='https://thenounproject.com/term/head/184237/' target="_new" >The Noun Project</a></li>
              </ul>
+             <hr/>
+              <div>Using many open source libraries including</div>
+                <ul>
+                <li><a target="_new" href="https://www.npmjs.com/package/create-node-app" >create-node-app</a> </li>
+                <li><a target="_new" href="https://github.com/syntithenai/react-express-oauth-login-system" >react-express-oauth-login-system</a> for oauth based login with support for social providers</li>
+                <li><a target="_new" href="https://github.com/localForage/localForage" >localForage</a> for cross platform local persistence.</li>
+                <li><a target="_new" href="https://github.com/florianholzapfel/express-restify-mongoose" >express-restify-mongoose</a> to simplify API development.</li>
+                <li><a target="_new" href="https://github.com/bvaughn/react-window" >react-window</a> for virtual rendering, allowing for lists with many thousands of elements.</li>
+                <li><a target="_new" href="https://github.com/josdejong/jsoneditor" >JSON editor</a> for editing uploaded sources.</li>
+                <li>react, bootstrap, express, mongodb and mongoose</li>
+                </ul>
             <hr/>
         </div>
 }

@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import localforage from 'localforage'
 import useDBSingleKey from './useDBSingleKey'
-import {uniquifyArray} from './utils'
+import {uniquifyArray, generateObjectId} from './utils'
 import {useParams, useHistory} from 'react-router-dom'
 
 function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
@@ -210,11 +210,11 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
          if (items) {
             var newItems = []
             items.map(function(item,i) {
-                if (item && item.id) {
+                if (item) {
                    var newItem = item
                    newItem.isSelected = false
                    newItems.push(newItem)
-                }
+                } 
                return null
             })
             setItems(newItems)
@@ -222,14 +222,14 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
         }
     }
     
-     function selectAll() {
+    function selectAll() {
+         console.log(['SELECTALL',items])
          if (items) {
             var newItems = []
             items.map(function(item,i) {
                 if (item && item.id) {
                     var newItem = item
-                       
-                    if (filteredItemsKeys[item.id]) {
+                    if (item.id && filteredItemsKeys[item.id]) {
                        newItem.isSelected = true
                        newItems.push(newItem)
                     } else {
@@ -242,6 +242,8 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
             setItems(newItems)
         }
     }
+    
+    
     
      function skillSetAll(val) {
          //console.log(['set skill all',tagAllValue,val])
@@ -327,13 +329,13 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
         if (skill && skill.trim().length > 0) skills.push(skill)
         var newIntent=''
         if (intent && intent.trim().length > 0) newIntent = intent
-        saveItemWrap({id:null, example:'', intent:newIntent, skills:skills,tags:[]},0)
+        saveItemWrap({id:generateObjectId(), example:'', intent:newIntent, skills:skills,tags:[]},0)
         console.log(['SAVED NEW EXAMPLE',{id:null, example:'', intent:newIntent, skills:skills,tags:[]}])
     }
     
     function saveItemWrap(item,index) {
         saveItem(item,index)
-        listRef.current.resetAfterIndex(index);
+        if (listRef && listRef.current) listRef.current.resetAfterIndex(index);
         updateLookups(items)
     }
     

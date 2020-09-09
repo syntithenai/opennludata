@@ -1,5 +1,5 @@
 import React from 'react';
-import {useState, useEffect} from 'react';
+import {useState} from 'react';
 import {BrowserRouter as  Router, Route, Link  } from 'react-router-dom'
 import LocalStorageUploadManager from './LocalStorageUploadManager'
 import ListsManager from './ListsManager'
@@ -7,11 +7,11 @@ import UtterancesManager from './UtterancesManager'
 import RegexpsManager from './RegexpsManager'
 import NluExampleEditor from './NluExampleEditor'
 import NavbarComponent from './components/NavbarComponent'
-import TestComponent from './components/TestComponent'
+//import TestComponent from './components/TestComponent'
 import {HelpText, HelpTextImport, HelpTextExport, HelpTextAbout} from './components/Components'
 import NluImportEditor from './NluImportEditor'
 import NluSkillsEditor from './NluSkillsEditor'
-import SearchPage from './SearchPage'
+//import SearchPage from './SearchPage'
 import ImportReviewPage from './ImportReviewPage'
 import SkillSearchPage from './SkillSearchPage'
 import {Button} from 'react-bootstrap'
@@ -58,6 +58,7 @@ function App() {
     const [utteranceListsLookups, setUtteranceListsLookups] = useState([])
     const [utteranceTagsLookups, setUtteranceTagsLookups] = useState([])
     const [regexpsLookups, setRegexpsLookups] = useState([])
+    const [regexpsCompleteLookups, setRegexpsCompleteLookups] = useState([])
     const [regexpListsLookups, setRegexpListsLookups] = useState([])
     const [regexpTagsLookups, setRegexpTagsLookups] = useState([])
     
@@ -74,7 +75,7 @@ function App() {
     
     
     // search bar
-    const [skillFilterValue, setSkillFilterValue] = useState('')
+   // const [skillFilterValue, setSkillFilterValue] = useState('')
   
        
     function startWaiting() {
@@ -94,11 +95,12 @@ function App() {
            name: "nlutool",
            storeName   : "regexps",
          });
-         var tally = 0;
-         var selectedTally = 0;
          utteranceStorage.getItem('alldata', function (err,utterances) {
+                 var tally = 0;
+                 var selectedTally = 0;
                 var utteranceLists={}
                 var utteranceIndex={}
+                var utteranceCompleteIndex={}
                 var utteranceTags={}
                 //console.log(['UPDATE UTTERANCES',err,utterances])
                 if (Array.isArray(utterances)) {
@@ -110,6 +112,7 @@ function App() {
                         tally += 1;
                          if (utterance.value) {
                              utteranceIndex[utterance.value]=true
+                             utteranceCompleteIndex[utterance.value]={value: utterance.value, synonym: utterance.synonym}
                          }
                          if (utterance.synonym) {
                              utterance.synonym.split("\n").map(function(synonym) {
@@ -128,6 +131,7 @@ function App() {
                     setRegexTally(tally)
                     setSelectedRegexTally(selectedTally)
                     setRegexpsLookups(Object.keys(utteranceIndex))
+                    setRegexpsCompleteLookups(Object.values(utteranceCompleteIndex))
                     setRegexpTagsLookups(Object.keys(utteranceTags))
                     setRegexpListsLookups(Object.keys(utteranceLists))
                 }
@@ -188,90 +192,106 @@ function App() {
   
     }
 
-    function updateLists(lists) {
-        console.log(['UPDATELISTS',lists])
-        if (lists) {
-            var newSelectedLists = {}
-            var newLists = {}
-            var tally = 0;
-            var selectedTally = 0;
-            lists.map(function(listItem) {
-                if (listItem.isSelected) {
-                         selectedTally += 1
-                }
-                tally += 1;
-                if (listItem && listItem.tags && listItem.tags.length > 0) {
-                    
-                    listItem.tags.map(function(tag) {
-                        if (tag && tag.trim().length > 0) {
-                            if (listItem.isSelected) {
-                                 newLists[tag] = (newLists[tag] > 0) ? newLists[tag] + 1 : 1
-                                 newSelectedLists[tag] = (newSelectedLists[tag] > 0) ? newSelectedLists[tag] + 1 : 1
-                            } else {
-                                newLists[tag] = (newLists[tag] >0) ? newLists[tag] + 1 : 1
+    function updateLists() {
+        var listsStorage = localforage.createInstance({
+           name: "nlutool",
+           storeName   : "lists",
+         });
+         listsStorage.getItem('alldata', function (err,lists) {
+            console.log(['UPDATELISTS',lists])
+            if (lists) {
+                var newSelectedLists = {}
+                var newLists = {}
+                var tally = 0;
+                var selectedTally = 0;
+                lists.map(function(listItem) {
+                    if (listItem.isSelected) {
+                             selectedTally += 1
+                    }
+                    tally += 1;
+                    if (listItem && listItem.tags && listItem.tags.length > 0) {
+                        
+                        listItem.tags.map(function(tag) {
+                            if (tag && tag.trim().length > 0) {
+                                if (listItem.isSelected) {
+                                     newLists[tag] = (newLists[tag] > 0) ? newLists[tag] + 1 : 1
+                                     newSelectedLists[tag] = (newSelectedLists[tag] > 0) ? newSelectedLists[tag] + 1 : 1
+                                } else {
+                                    newLists[tag] = (newLists[tag] >0) ? newLists[tag] + 1 : 1
+                                }
                             }
-                        }
-                        return null
-                    })
-                }
-                return null
-            })
-            console.log(['UPDATELISTS',tally, selectedTally])
-            setListTally(tally)
-            setSelectedListTally(selectedTally)
-            setSelectedListTallyByList(newSelectedLists)
-            setListTallyByList(newLists)
-            setListsLookups(Object.keys(newLists))
-            //console.log('updated lists', newLists)
-        }
+                            return null
+                        })
+                    }
+                    return null
+                })
+                console.log(['UPDATELISTS',tally, selectedTally])
+                setListTally(tally)
+                setSelectedListTally(selectedTally)
+                setSelectedListTallyByList(newSelectedLists)
+                setListTallyByList(newLists)
+                setListsLookups(Object.keys(newLists))
+                //console.log('updated lists', newLists)
+            }
+        })
     }
 
-    function updateLookups(items) {
-        console.log(['UPDATELOOKUPS',items])
-        if (items && items.length > 0) {
-            var tags = {}
-            var intents = {}
-            var entities = {}
-            var skills = {}
-            var selected = 0;
-            items.map(function(item) {
-                if (item) {
-                    if (item.isSelected) selected = selected + 1;
-                   intents[item.intent] = true
-                   if (item.tags && item.tags.length > 0) {
-                       item.tags.map(function(tag) {
-                          tags[tag] = true  
-                          return null
-                       })
-                   }
-                   if (item.skills && item.skills.length > 0) {
-                       item.skills.map(function(skill) {
-                          skills[skill] = true  
-                          return null
-                       })
-                   }
-                   if (item.entities && item.entities.length > 0) {
-                       item.entities.map(function(entity) {
-                          if (entity.type) {
-                              entities[entity.type] = true  
-                          }
-                          return null
-                       })
-                   }
+    function updateLookups() {
+        var examplesStorage = localforage.createInstance({
+           name: "nlutool",
+           storeName   : "examples",
+         });
+        examplesStorage.getItem('alldata', function (err,items) {
+            console.log(['UPDATELOOKUPS',items])
+            if (items && items.length > 0) {
+                var tags = {}
+                var intents = {}
+                var entities = {}
+                var skills = {}
+                var selected = 0;
+                items.map(function(item) {
+                    if (item) {
+                        //console.log(['UPDATELOOKUPS single',item])
+                        if (item.isSelected) selected = selected + 1;
+                       intents[item.intent] = true
+                       if (item.tags && item.tags.length > 0) {
+                           item.tags.map(function(tag) {
+                              tags[tag] = true  
+                              return null
+                           })
+                       }
+                       if (item.skills && item.skills.length > 0) {
+                           item.skills.map(function(skill) {
+                              skills[skill] = true  
+                              return null
+                           })
+                       }
+                       if (item.entities && item.entities.length > 0) {
+                           item.entities.map(function(entity) {
+                              if (entity.type) {
+                                  entities[entity.type] = true  
+                              }
+                              return null
+                           })
+                       }
+                    }
+                    return null
+                })
+                const distinct = function(value,index,self) {
+                    return self.indexOf(value) === index;
                 }
-                return null
-            })
-            const distinct = function(value,index,self) {
-                return self.indexOf(value) === index;
+                console.log(['UPDATELOOKUPS single res',intents,entities])
+                    
+                setIntentLookups([].concat(Object.keys(intents),intentLookups).filter(distinct))
+                setEntityLookups([].concat(Object.keys(entities),entityLookups).filter(distinct))
+                setTagLookups([].concat(Object.keys(tags),tagLookups).filter(distinct))
+                setSkillLookups([].concat(Object.keys(skills),skillLookups).filter(distinct))
+                setSelectedTally(selected)
+                console.log(entityLookups, intentLookups)
             }
-            setIntentLookups([].concat(Object.keys(intents),intentLookups).filter(distinct))
-            setEntityLookups([].concat(Object.keys(entities),entityLookups).filter(distinct))
-            setTagLookups([].concat(Object.keys(tags),tagLookups).filter(distinct))
-            setSkillLookups([].concat(Object.keys(skills),skillLookups).filter(distinct))
-            setSelectedTally(selected)
-        }
+        })
     }
-    const lookups = {regexpTagsLookups:regexpTagsLookups,regexpsLookups:regexpsLookups,regexpListsLookups:regexpListsLookups,    utteranceTagsLookups:utteranceTagsLookups,utterancesLookups:utterancesLookups,utteranceListsLookups:utteranceListsLookups,intentLookups,entityLookups,tagLookups,skillLookups, selectedTally, listsLookups, listTally, selectedListTally, listTallyByList, selectedListTallyByList, utteranceTally, selectedUtteranceTally,regexTally, selectedRegexTally}
+    const lookups = {regexpTagsLookups:regexpTagsLookups,regexpsLookups:regexpsLookups,regexpListsLookups:regexpListsLookups,  regexpsCompleteLookups,  utteranceTagsLookups:utteranceTagsLookups,utterancesLookups:utterancesLookups,utteranceListsLookups:utteranceListsLookups,intentLookups,entityLookups,tagLookups,skillLookups, selectedTally, listsLookups, listTally, selectedListTally, listTallyByList, selectedListTallyByList, utteranceTally, selectedUtteranceTally,regexTally, selectedRegexTally}
     const updateFunctions = {updateLookups, updateLists, updateUtterances, updateRegexps}
                 
   return (
@@ -290,11 +310,6 @@ function App() {
                             }}
                         />
                         <div style={{marginLeft:'0.5em'}} >
-                            <Route exact path='/test' render={
-                                (props) => {
-                                    return <TestComponent waiting={waiting} user={user} isLoggedIn={isLoggedIn} history={props.history} message={pageMessage} setPageMessage={setPageMessage}  getAxiosClient={getAxiosClient}  />
-                                }}
-                            />
                             
                             
                             <Route exact path='/menu' component={SiteMenu} />

@@ -67,6 +67,7 @@ loginSystem(config).then(function(login) {
                 req.body.created_date = new Date().getTime();
                 req.body.updated_date = new Date().getTime();
                 req.body.user = loginUser._id
+                req.body.userAvatar = loginUser.avatar
                 console.log(['PRECREATE ',req.body.tags])
                 if (req.body.tags) {
                     skillTagModel = mongoose.model('SkillTags',skillTagsSchema)
@@ -85,6 +86,8 @@ loginSystem(config).then(function(login) {
             console.log(['PREUPDATE',loginUser])
             if (loginUser&& loginUser._id) { 
                 req.body.updated_date = new Date().getTime();
+                req.body.user = loginUser._id
+                req.body.userAvatar = loginUser.avatar
                 console.log(['PREUPDATE ',req.body.tags])
                 if (req.body.tags) {
                     skillTagModel = mongoose.model('SkillTags',skillTagsSchema)

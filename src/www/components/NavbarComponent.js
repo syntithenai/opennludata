@@ -57,7 +57,7 @@ export default function NavbarComponent(props) {
 
     return <Navbar  bg="dark" variant="dark"  style={{width:'100%', border:''}} >
         
-        {props.message && <div style={{position:'fixed',top:100,left:window.innerWidth ? (window.innerWidth /2 - 40) : 100, border: '2px solid red', background: 'pink', padding: '0.5em', minWidth:'400px' ,borderRadius:'5px'}} >
+        {props.message && <div style={{position:'fixed',top:100,left:window.innerWidth ? (window.innerWidth /2 - 40) : 100, border: '2px solid red', background: 'pink', padding: '0.5em', minWidth:'400px' ,borderRadius:'5px', zIndex:999}} >
             <Button variant="danger" size="sm"  style={{float:'right', fontWeight: 'bold',borderRadius:'20px',marginLeft:'1em'}} onClick={function(e) {props.setPageMessage('')}}>X</Button>{props.message} 
         </div>}
         

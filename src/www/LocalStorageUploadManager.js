@@ -42,7 +42,8 @@ function FilesList(props) {
         })
      }
      var showError = function(e) {
-         props.setPageMessage(e.toString(),2000)
+         if (e.error) props.setPageMessage(e.error,2000)
+         else props.setPageMessage(e.toString(),2000)
      }
      
     function downloadZip(item) {
@@ -54,13 +55,14 @@ function FilesList(props) {
             })
         });
      }
+    
      
      if (items) {
-       const list = Object.values(items).sort(function(a,b) {if (a.updated_date < b.updated_date) return 1; else return -1}).map(function(item,i) {
+       const list = Object.values(items).map(function(item,i) {
             return <ListGroup.Item  key={i}  >
 
                    
-                   <Button style={{float:'right', marginLeft:'0.5em'}} variant="danger" onClick={function(e) {if(window.confirm('Really delete source '+items[i].title)) props.deleteItem(i)}} >Delete</Button>
+                   <Button style={{float:'right', marginLeft:'0.5em'}} variant="danger" onClick={function(e) {if(window.confirm('Really delete source '+item.title+'-'+i)) props.deleteItem(i)}} >Delete</Button>
                     
                     {item.fileType.endsWith(".zip") && <Button style={{float:"right", marginLeft:'0.5em'}} onClick={function() {downloadZip(item)}}>Download</Button>}
 
@@ -70,16 +72,16 @@ function FilesList(props) {
                    {!item.fileType.endsWith('.zip') && <Link to={props.match.url+"/text/"+item.id} ><Button style={{float:'right',marginLeft:'0.5em'}}  >Edit</Button></Link>}
                    
                    {item.fileType === "text" && <div className="textimportbuttons" >
-                       <Button style={{float:'right', marginLeft:'0.5em'}} variant="success" onClick={function(e) { props.importFunctions.importIntents(items[i]).then(saveSkill).catch(showError)  }}    >Import Intents</Button>
-                       <Button style={{float:'right', marginLeft:'0.5em'}} variant="success" onClick={function(e) { props.importFunctions.importEntities(items[i]).then(saveSkill).catch(showError)  }}    >Import Entities</Button>
-                       <Button style={{float:'right', marginLeft:'0.5em'}} variant="success" onClick={function(e) { props.importFunctions.importUtterances(items[i]).then(saveSkill).catch(showError)  }}    >Import Utterances</Button>
+                       <Button style={{float:'right', marginLeft:'0.5em'}} variant="success" onClick={function(e) { props.importFunctions.importIntents(item).then(saveSkill).catch(showError)  }}    >Import Intents</Button>
+                       <Button style={{float:'right', marginLeft:'0.5em'}} variant="success" onClick={function(e) { props.importFunctions.importEntities(item).then(saveSkill).catch(showError)  }}    >Import Entities</Button>
+                       <Button style={{float:'right', marginLeft:'0.5em'}} variant="success" onClick={function(e) { props.importFunctions.importUtterances(item).then(saveSkill).catch(showError)  }}    >Import Utterances</Button>
                     </div>}
                     
                     {item.fileType !== "text" && <>
                        {/* Import whatever is available */}
                        {<Button style={{float:'right', marginLeft:'0.5em'}} variant="success" 
                            onClick={function(e) { 
-                               props.importFunctions.importAll(items[i])
+                               props.importFunctions.importAll(item)
                                // save import results and redirect to import overview
                                .then(saveSkill).catch(showError) 
                             }}    >Import</Button>}
@@ -103,7 +105,7 @@ export default function LocalStorageUploadManager(props) {
     //console.log('man')
     //console.log(props)
      
-    var importFunctions = useImportFunctions()
+    var importFunctions = useImportFunctions(props.setPageMessage)
      
 
      const {loadAll, saveItem, deleteItem ,items, findKeyBy, findBy} = useDB('nlutool','sources');
@@ -131,7 +133,7 @@ export default function LocalStorageUploadManager(props) {
                             //item.data = new File([item.data],'application/zip')
                         //}
                         console.log(['SET ITEM TYPE', item.fileType])
-                        saveItem(item)
+                        saveItem(item,0)
                     } else {
                         props.setPageMessage('Invalid file type')
                         setTimeout(function() {

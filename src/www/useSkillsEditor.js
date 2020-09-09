@@ -1,11 +1,11 @@
-import React, {useState, useEffect} from 'react';
+import {useState, useEffect} from 'react';
 import {useParams, useHistory} from 'react-router-dom'
 
-import useNluEditor from './useNluEditor'
-import exportFormats from './export/index'
+//import useNluEditor from './useNluEditor'
+//import exportFormats from './export/index'
 import useDB from './useDB'
-import {generateObjectId, uniquifyArray, RASA, GoogleAssistant, Alexa} from './utils'
-import { saveAs } from 'file-saver';
+import {generateObjectId, uniquifyArray} from './utils'
+//import { saveAs } from 'file-saver';
 import useRestEndpoint from './useRestEndpoint'
 import localforage from 'localforage'
 
@@ -39,7 +39,7 @@ export default function useSkillsEditor(props) {
      });
     const token = props.user && props.user.token && props.user.token.access_token ? props.user.token.access_token : ''
     const axiosClient = props.getAxiosClient(token)
-    const {saveItem, deleteItem, getItem, searchItems} = useRestEndpoint(axiosClient,"http://localhost:5000/api/v1/")
+    const {saveItem, deleteItem, searchItems} = useRestEndpoint(axiosClient,"http://localhost:5000/api/v1/")
 
     const [invocation, setInvocation] = useState('')
     const [mongoId, setMongoId] = useState('')
@@ -64,6 +64,10 @@ export default function useSkillsEditor(props) {
     // load skill on init
     useEffect(() => {
         loadSkill()
+         //props.updateFunctions.updateLists(listsManager.items[0])
+            //props.updateFunctions.updateRegexps(listsManager.items[0])
+            //props.updateFunctions.updateUtterances(listsManager.items[0])
+            //props.updateFunctions.updateLookups(listsManager.items[0])
     },[])
         
     //// load list lookups
@@ -71,6 +75,9 @@ export default function useSkillsEditor(props) {
         if (listsManager.items.length > 0) { 
             //console.log(['UPD ITEMS',listsManager.items,listsManager.items[0]])
             props.updateFunctions.updateLists(listsManager.items[0])
+            //props.updateFunctions.updateRegexps(listsManager.items[0])
+            //props.updateFunctions.updateUtterances(listsManager.items[0])
+            props.updateFunctions.updateLookups(listsManager.items[0])
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     },[listsManager.items])
@@ -112,7 +119,7 @@ export default function useSkillsEditor(props) {
         //
         var skill = currentSkill
         if (skill && skill.title && skill.title.length > 0) {
-            // merge in entity values
+            // merge in latest entity values derived from intents
             if (entitiesForSkill) {
                 Object.keys(entitiesForSkill).map(function(entity) {
                    if (skill.entities && skill.entities[entity]) {
@@ -156,12 +163,14 @@ export default function useSkillsEditor(props) {
                     if (item.skills) {
                         item.skills.map(function(skill) {
                             skillKeys[skill] = true
+                            return null
                         })
                     }
                     // filter 
                     if (skillFilterValue && item.skills && item.skills.indexOf(skillFilterValue) !== -1) {
                         filteredItems.push(item)
                     }
+                    return null
                 })
                 setSkillKeys(Object.keys(skillKeys))
                 setFilteredItems(filteredItems)
@@ -178,13 +187,14 @@ export default function useSkillsEditor(props) {
                         if (newSkill.title) findOnlineSkill(props.user,newSkill) 
                         var [intents, tags] = indexIntentsAndTags(skill,filteredItems)
                         newSkill.intents = intents
-                        newSkill.tags = tags    
+                       // newSkill.tags = tags    
                         setCurrentSkill(newSkill)
                         setInvocation(newSkill.invocation)
                         setMongoId(newSkill._id)
                         listsManager.loadAll()
                         props.updateFunctions.updateUtterances()
                         props.updateFunctions.updateRegexps()
+                        props.updateFunctions.updateLookups()
                         //console.log(['LOADED LOCAL SKILL ',JSON.parse(JSON.stringify(newSkill))])
                         forceReload(newSkill)
                     })
@@ -215,6 +225,7 @@ export default function useSkillsEditor(props) {
                             // matching skill OK
                             //setSkillMatches([res.data[0]])
                         } 
+                        return null
                     })
                     if (!found) {
                         // potential match
@@ -508,12 +519,12 @@ export default function useSkillsEditor(props) {
     }  
         
     function addRegexp(regexp) {
-       
+        console.log(['ADDREGEX',regexp])
         if (currentSkill && regexp) {
             var skill = currentSkill;
             if (!Array.isArray(skill.regexps)) skill.regexps=[]
-            skill.regexps.push(regexp.name)
-            skill.regexps = uniquifyArray(skill.regexps)
+            skill.regexps.push({name: regexp.name, synonym: regexp.synonym })
+            //skill.regexps = uniquifyArray(skill.regexps)
             setCurrentSkill(skill)  
             //// if this is a new regexp, add it to the main database
             //if (!props.lookups.regexpListsLookups[regexp.name] && !props.lookups.regexpsLookups[regexps.name]) {
@@ -547,26 +558,34 @@ export default function useSkillsEditor(props) {
     
     function setRegexpIntent(index, intent) {
         console.log(['set reg intent',index, intent])
-        //if (typeof index === "number" && currentSkill && currentSkill.regexps && currentSkill.regexps.length > index) {
-            //var skill = currentSkill;
-            //skill.regexps = [...skill.regexps.slice(0,index),...skill.regexps.slice(index+1)]
-            //setCurrentSkill(skill)  
-            //console.log('RASA')
-            //console.log(skill)
-            //forceReload()
-        //}
+        if (typeof index === "number" && currentSkill && currentSkill.regexps && currentSkill.regexps.length > index) {
+            var skill = currentSkill;
+            skill.regexps = skill.regexps ? skill.regexps : []
+            var key = (!isNaN(parseInt(index)) ? parseInt(index) : 0)
+            var regexp = skill.regexps[key] ? skill.regexps[key] : {}
+            regexp.intent = intent
+            skill.regexps[key] = regexp
+            setCurrentSkill(skill)  
+            console.log('RASA')
+            console.log(skill)
+            forceReload()
+        }
     }
     
     function setRegexpEntity(index,entity) {
         console.log(['set reg entity',index, entity])
-        //if (typeof index === "number" && currentSkill && currentSkill.regexps && currentSkill.regexps.length > index) {
-            //var skill = currentSkill;
-            //skill.regexps = [...skill.regexps.slice(0,index),...skill.regexps.slice(index+1)]
-            //setCurrentSkill(skill)  
-            //console.log('RASA')
-            //console.log(skill)
-            //forceReload()
-        //}
+        if (typeof index === "number" && currentSkill && currentSkill.regexps && currentSkill.regexps.length > index) {
+            var skill = currentSkill;
+            skill.regexps = skill.regexps ? skill.regexps : []
+            var key = (parseInt(index) != NaN ? parseInt(index) : 0)
+            var regexp = skill.regexps[key] ? skill.regexps[key] : {}
+            regexp.entity = entity
+            skill.regexps[key] = regexp
+            setCurrentSkill(skill)  
+            console.log('RASA')
+            console.log(skill)
+            forceReload()
+        }
     }
     
     function addUtterance(utterance) {
@@ -631,19 +650,43 @@ export default function useSkillsEditor(props) {
             console.log(skill)
             forceReload()
         }
-    }    
+    }  
+    
+    function addSkillTag(tag) {
+          console.log(['ADD skill tag',tag, currentSkill])
+          if (currentSkill && tag) {
+            var skill = currentSkill;
+            if (!Array.isArray(skill.tags)) skill.tags=[]
+            skill.tags.push(tag.name)
+            skill.utterancesLists = uniquifyArray(skill.utterancesLists).sort()
+            setCurrentSkill(skill)  
+            forceReload()
+       } 
+    }
+     
+    function removeSkillTag(index) {
+          console.log(['rm skill tag',index, currentSkill])
+        if (typeof index === "number" && currentSkill && currentSkill.tags) {
+            var skill = currentSkill;
+            skill.tags = [...skill.tags.slice(0,index),...skill.tags.slice(index+1)]
+            setCurrentSkill(skill)  
+            forceReload()
+        }
+    }  
+    
 
+   
     function forceReload(skill) {
         var thisSkill = skill && skill.id ? skill : (currentSkill && currentSkill.id ? currentSkill : {})
         setListsForEntity(JSON.stringify([thisSkill._id,thisSkill.entitiesListsData,thisSkill.utterancesListsData,thisSkill.rasa,
-        thisSkill.jovo,thisSkill.mycroft,thisSkill.entities,thisSkill.utterances,thisSkill.utterancesLists]))  
+        thisSkill.jovo,thisSkill.mycroft,thisSkill.entities,thisSkill.utterances,thisSkill.utterancesLists, thisSkill.regexps, thisSkill.tags]))  
     }
         
     //addRegexpUtteranceTags,
     return {setAlexaEntityType,setGoogleAssistantEntityType,  removeListFromSkillEntity, addListToSkillEntity,
     currentSkill,setCurrentSkill,  skillFilterValue, invocation, setInvocation, entitiesForSkill, collatedItems, collatedCounts, setCurrentIntent, setSkillFilterValue,
      addRegexp, removeRegexp, setRegexpIntent, setRegexpEntity, setMongoId, saveItem, deleteItem, searchItems,
-     removeUtterance, addUtterance,  addUtteranceList, removeUtteranceList, skillKeys,
+     removeUtterance, addUtterance,  addUtteranceList, removeUtteranceList, skillKeys, addSkillTag, removeSkillTag,
      newSlot, newSlotValue,    setNewSlotValue,  slots: props.slots, setRASASlotAutofill, setRASASlotType, deleteSlot ,
      setRASAActions, setRASASession , setRASAEndpoint , setRASACredentials  ,setRASAStories ,setRASAConfig, 
      filteredItems, currentIntent, listsForEntity, listsManager, collatedTags, skillMatches, skillUpdatedMatches,setSkillMatches, setSkillUpdatedMatches, setSkill, forceReload

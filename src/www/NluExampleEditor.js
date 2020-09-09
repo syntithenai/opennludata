@@ -44,10 +44,11 @@ export default function NluExampleEditor(props) {
                         //|| (item.tags && item.tags.indexOf(searchFilter) !== -1)
                 //return matchSearchFilter && skillFilterValue && item.skills && item.skills.indexOf(skillFilterValue) !== -1
             //})
-            
+          
         if (filteredItems && filteredItems.length > 0) {
             return <div>
-            <MatchesTallies items={items} filteredItems={filteredItems}/>
+          
+          <MatchesTallies items={items} filteredItems={filteredItems}/>
              {props.lookups.selectedTally > 0 && <span style={{float:'right'}}> 
                  <WithSelectedDropDowns
                   skillSetAll={skillSetAll} skillAllValue={skillAllValue}  setSkillAllValue={setSkillAllValue}  untagAll={untagAll} unskillAll={unskillAll} 

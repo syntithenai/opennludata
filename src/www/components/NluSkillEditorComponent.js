@@ -17,26 +17,28 @@ import RASATemplates from '../export/RASATemplates'
 //import useRestEndpoint from './useRestEndpoint'
        
 export default function NluSkillEditorComponent(props) {
-
     //console.log(['skill ',props])
-
     if (props.skillFilterValue && props.skillFilterValue.length > 0) {
-      
         if (props.filteredItems && props.filteredItems.length > 0) {
            
             const utteranceTags = props.currentSkill && props.currentSkill.utterances ? props.currentSkill.utterances.map(function(listItem,listItemKey) {return {id:listItemKey, name:listItem} }) : []
-            const regexpTags = props.currentSkill && props.currentSkill.regexps ? props.currentSkill.regexps.map(function(listItem,listItemKey) {return {id:listItemKey, name:listItem} }) : []
             const utteranceListTags = props.currentSkill && props.currentSkill.utterancesLists ? props.currentSkill.utterancesLists.map(function(listItem,listItemKey) {return {id:listItemKey, name:listItem} }) : []
             const slots = props.currentSkill && props.currentSkill.rasa && props.currentSkill.rasa.slots ? props.currentSkill.rasa.slots : props.entitiesForSkill;
+            const skillTags = props.currentSkill && props.currentSkill.tags ? props.currentSkill.tags.map(function(tag,i) {return {id: i, name: tag}}):[]
             return <div>
                  <div><h3>{props.skillFilterValue} </h3></div>
-                    <div>
-                   
-                    <label style={{fontWeight:'bold', marginLeft:'0.5em'}} > Invocation <input type='text' value={props.invocation} onChange={function(e) {props.setInvocation(e.target.value)}} /></label>
-                    </div>
                     <div style={{marginTop:'0.7em', marginBottom:'0.7em'}} >
                         <b style={{marginRight:'1em', marginLeft:'0.5em'}} >Tags</b>
-                        <span>{props.currentSkill.tags ? props.currentSkill.tags.join(", "): ''}</span>
+                         <ReactTags
+                            placeholderText="Select Tags  "
+                            minQueryLength={0}
+                            maxSuggestionsLength={50}
+                            autoresize={true}
+                            allowNew={true}
+                            tags={skillTags}
+                            suggestions={[]}                           
+                            onDelete={function(index) {props.removeSkillTag(index)}}
+                            onAddition={function(tag) {props.addSkillTag(tag)}} />
                     </div>
                     <div style={{marginTop:'0.7em', marginBottom:'0.7em', borderTop: '2px solid black'}} >
                         <b style={{marginRight:'1em', marginLeft:'0.5em'}} >Intents</b>
@@ -115,10 +117,11 @@ export default function NluSkillEditorComponent(props) {
                             maxSuggestionsLength={50}
                             autoresize={true}
                             allowNew={false}
-                            tags={regexpTags}
-                            tagComponent={function(iprops) {return <TagComponent tag={iprops.tag}  setRegexpEntity={props.setRegexpEntity} setRegexpIntent={props.setRegexpIntent} onDelete={function(index) {props.removeRegexp(index)}} lookups={props.lookups} />}}
+                            tags={props.currentSkill && props.currentSkill.regexps ? props.currentSkill.regexps.map(function(tag,i) {return {id: i, name: tag.name, intent: tag.intent ? tag.intent : '', entity: tag.entity ? tag.entity : '', synonym: tag.synonym}}):[]}
+                            tagComponent={function(iprops) {return <TagComponent {...iprops}   setRegexpEntity={props.setRegexpEntity} setRegexpIntent={props.setRegexpIntent}  lookups={props.lookups}  />}}
                             suggestionComponent={SuggestionComponent}
-                            suggestions={props.lookups.regexpsLookups ? props.lookups.regexpsLookups.map(function(tag,i) {return {id: i, name: tag}}):[]}
+                            suggestions={props.lookups.regexpsLookups ? props.lookups.regexpsCompleteLookups.map(function(tag,i) {return {id: i, name: tag.value, intent: tag.intent ? tag.intent : '', entity: tag.entity ? tag.entity : '', synonym: tag.synonym}}):[]}
+                           
                             onDelete={function(index) {props.removeRegexp(index)}}
                             onAddition={function(tag) {props.addRegexp(tag)}} /></ListGroup>
                             </div>
@@ -260,22 +263,22 @@ blah name`} ></textarea>
                       
                       <Tab eventKey="mycroft" title="Mycroft">
                         <div style={{marginTop:'0.7em', marginLeft:'1.4em'}} >
-                            <b>not yet</b>
+                           <b>not yet</b>
                         </div>
                       </Tab>
                        <Tab eventKey="jovo" title="JOVO">
                         <div style={{marginTop:'0.7em', marginLeft:'1.4em'}} >
-                            <b>not yet</b>
+                            <label style={{fontWeight:'bold', marginLeft:'0.5em'}} > Invocation <input type='text' value={props.invocation} onChange={function(e) {props.setInvocation(e.target.value)}} /></label>
                         </div>
                       </Tab>
                       <Tab eventKey="alex" title="Alexa">
                         <div style={{marginTop:'0.7em', marginLeft:'1.4em'}} >
-                            <b>not yet</b>
+                            <label style={{fontWeight:'bold', marginLeft:'0.5em'}} > Invocation <input type='text' value={props.invocation} onChange={function(e) {props.setInvocation(e.target.value)}} /></label>
                         </div>
                       </Tab>
                       <Tab eventKey="google_assistant" title="Google Assistant">
                         <div style={{marginTop:'0.7em', marginLeft:'1.4em'}} >
-                            <b>not yet</b>
+                            <label style={{fontWeight:'bold', marginLeft:'0.5em'}} > Invocation <input type='text' value={props.invocation} onChange={function(e) {props.setInvocation(e.target.value)}} /></label>
                         </div>
                       </Tab>
                     </Tabs>

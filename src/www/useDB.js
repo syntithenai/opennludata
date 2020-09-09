@@ -85,10 +85,10 @@ export default function useDB(database, databaseTable) {
                 return null
             })
             Promise.all(ipromises).then(function(res) {
+                res = res.sort(function(a,b) {if (a.updated_date < b.updated_date) return 1; else return -1})
                 dispatch({ type: "replaceall", items: res });
             })
         })
-        
     }
 
     
