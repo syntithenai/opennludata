@@ -19,16 +19,26 @@ export default function SkillSearchPage(props) {
     const sourcesDB = useDB('nlutool','sources');
 
     useEffect((props) => {
-        doSearch()
+        loadSkills()
+        //doSearch()
     },[])
+    
+    function loadSkills() {
+        const axiosClient = props.getAxiosClient()
+        axiosClient.get('https://raw.githubusercontent.com/syntithenai/opennludata_data/master/public/skills/index.js').then(function(res) {
+          console.log(res)  
+        }).catch(function(err) {
+            console.log(err)  
+        })
+        //https://raw.githubusercontent.com/syntithenai/opennludata_data/master/public/skills/index.js
+    }
     
     function importItem(item) {
         var item = {id:null, data:JSON.stringify(item), title:item.title+'.skill.json', fileType :"opennlu.skill    "}
         sourcesDB.saveItem(item,0)
         history.push("/sources")
     }
-    
-    
+
     function doSearch(queryIn='') {
         const text = queryIn && queryIn.trim && queryIn.trim() ? queryIn : (searchFilter && searchFilter.trim() ? searchFilter : '')
         var query = {}

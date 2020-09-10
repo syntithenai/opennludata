@@ -75,6 +75,8 @@ function HelpTextImport(props) {
             <h1>Importing Data</h1>
             <div>This tool can import files a variety of file formats and allows you to cherry pick intents, entities and utterances.
             <br/>
+            You can use zip files to to upload and import many files that make up a skill for Mycroft, RASA or JOVO 
+            <br/>
            <ul>
                 <li><h3>Text</h3>
                     

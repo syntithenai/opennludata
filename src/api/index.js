@@ -1,3 +1,5 @@
+
+const commitSkill = require('./commitSkill');
 const express = require('express');
 const bodyParser= require('body-parser')
 const cookieParser = require('cookie-parser');
@@ -75,6 +77,7 @@ loginSystem(config).then(function(login) {
                       console.log(['INSERTED TAGS',res])  
                     })
                 }
+               
                 next()
             } else {
                 return res.sendStatus("401")
@@ -95,6 +98,8 @@ loginSystem(config).then(function(login) {
                       console.log(['INSERTED TAGS',res])  
                     })
                 }
+                //if ()
+                
                 next()
             } else {
                 return res.sendStatus("401")
@@ -109,13 +114,57 @@ loginSystem(config).then(function(login) {
             } else {
                 return res.sendStatus("401")
             }
+        }, 
+
+        postCreate: (req, res, next) => {
+            const skill = req.erm.result         // unfiltered document or object
+            const statusCode = req.erm.statusCode // 201
+
+            commitSkill(skill).then(result => {
+              console.log(result)
+              next()
+            }).catch(err => {
+              console.error(err)
+              next(err)
+            })
+        }, 
+        
+        postUpdate: (req, res, next) => {
+          const skill = req.erm.result         // unfiltered document or object
+          const statusCode = req.erm.statusCode // 200
+
+          commitSkill(skill).then(result => {
+              console.log(result)
+              next()
+            }).catch(err => {
+              console.error(err)
+              next(err)
+            })
+        },
+        
+        postDelete: (req, res, next) => {
+          const result = req.erm.result         // unfiltered document or object
+          const statusCode = req.erm.statusCode // 204
+            
+          //commitSkill({title:'testskill', user: '7687sdfwe76d7d', userAvatar:"westwing", intents:[{id: "873w27g7h908d", intent:'doit', example:'do it now please', entities:[]}]}).then(result => {
+              //console.log(result)
+              //next()
+            //}).catch(err => {
+              //console.error(err)
+              //next(err)
+            //})
         }
+        
+
     }
+    //var skillOptions = JSON.parse(JSON.stringify(options))
+    //skill.options.pre
+    
     var restifyRouter = express.Router();
     restify.serve(restifyRouter, mongoose.model('Skill',skillsSchema ), options)
-    restify.serve(restifyRouter, mongoose.model('Entities',entitiesSchema ), options)
-    restify.serve(restifyRouter, mongoose.model('Utterance',utterancesSchema ), options)
-    restify.serve(restifyRouter, mongoose.model('Regexp',regexpsSchema ), options)
+    //restify.serve(restifyRouter, mongoose.model('Entities',entitiesSchema ), options)
+    //restify.serve(restifyRouter, mongoose.model('Utterance',utterancesSchema ), options)
+    //restify.serve(restifyRouter, mongoose.model('Regexp',regexpsSchema ), options)
     restify.serve(restifyRouter, mongoose.model('SkillTags',skillTagsSchema ), {
         preCreate: function(req,res,next) {return res.sendStatus("401")},
         preUpdate: function(req,res,next) {return res.sendStatus("401")},
