@@ -83,7 +83,8 @@ async function commitSkill(skill) {
           const base = process.env.github_data_base ? process.env.github_data_base : ''
           const head = process.env.github_data_head ? process.env.github_data_head : ''
           const fileContent = JSON.stringify(skill)
-          const filePath = (process.env.github_data_filePath ? process.env.github_data_filePath : 'public/skills/') +(skill.userAvatar ?  skill.userAvatar + '-'  : '') + skill.title + '-' + skill.id +".json"
+          const filePath = (process.env.github_data_filePath ? process.env.github_data_filePath : 'docs/static/media/skills/') +(skill.userAvatar ?  skill.userAvatar + '-'  : '') + skill.title + '-' + skill.id +".json"
+          //const devFilePath = process.env.github_data_devFilePath ?  +((skill.userAvatar ?  skill.userAvatar + '-'  : '') + skill.title + '-' + skill.id +".json" ): ''
           // try to load index
           const indexPath = (process.env.github_data_filePath ? process.env.github_data_filePath : 'public/skills/') + 'index.js'
           const changes = {
