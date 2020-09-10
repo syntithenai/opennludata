@@ -78,10 +78,10 @@ async function commitSkill(skill) {
     return new Promise(function(resolve,reject) {
       console.log(['COMMIT SKILL',skill])
       if (skill.title && skill.id) {
-          const owner = process.env.github_data_owner ? process.env.github_data_owner : 'syntithenai'
-          const repo = process.env.github_data_repo ? process.env.github_data_repo : 'opennludata_data'
-          const base = process.env.github_data_base ? process.env.github_data_base : 'master'
-          const head = process.env.github_data_head ? process.env.github_data_head : 'master'
+          const owner = process.env.github_data_owner ? process.env.github_data_owner : ''
+          const repo = process.env.github_data_repo ? process.env.github_data_repo : ''
+          const base = process.env.github_data_base ? process.env.github_data_base : ''
+          const head = process.env.github_data_head ? process.env.github_data_head : ''
           const fileContent = JSON.stringify(skill)
           const filePath = (process.env.github_data_filePath ? process.env.github_data_filePath : 'public/skills/') +(skill.userAvatar ?  skill.userAvatar + '-'  : '') + skill.title + '-' + skill.id +".json"
           // try to load index

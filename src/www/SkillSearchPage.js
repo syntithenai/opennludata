@@ -25,8 +25,8 @@ export default function SkillSearchPage(props) {
     
     function loadSkills() {
         const axiosClient = props.getAxiosClient()
-        axiosClient.get('https://raw.githubusercontent.com/syntithenai/opennludata_data/master/public/skills/index.js').then(function(res) {
-          console.log(res)  
+        axiosClient.get((process.env.REACT_APP_githubSkillsUrl ? process.env.REACT_APP_githubSkillsUrl : 'https://opennludata.org/static/media/skills/')+'index.js').then(function(res) {
+          console.log(['LOD SKILSS',res])  
         }).catch(function(err) {
             console.log(err)  
         })
