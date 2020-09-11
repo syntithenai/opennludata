@@ -5,7 +5,7 @@ Please note this is a work in progress. The backend is not yet deployed so login
 # TODO
 
 ## Bugs/Incomplete
-- sources not rendering on live ?
+
 - new intent force list rerender
 - regexp tag selection
 - import - rasa zip, opennlu.regex,utterances, ..., text intent import parse entities
