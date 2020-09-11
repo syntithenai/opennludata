@@ -59,11 +59,10 @@ function HelpText(props) {
             <li>Cross platform nodejs server</li>
             <li>Published skills are committed to Github to ensure long term availability of collected data.</li>
             <li>To ensure ongoing availability, the web pages are hosted with github pages and the search interface relies on static data generated during publishing so a database/backend server is only required when publishing)</li>
+             <li>When the Internet is available, <b>this site uses Google Analytics to measure engagement and improve future versions.</b> </li>
         </ul>
         
         
-        
-        <div>When the Internet is available, <b>this site uses Google Analytics to measure engagement and improve future versions.</b></div>
         
         
     </div>

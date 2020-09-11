@@ -74,23 +74,25 @@ async function push ({ owner, repo, base, head, changes }) {
 }
   //Buffer.from('Content from octokit.').toString('base64')
     
-async function commitSkill(skill) {
+async function commitSkill(skill, deleteSkill) {
     return new Promise(function(resolve,reject) {
       console.log(['COMMIT SKILL',skill])
-      if (skill.title && skill.id) {
+      if (skill && skill.id) {
           const owner = process.env.github_data_owner ? process.env.github_data_owner : ''
           const repo = process.env.github_data_repo ? process.env.github_data_repo : ''
           const base = process.env.github_data_base ? process.env.github_data_base : ''
           const head = process.env.github_data_head ? process.env.github_data_head : ''
           const fileContent = JSON.stringify(skill)
-          const filePath = (process.env.github_data_filePath ? process.env.github_data_filePath : 'docs/static/media/skills/') +(skill.userAvatar ?  skill.userAvatar + '-'  : '') + skill.title + '-' + skill.id +".json"
+          const skillFileName = (skill.userAvatar ?  skill.userAvatar + '-'  : '') + skill.title + '-' + skill.id +".json"
+          const filePath = (process.env.github_data_filePath ? process.env.github_data_filePath : 'docs/static/media/skills/') + skillFileName
           //const devFilePath = process.env.github_data_devFilePath ?  +((skill.userAvatar ?  skill.userAvatar + '-'  : '') + skill.title + '-' + skill.id +".json" ): ''
           // try to load index
           const indexPath = (process.env.github_data_filePath ? process.env.github_data_filePath : 'public/skills/') + 'index.js'
           const changes = {
             files: {},
-            commit: 'Skill published '+skill.title+(' (' + skill.id+')')+(skill.userAvatar ? ' by ' + skill.userAvatar : '')
+            commit: 'Published skill '+skill.title+(' (' + skill.id+')')+(skill.userAvatar ? ' by ' + skill.userAvatar : '')
           }
+          if (deleteSkill) changes.commit = 'Unpublished skill ' + skill.id
           fs.readFile(indexPath, 'utf8', function(err, contents) {
               var skillIndex = {}
               if (contents) {
@@ -101,9 +103,16 @@ async function commitSkill(skill) {
                   }
               }
               skillIndex = typeof skillIndex === "object" ? skillIndex : {}
-              skillIndex[skill.id] = {title: skill.title, userAvatar: skill.userAvatar, updated_date: skill.updated_date, created_date: skill.created_date, tags: skill.tags}
-              
-              changes.files[indexPath] = JSON.stringify(skillIndex)        
+              skillIndex[skill._id] = {title: skill.title, userAvatar: skill.userAvatar, updated_date: skill.updated_date, created_date: skill.created_date, tags: skill.tags, entities: skill.entities ? Object.keys(skill.entities).length : 0, intents: skill.intents ? Object.keys(skill.intents).length : 0, utterances: skill.utterances ? skill.utterances.length : 0, regexps: skill.regexps ? skill.regexps.length : 0, file:skillFileName}
+              if (deleteSkill) {
+                   skillIndex[skill._id].deleted = true;
+              } 
+              var notDeleted = {}
+              Object.values(skillIndex).filter(function(skill) {if (!skill.deleted) return true; else return false }).map(function(skill) {
+                  notDeleted[skill._id] = skill
+                  return null
+              });
+              changes.files[indexPath] = JSON.stringify(notDeleted)       
               changes.files[filePath] = fileContent  
               console.log(['COMMIT SKILL push',changes, owner, repo, base, head])
               push({ owner, repo, base, head, changes }).then(function() {

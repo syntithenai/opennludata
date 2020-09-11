@@ -62,10 +62,10 @@ function reducer(state, action) {
 }
 
 // state manager with local storage backing
-export default function useDB(database, databaseTable,singleKey) {
+export default function useDB(database, databaseTable,singleKey, initialData=[]) {
     //console.log(['use db single key', database, databaseTable,singleKey])
     if (!singleKey) singleKey = 'data'
-     const [items, dispatch] = useReducer(reducer,[]);
+     const [items, dispatch] = useReducer(reducer,initialData);
      var localforageStorage = localforage.createInstance({
        name: database ? database : "localstoragemanager",
        storeName   : databaseTable ? databaseTable : 'single_key_data',
@@ -96,7 +96,7 @@ export default function useDB(database, databaseTable,singleKey) {
         return new Promise(function(resolve, reject) {
             localforageStorage.getItem(singleKey).then(function(res) {
               //console.log(['loadall',database, databaseTable,singleKey,res])
-              dispatch({ type: "replaceall", items: res ? res : []});
+              dispatch({ type: "replaceall", items: res ? res : initialData});
               resolve(res)
             })
         })

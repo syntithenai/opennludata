@@ -10,7 +10,6 @@ import NluSkillEditorComponent from './components/NluSkillEditorComponent'
 
 import useSkillsEditor from './useSkillsEditor'
 
-
 export default  function NluSkillsEditor(props) {
 
     const skillsEditor = useSkillsEditor(Object.assign({},props,{user:props.user, lookups: props.lookups}))

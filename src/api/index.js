@@ -63,53 +63,57 @@ loginSystem(config).then(function(login) {
         findOneAndUpdate: false,
         allowRegexp: false,
          // only owners can create and update
+         
         preCreate: (req, res, next) => {
             var loginUser = res.locals && res.locals.oauth && res.locals.oauth.token && res.locals.oauth.token.user ? res.locals.oauth.token.user : {}
+            console.log(['PRECREATE ',loginUser, res.locals, res.body])
             if (loginUser && loginUser._id) { 
                 req.body.created_date = new Date().getTime();
                 req.body.updated_date = new Date().getTime();
                 req.body.user = loginUser._id
                 req.body.userAvatar = loginUser.avatar
-                console.log(['PRECREATE ',req.body.tags])
-                if (req.body.tags) {
-                    skillTagModel = mongoose.model('SkillTags',skillTagsSchema)
-                    skillTagModel.insertMany(req.body.tags.map(function(tag) { return {tag:tag}  }), {ordered: true}).then(function(res) {
-                      console.log(['INSERTED TAGS',res])  
-                    })
-                }
+                console.log(['PRECREATEdd ',req.body.tags])
+                //if (req.body.tags) {
+                    //skillTagModel = mongoose.model('SkillTags',skillTagsSchema)
+                    //skillTagModel.insertMany(req.body.tags.map(function(tag) { return {tag:tag}  }), {ordered: true}).then(function(res) {
+                      //console.log(['INSERTED TAGS',res])  
+                    //})
+                //}
                
                 next()
             } else {
-                return res.sendStatus("401")
+                return res.sendStatus("401") // not authenticated
             }
         },
         
         preUpdate: (req, res, next) => {
             var loginUser = res.locals && res.locals.oauth && res.locals.oauth.token && res.locals.oauth.token.user ? res.locals.oauth.token.user : {}
-            console.log(['PREUPDATE',loginUser])
+            console.log(['PREUPDATE',loginUser,res.locals, res.body])
             if (loginUser&& loginUser._id) { 
                 req.body.updated_date = new Date().getTime();
                 req.body.user = loginUser._id
                 req.body.userAvatar = loginUser.avatar
-                console.log(['PREUPDATE ',req.body.tags])
-                if (req.body.tags) {
-                    skillTagModel = mongoose.model('SkillTags',skillTagsSchema)
-                    skillTagModel.insertMany(req.body.tags.map(function(tag) { return {tag:tag}  }), {ordered: true}).then(function(res) {
-                      console.log(['INSERTED TAGS',res])  
-                    })
-                }
+                console.log(['PREUPDATEdd ',req.body.tags])
+                //if (req.body.tags) {
+                    //skillTagModel = mongoose.model('SkillTags',skillTagsSchema)
+                    //skillTagModel.insertMany(req.body.tags.map(function(tag) { return {tag:tag}  }), {ordered: true}).then(function(res) {
+                      //console.log(['INSERTED TAGS',res])  
+                    //})
+                //}
                 //if ()
                 
                 next()
             } else {
-                return res.sendStatus("401")
+                return res.sendStatus("401") // not authenticated
             }
         },
         
         preDelete: (req, res, next) => {
           var loginUser = res.locals && res.locals.oauth && res.locals.oauth.token && res.locals.oauth.token.user ? res.locals.oauth.token.user : {}
-            console.log(['PREDELETE',loginUser])
+            
             if (loginUser&& loginUser._id) { 
+                //console.log(['NOW GIT RM',skill])
+                
                 next()
             } else {
                 return res.sendStatus("401")
@@ -118,7 +122,7 @@ loginSystem(config).then(function(login) {
 
         postCreate: (req, res, next) => {
             const skill = req.erm.result         // unfiltered document or object
-            const statusCode = req.erm.statusCode // 201
+            const statusCode = req.erm.statusCode // 201 created OK
 
             commitSkill(skill).then(result => {
               console.log(result)
@@ -131,7 +135,7 @@ loginSystem(config).then(function(login) {
         
         postUpdate: (req, res, next) => {
           const skill = req.erm.result         // unfiltered document or object
-          const statusCode = req.erm.statusCode // 200
+          const statusCode = req.erm.statusCode // 200 updated OK
 
           commitSkill(skill).then(result => {
               console.log(result)
@@ -143,16 +147,18 @@ loginSystem(config).then(function(login) {
         },
         
         postDelete: (req, res, next) => {
-          const result = req.erm.result         // unfiltered document or object
-          const statusCode = req.erm.statusCode // 204
-            
-          //commitSkill({title:'testskill', user: '7687sdfwe76d7d', userAvatar:"westwing", intents:[{id: "873w27g7h908d", intent:'doit', example:'do it now please', entities:[]}]}).then(result => {
-              //console.log(result)
-              //next()
-            //}).catch(err => {
-              //console.error(err)
-              //next(err)
-            //})
+          const skill = req.erm.result         // unfiltered document or object
+          const statusCode = req.erm.statusCode // 204 deleted OK
+          console.log(['POSTDELETE', req.url])
+            var parts = req.url.split("/")
+            var id = parts[parts.length - 1]
+            commitSkill({id: id}, true).then(result => {
+                  console.log(result)
+                  next()
+                }).catch(err => {
+                  console.error(err)
+                  next(err)
+                })
         }
         
 
@@ -165,11 +171,11 @@ loginSystem(config).then(function(login) {
     //restify.serve(restifyRouter, mongoose.model('Entities',entitiesSchema ), options)
     //restify.serve(restifyRouter, mongoose.model('Utterance',utterancesSchema ), options)
     //restify.serve(restifyRouter, mongoose.model('Regexp',regexpsSchema ), options)
-    restify.serve(restifyRouter, mongoose.model('SkillTags',skillTagsSchema ), {
-        preCreate: function(req,res,next) {return res.sendStatus("401")},
-        preUpdate: function(req,res,next) {return res.sendStatus("401")},
-        preDelete: function(req,res,next) {return res.sendStatus("401")}
-    })
+    //restify.serve(restifyRouter, mongoose.model('SkillTags',skillTagsSchema ), {
+        //preCreate: function(req,res,next) {return res.sendStatus("401")}, // not authenticated
+        //preUpdate: function(req,res,next) {return res.sendStatus("401")}, // not authenticated
+        //preDelete: function(req,res,next) {return res.sendStatus("401")} // not authenticated
+    //})
     // SSL
     // allow self generated certs
     //process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";

@@ -62,7 +62,9 @@ function FilesList(props) {
             return <ListGroup.Item  key={i}  >
 
                    
-                   <Button style={{float:'right', marginLeft:'0.5em'}} variant="danger" onClick={function(e) {if(window.confirm('Really delete source '+item.title+'-'+i)) props.deleteItem(i)}} >Delete</Button>
+                  
+                    {(item && item.fileType) && <>
+                         <Button style={{float:'right', marginLeft:'0.5em'}} variant="danger" onClick={function(e) {if(window.confirm('Really delete source '+item.title+'-'+i)) props.deleteItem(i)}} >Delete</Button>
                     
                     {item.fileType.endsWith(".zip") && <Button style={{float:"right", marginLeft:'0.5em'}} onClick={function() {downloadZip(item)}}>Download</Button>}
 
@@ -89,7 +91,8 @@ function FilesList(props) {
                     
                    
                    <span style={{width:'90%'}}  > {item.fileType && <Button>{item.fileType}</Button>}&nbsp;&nbsp;&nbsp;{item.title}</span>
-                  
+                 
+                  </>}
                </ListGroup.Item>
         })
         return <ListGroup>{list}</ListGroup>

@@ -1,8 +1,8 @@
-export default function useRestEndpoint(axiosClient,restUrl="http://localhost:5000/api/v1/") {
+export default function useRestEndpoint(axiosClient,restUrl=process.env.REACT_APP_restBaseUrl) {
    
     // to  endpoint root
     function doPost(modelType,data) {
-        console.log('POST', modelType, data)  
+        console.log(['POST', modelType, data, restUrl])  
         return new Promise(function(resolve,reject) {
             if (modelType && data) {
                 axiosClient.post(restUrl+modelType,

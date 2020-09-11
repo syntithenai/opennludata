@@ -9,7 +9,7 @@ const RegexpsManagerSearchBar = function(props) {
     const [topTagOptions,setTopTagOptions] = useState([])
     useEffect(() => {
         //console.log(['kust nabager ',props.lookups.listsLookups])
-        var topTagOptionss = props.lookups.utteranceTagsLookups && props.lookups.utteranceTagsLookups.sort().map(function(listKey,i) {
+        var topTagOptionss = props.lookups.regexpTagsLookups && props.lookups.regexpTagsLookups.sort().map(function(listKey,i) {
               return <Dropdown.Item key={i} value={listKey} onClick={function(e) {props.setListFilterValue(listKey)}}  >{listKey}</Dropdown.Item>
         })
         topTagOptionss.unshift(<Dropdown.Item key={'empty_key_value_empty'} value={''} onClick={function(e) {props.setListFilterValue('')}}  >&nbsp;</Dropdown.Item>)
@@ -20,10 +20,8 @@ const RegexpsManagerSearchBar = function(props) {
     
     return <div>
             {<span>
-            
                 {props.lookups.selectedRegexTally > 0 && <Button size="lg"  onClick={function(e) { props.resetSelection(e) }} variant="success"  ><img style={{height:'1em'}} src={checkImage} alt="Deselect" /></Button> }
                 {props.lookups.selectedRegexTally <= 0 && <Button size="lg" onClick={function(e) { props.selectAll(e) }} variant="secondary"  ><img style={{height:'1em'}} src={checkImage} alt="Select" /></Button> }
-                
                 
            </span>}   
             {<span style={{marginLeft:'0.4em'}}><SearchInput searchFilter={props.searchFilter} setSearchFilter={props.setSearchFilter} /></span>}   

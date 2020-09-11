@@ -1,5 +1,6 @@
 //const yaml = require('js-yaml');
 // FUNCTIONS 
+var balanced = require('balanced-match');
 
 const RASA = {
     slotTypes : {
@@ -65,6 +66,16 @@ function concatText(text,words) {
       return i;
     }
     
+    function multiplyArrays(a,b) {
+        var results=[]
+        a.map(function(aval) {
+              b.map(function(bval) {
+                  results.push(aval + bval)
+              })
+        })
+        return results
+    }
+
     function uniquifyArray(a) {
         //console.log(['UNIQARRAY',a])
         if (Array.isArray(a)) {
@@ -99,6 +110,30 @@ function concatText(text,words) {
             return []
         }
     }
+    
+    // recursively expand sentence containing options eg (the|an(y|)|my) into an array of expanded sentences
+    function expandOptions(text) {
+        var options = []
+        var b = balanced('(',')',text)
+        if (b && b.body) {
+            var innerOptions = null
+            var ib = balanced('(',')',b.body)
+            if (ib) {
+                innerOptions = expandOptions(b.body)
+            } else {
+                innerOptions = b.body.split("|")
+            }
+            innerOptions = uniquifyArray(innerOptions)
+            var sentences = uniquifyArray(multiplyArrays(multiplyArrays([b.pre],innerOptions),[b.post]))
+            sentences.map(function(sentence) {
+               options=[].concat(options,expandOptions(sentence))  
+            })
+        } else {
+            options = text.split("|")
+        }
+        return uniquifyArray(options)
+    }
+    
     function replaceEntities(example,entities) {
         // replace entity values with {entityName}
         // first sort entities by start key
@@ -139,6 +174,20 @@ function concatText(text,words) {
             return example
         }
     }
+    /**
+     *  create array by splitting on newline and fullstop
+     */
+    function splitSentences(text) {
+      var final = []
+      if (text) {
+          // split by newline and full stop
+         var splits = text.split('\n').join('::::').split('.').join('::::').split('::::') //.map(function(value) { return value.trim()})
+        // trim all splits
+        for (var splitText in splits) {
+            if(splitText.trim().length > 0) final.push(splits[splitText])
+        }
+     }
+     return final;
+    }
     
-    
-export {generateObjectId, parentUrl, concatText , findFirstDiffPos,uniquifyArray, uniquifyArrayOfObjects, replaceEntities,replaceEntitiesWithValues,  RASA, GoogleAssistant, Alexa, snakeToCamelCase, camelToSnakeCase, toSnakeCase }
+export {generateObjectId, parentUrl, concatText , findFirstDiffPos,uniquifyArray, multiplyArrays, expandOptions, splitSentences, uniquifyArrayOfObjects, replaceEntities,replaceEntitiesWithValues,  RASA, GoogleAssistant, Alexa, snakeToCamelCase, camelToSnakeCase, toSnakeCase }

@@ -1,6 +1,6 @@
 import JSZip from 'jszip'
 import parenthesis from 'parenthesis'
-import {generateObjectId} from './utils'
+import {generateObjectId, uniquifyArray, multiplyArrays, expandOptions, splitSentences} from './utils'
 
 var balanced = require('balanced-match');
 
@@ -113,31 +113,39 @@ function unzip(content,pathFilters) {
 }
 
 
-/**
- *  create array by splitting on newline and fullstop
- */
-function splitSentences(text) {
-      var final = []
-      if (text) {
-          // split by newline and full stop
-         var splits = text.split('\n').join('::::').split('.').join('::::').split('::::') //.map(function(value) { return value.trim()})
-        // trim all splits
-        for (var splitText in splits) {
-            if(splitText.trim().length > 0) final.push(splits[splitText])
-        }
-     }
-     return final;
-}
+
 
 /**
  *  create entity objects from split sentences
  */
+  
 function generateIntentSplits(text, intent) {
     const splits = splitSentences(text)
+
+     function extractEntities(text) {
+        var entities=[]
+        var latestText = text
+        var b = balanced('{','}',latestText)
+        var limit = 20
+        while (b && limit) {
+            var entity = { value:b.body, start: b.start, end: b.end, type:b.body }
+            entities.push(entity)
+            latestText = b.pre + b.body + b.post
+            b = balanced('{','}',latestText)
+            limit --
+        }
+        return {'id':generateObjectId(), example: latestText, entities: entities, tags: []}
+    }
+        
     var newSplits=[]
     splits.map(function(text,i) {
         if (text && text.trim().length > 0) {
-         newSplits.push({'id':generateObjectId(), 'example':text,'intent':intent ? intent : '',"entities":[], "tags":[]})
+           expandOptions(text).map(function(line) {
+                var intentGen = extractEntities(line)
+                intentGen.intent = intent;
+                newSplits.push(intentGen)
+            }) 
+           //newSplits.push({'id':generateObjectId(), 'example':text,'intent':intent ? intent : '',"entities":[], "tags":[]})
         }
         return null
     })
@@ -241,114 +249,21 @@ function sortExampleSplits(a,b) {
                 }
             })
         }
-    }
-    
-    function generateIntentSplitsForMycroftHandleBody(pre,post, parts, intent) {
-        var intents = []
-        console.log(['GEN handle',parts])
-        if (parts && parts.body) {
-            var innerParts = balanced('(',')',parts.body)
-            var innerPartsPost = balanced('(',')',parts.post)
-            if (innerParts) console.log(['RECURSE',innerParts])
-            if (innerPartsPost) console.log(['RECURSEPOST',innerPartsPost])
-            if (innerPartsPost) {
-                // recurse with parts.post
-                //intents = [].concat(intents, generateIntentSplitsForMycroftHandleBody(pre+parts.pre+innerPartsPost.pre,innerPartsPost.post+parts.post+post,innerPartsPost, intent))
-            } else {
-                var options = parts.post.split("|")
-                console.log(['NP',parts])
-                options.map(function(option) {
-                    if (option && option.length) {
-                        intents.push({intent: intent, example:pre + parts.pre  + option + parts.post + post})
-                    }
-                });
-            }    
-            //if (innerParts) {
-                //// recurse with parts.body
-                //intents = [].concat(intents, generateIntentSplitsForMycroftHandleBody(pre+innerParts.pre,innerParts.post+post,innerParts, intent))
-            //} else {
-                //var options = parts.body.split("|")
-                //console.log(['NP',parts])
-                //options.map(function(option) {
-                    //if (option && option.length) {
-                        //intents.push({intent: intent, example:pre + parts.pre  + option + parts.post + post})
-                    //}
-                //});
-            //}
-            
-
-        }
-        return intents
-    }
-                    
+    }       
 
     function generateIntentSplitsForMycroft(item, intentLabel) {
-
-            console.log(['GEN MYC',item])
-            var intents = []
-            if (item) {
-                console.log(['GEN MYC d',item])
-                item.split("\n").map(function(intentExample,intentKey) {
-                    expandOptions(intentExample).map(function(line) {
-                        var intent = extractEntities(line)
-                        intent.intent = intentLabel;
-                        intents.push(intent)
-                    })
+        var intents = []
+        if (item) {
+            item.split("\n").map(function(intentExample,intentKey) {
+                expandOptions(intentExample).map(function(line) {
+                    var intent = extractEntities(line)
+                    intent.intent = intentLabel;
+                    intents.push(intent)
                 })
-            }
-            console.log(['MY IMP COMPL',intents])  
-            return intents
-        
-
-        //var t = "(i|we) want to (see (tigers|lions)|watch (penguins|monkeys)) AT the zoo"
-        //return 
-        
-        
-        function multiplyArrays(a,b) {
-            var results=[]
-            a.map(function(aval) {
-                  b.map(function(bval) {
-                      results.push(aval + bval)
-                  })
             })
-            return results
         }
-
-        function uniquifyArray(a) {
-            if (Array.isArray(a)) {
-                var index = {}
-                a.map(function(value) {
-                    index[value] = true 
-                    return null
-                })
-                return Object.keys(index)
-            } else {
-                return []
-            }
-        }
-
-        function expandOptions(text) {
-            var options = []
-            var b = balanced('(',')',text)
-            if (b && b.body) {
-                var innerOptions = null
-                var ib = balanced('(',')',b.body)
-                if (ib) {
-                    innerOptions = expandOptions(b.body)
-                } else {
-                    innerOptions = b.body.split("|")
-                }
-                innerOptions = uniquifyArray(innerOptions)
-                var sentences = uniquifyArray(multiplyArrays(multiplyArrays([b.pre],innerOptions),[b.post]))
-                sentences.map(function(sentence) {
-                   options=[].concat(options,expandOptions(sentence))  
-                })
-            } else {
-                options = text.split("|")
-            }
-            return uniquifyArray(options)
-        }
-
+        return intents
+        
         function extractEntities(text) {
             var entities=[]
             var latestText = text
@@ -361,7 +276,7 @@ function sortExampleSplits(a,b) {
                 b = balanced('{','}',latestText)
                 limit --
             }
-            return {example: latestText, entities: entities}
+            return {'id':generateObjectId(), example: latestText, entities: entities, tags:[]}
         }
 
     }

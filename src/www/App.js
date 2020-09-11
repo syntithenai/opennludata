@@ -1,5 +1,5 @@
 import React from 'react';
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import {BrowserRouter as  Router, Route, Link  } from 'react-router-dom'
 import LocalStorageUploadManager from './LocalStorageUploadManager'
 import ListsManager from './ListsManager'
@@ -19,6 +19,9 @@ import localforage from 'localforage'
 import {LoginSystem,LoginSystemContext}  from 'react-express-oauth-login-system-components'
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
+
+const axios = require('axios');
+
 function SiteMenu(props) {
     var astyle={paddingLeft:'0.3em'}
     return <div style={{marginLeft:'0.5em'}}>
@@ -72,11 +75,36 @@ function App() {
     const [selectedRegexTally, setSelectedRegexTally] = useState(0)
     const [utteranceTally, setUtteranceTally] = useState(0)
     const [selectedUtteranceTally, setSelectedUtteranceTally] = useState(0)
+    var [skills, setSkills] = useState({})
+    var [skillTags, setSkillTags] = useState({})
     
     
     // search bar
    // const [skillFilterValue, setSkillFilterValue] = useState('')
   
+    
+    
+    function loadSkills() {
+        return axios.get((process.env.REACT_APP_githubSkillsUrl ? process.env.REACT_APP_githubSkillsUrl : '/static/media/skills/')+'index.js').then(function(res) {
+          //console.log(['LOaD SKILSS',res.data])  
+          var tags={}
+          if (res.data) {
+              Object.values(res.data).map(function(skill) {
+                  if (skill.tags) skill.tags.map(function(tag) {
+                      tags[tag] = true
+                     return null  
+                  })
+                  return null
+              })
+              setSkillTags(Object.keys(tags).sort())
+              setSkills(res.data)
+          }
+        }).catch(function(err) {
+            console.log(err)  
+        })
+    }
+       
+    useEffect(() => loadSkills(),[])   
        
     function startWaiting() {
         setWaiting(true)
@@ -91,11 +119,11 @@ function App() {
     
     function updateRegexps() {
         //console.log('UPDATE regexps')
-        var utteranceStorage = localforage.createInstance({
+        var storage = localforage.createInstance({
            name: "nlutool",
            storeName   : "regexps",
          });
-         utteranceStorage.getItem('alldata', function (err,utterances) {
+         storage.getItem('alldata', function (err,utterances) {
                  var tally = 0;
                  var selectedTally = 0;
                 var utteranceLists={}
@@ -143,7 +171,7 @@ function App() {
     }
     
     function updateUtterances() {
-        console.log('UPDATE UTTERANCES')
+        //console.log('UPDATE UTTERANCES')
         var utteranceStorage = localforage.createInstance({
            name: "nlutool",
            storeName   : "utterances",
@@ -198,7 +226,7 @@ function App() {
            storeName   : "lists",
          });
          listsStorage.getItem('alldata', function (err,lists) {
-            console.log(['UPDATELISTS',lists])
+            //console.log(['UPDATELISTS',lists])
             if (lists) {
                 var newSelectedLists = {}
                 var newLists = {}
@@ -225,7 +253,7 @@ function App() {
                     }
                     return null
                 })
-                console.log(['UPDATELISTS',tally, selectedTally])
+                //console.log(['UPDATELISTS',tally, selectedTally])
                 setListTally(tally)
                 setSelectedListTally(selectedTally)
                 setSelectedListTallyByList(newSelectedLists)
@@ -242,7 +270,7 @@ function App() {
            storeName   : "examples",
          });
         examplesStorage.getItem('alldata', function (err,items) {
-            console.log(['UPDATELOOKUPS',items])
+            //console.log(['UPDATELOOKUPS',items])
             if (items && items.length > 0) {
                 var tags = {}
                 var intents = {}
@@ -280,19 +308,19 @@ function App() {
                 const distinct = function(value,index,self) {
                     return self.indexOf(value) === index;
                 }
-                console.log(['UPDATELOOKUPS single res',intents,entities])
+                //console.log(['UPDATELOOKUPS single res',intents,entities])
                     
                 setIntentLookups([].concat(Object.keys(intents),intentLookups).filter(distinct))
                 setEntityLookups([].concat(Object.keys(entities),entityLookups).filter(distinct))
                 setTagLookups([].concat(Object.keys(tags),tagLookups).filter(distinct))
                 setSkillLookups([].concat(Object.keys(skills),skillLookups).filter(distinct))
                 setSelectedTally(selected)
-                console.log(entityLookups, intentLookups)
+                //console.log(entityLookups, intentLookups)
             }
         })
     }
-    const lookups = {regexpTagsLookups:regexpTagsLookups,regexpsLookups:regexpsLookups,regexpListsLookups:regexpListsLookups,  regexpsCompleteLookups,  utteranceTagsLookups:utteranceTagsLookups,utterancesLookups:utterancesLookups,utteranceListsLookups:utteranceListsLookups,intentLookups,entityLookups,tagLookups,skillLookups, selectedTally, listsLookups, listTally, selectedListTally, listTallyByList, selectedListTallyByList, utteranceTally, selectedUtteranceTally,regexTally, selectedRegexTally}
-    const updateFunctions = {updateLookups, updateLists, updateUtterances, updateRegexps}
+    const lookups = {regexpTagsLookups:regexpTagsLookups,regexpsLookups:regexpsLookups,regexpListsLookups:regexpListsLookups,  regexpsCompleteLookups,  utteranceTagsLookups:utteranceTagsLookups,utterancesLookups:utterancesLookups,utteranceListsLookups:utteranceListsLookups,intentLookups,entityLookups,tagLookups,skillLookups, selectedTally, listsLookups, listTally, selectedListTally, listTallyByList, selectedListTallyByList, utteranceTally, selectedUtteranceTally,regexTally, selectedRegexTally, skills, skillTags}
+    const updateFunctions = {updateLookups, updateLists, updateUtterances, updateRegexps, loadSkills}
                 
   return (
     <div className="OpenNluDataApp">
@@ -405,7 +433,7 @@ function App() {
                             <Route exact path='/helpexport' component={HelpTextExport}     />
                             <Route exact path='/helpabout' component={HelpTextAbout}     />
                             
-                            <Route exact path='/search' render={(props) => <SkillSearchPage user={user} getAxiosClient={getAxiosClient}   />} />
+                            <Route exact path='/search' render={(props) => <SkillSearchPage user={user} getAxiosClient={getAxiosClient} lookups={lookups} updateFunctions={updateFunctions}  />} />
                            
                             <Route exact path='/' component={HelpText} />
 

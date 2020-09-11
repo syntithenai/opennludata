@@ -38,8 +38,9 @@ export default function useSkillsEditor(props) {
        storeName   : "examples",
      });
     const token = props.user && props.user.token && props.user.token.access_token ? props.user.token.access_token : ''
+    console.log(['SETOKE',token])
     const axiosClient = props.getAxiosClient(token)
-    const {saveItem, deleteItem, searchItems} = useRestEndpoint(axiosClient,"http://localhost:5000/api/v1/")
+    const {saveItem, deleteItem, searchItems} = useRestEndpoint(axiosClient,process.env.REACT_APP_restBaseUrl)
 
     const [invocation, setInvocation] = useState('')
     const [mongoId, setMongoId] = useState('')
@@ -207,41 +208,52 @@ export default function useSkillsEditor(props) {
         // if user is logged in, try load the matching online skill
         if (user && user._id && skill.title) {
             var query = {user:user._id, title:skill.title}
-            //if (skill._id) query._id = skill._id
-            console.log(['SEARCH ONLINE ',query])
-            searchItems('Skill',query).then(function (res) {
-                console.log(['SKILL RESULTS'])
-                console.log(res.data)
-                if (res.data && res.data.length > 0) {
-                    var found = false
-                    res.data.map(function(skillItem) {
-                        console.log(['SKILL RESULTS', skill ? skill._id : '',skillItem ? skillItem._id:''])
-                        if (skill._id && skill._id === skillItem._id) {
-                            found = true
-                            console.log(['SKILL RESULTS DATES',skill.updated_date ,skillItem.updated_date, skill.updated_date - skillItem.updated_date])
-                            if (skill.updated_date < skillItem.updated_date) {
-                                setSkillUpdatedMatches([res.data[0]])
-                            }
-                            // matching skill OK
-                            //setSkillMatches([res.data[0]])
-                        } 
-                        return null
-                    })
-                    if (!found) {
-                        // potential match
-                        setSkillMatches(res.data)
+            if (props.lookups.skills) {
+                setSkillMatches( Object.values(props.lookups.skills).filter(function(loadedSkill) {
+                    if (loadedSkill && loadedSkill.title ===  skill.title) {
+                        if (user._id === loadedSkill.user) {
+                            setSkillMatches([loadedSkill])
+                        }
                     }
-                } else {
-                    // no match existing so create new OK
-                   setSkillMatches([])
-                }
-            }).catch(function(err) {
-                console.log(err)  
-            })
-        } else {
-            // no match existing so create new OK
-           setSkillMatches([])
-        }
+                }))
+            }
+        }    
+            //if (skill._id) query._id = skill._id
+            //console.log(['SEARCH ONLINE ',query])
+            //searchItems('Skill',query).then(function (res) {
+                //console.log(['SKILL RESULTS'])
+                //console.log(res.data)
+                //if (res.data && res.data.length > 0) {
+                    //var found = false
+                    //res.data.map(function(skillItem) {
+                        //console.log(['SKILL RESULTS', skill ? skill._id : '',skillItem ? skillItem._id:''])
+                        //if (skill._id && skill._id === skillItem._id) {
+                            //found = true
+                            //console.log(['SKILL RESULTS DATES',skill.updated_date ,skillItem.updated_date, skill.updated_date - skillItem.updated_date])
+                            //if (skill.updated_date < skillItem.updated_date) {
+                                //setSkillUpdatedMatches([res.data[0]])
+                            //}
+                            //// matching skill OK
+                            ////setSkillMatches([res.data[0]])
+                        //} 
+                        //return null
+                    //})
+                    //if (!found) {
+                        //// potential match
+                        //setSkillMatches(res.data)
+                    //}
+                //} else {
+                    //// no match existing so create new OK
+                   //setSkillMatches([])
+                //}
+            //}).catch(function(err) {
+                //console.log(err)  
+            //})
+            
+        //} else {
+            //// no match existing so create new OK
+           //setSkillMatches([])
+        //}
     }
     
     function indexEntities(currentSkill, filteredItems) {

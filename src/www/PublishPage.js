@@ -17,10 +17,12 @@ export default  function PublishPage(props) {
                 <div ><b>By publishing your extension, you are agreeing to the following</b>
                 <ul>
                     <li>Your skill will be available for download under an MIT Open Source License, allowing people to download the data and do whatever they want with it.</li>
+                    <li>Your skill will be committed to the <a href="https://github.com/syntithenai/opennludata" target="_new">Github repository</a> </li>
+                    <li>Your skill can be unpublished/deleted from the searchable index but will remain in the history of the git repository.</li>
                 </ul>
                 </div>
                 
-                <div>Submitted skills can be found using the search tools on this website. Community data is also regularly commited to the <a href="https://github.com/syntithenai/opennludata_data" target="_new">Github repository</a> </div>
+                <div>Submitted skills can be found using the search tools on this website. </div>
                 <br/>
                
                 <div style={{width: '100%',textAlign:'center'}}>
@@ -34,7 +36,9 @@ export default  function PublishPage(props) {
                                    props.setCurrentSkill(res.data)
                                    props.setMongoId(res.data._id)
                                    props.setPageMessage('Published',3000)
-                                   props.history.push("/skills/skill/"+props.currentSkill.title)
+                                   props.updateFunctions.loadSkills().then(function() {
+                                        props.history.push("/skills/skill/"+props.currentSkill.title)
+                                   })
                                    //console.log('updtecurrent skill ',currentSkill)
                                } 
                             })
@@ -52,7 +56,9 @@ export default  function PublishPage(props) {
                                    props.setCurrentSkill(res.data)
                                    props.setMongoId(res.data._id)
                                    props.setPageMessage('Published',3000)
-                                   props.history.push("/skills/skill/"+props.currentSkill.title)
+                                   props.updateFunctions.loadSkills().then(function() {
+                                        props.history.push("/skills/skill/"+props.currentSkill.title)
+                                   })
                                } 
                             })  
                         })  
@@ -65,7 +71,9 @@ export default  function PublishPage(props) {
                            props.setMongoId(null)
                            console.log(['SSKIL deleted',res]) 
                                props.setPageMessage('Unpublished',3000)
-                            props.history.push("/skills/skill/"+props.currentSkill.title)
+                               props.updateFunctions.loadSkills().then(function() {
+                                    props.history.push("/skills/skill/"+props.currentSkill.title)
+                                })
                        }) 
                        
                     }} >Unpublish</Button>}

@@ -28,7 +28,7 @@ export default function UtterancesManagerRow(props) {
                   <div style={{float:'left'}}>
                      {!item.isSelected && <Button style={{float: 'left'}} size="lg" variant="secondary" onClick={function() {selectItem(splitNumber)}} ><img style={{height:'1em'}} src={checkImage} alt="Select"  /></Button>}
                       {item.isSelected && <Button style={{float: 'left'}} size="lg" variant="success" onClick={function() {deselectItem(splitNumber)}} ><img style={{height:'1em'}} src={checkImage} alt="Deselect"  /></Button>}
-                </div>
+                  </div>
                   
                 <label><span style={{float:'left', marginLeft:'0.5em', marginRight:'0.5em'}}>Description </span> <input style={{float:'left'}} size='50'   
                        type='text'  value={item.value}  onChange={function(e) { updateExampleContent(e.target.value)}} /></label>
@@ -49,14 +49,14 @@ export default function UtterancesManagerRow(props) {
                         suggestionComponent={SuggestionComponent}
                         suggestions={props.lookups.regexpTagsLookups.map(function(listName,i) {return {id: i, name: listName}})}
                         onDelete={onTagDelete}
-                        onAddition={onTagAddition} /> 
+                        onAddition={function(a, b) {console.log('ADD REGEXP TAG',a,b) ; onTagAddition(a)}} /> 
                         </span>
                         </label>
                         
                         
                       
                     <label style={{float:'left', marginLeft:'0.5em'}} ><span style={{float:'left', marginRight:'0.5em'}}>Regular Expression</span> 
-                        <textarea style={{width:'60em',height:'2em'}}  type='text' value={item.synonym} onChange={function(e) {updateExampleSynonym(e.target.value)}} />
+                        <textarea style={{width:'60em',height:'6em'}}  type='text' value={item.synonym} onChange={function(e) {updateExampleSynonym(e.target.value)}} />
                     </label>
                     
                     

@@ -2,8 +2,8 @@ import React, {useState, useEffect} from 'react';
 import useDBSingleKey from './useDBSingleKey'
 import {useParams, useHistory} from 'react-router-dom'
 
-function useListItemEditor(database, databaseTable, databaseKey, updateLists) {
-    const {loadAll, saveItem, deleteItem , items, setItems, findKeyBy, filter, sort} = useDBSingleKey(database, databaseTable, databaseKey)
+function useListItemEditor(database, databaseTable, databaseKey, updateLists, initialData) {
+    const {loadAll, saveItem, deleteItem , items, setItems, findKeyBy, filter, sort} = useDBSingleKey(database, databaseTable, databaseKey, initialData)
     const [filteredItems, setFilteredItems] = useState([])
     const [filteredItemsKeys, setFilteredItemsKeys] = useState([])
     const [searchFilter, setSearchFilter] = useState('')

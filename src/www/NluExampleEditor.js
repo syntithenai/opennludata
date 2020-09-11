@@ -55,14 +55,12 @@ export default function NluExampleEditor(props) {
                      intentAll={intentAll} intentAllValue={intentAllValue} setIntentAllValue={setIntentAllValue}  
                      tagAll={tagAll} tagAllValue={tagAllValue} setTagAllValue={setTagAllValue}  lookups={props.lookups}
                  />
-                 
-                        
-                
                  <Button style={{marginLeft:'1em'}} onClick={deleteAll} variant="danger"  >Delete Selected</Button> 
                
             </span> } 
                
                 <List
+                    key="intentlist"  
                     ref={listRef}
                     itemData={{items: filteredItems, saveItem: saveItemWrap, deleteItem, findKeyBy, lookups: props.lookups, setPageMessage: props.setPageMessage}}
                     itemKey={index => index}  

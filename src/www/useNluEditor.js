@@ -335,6 +335,8 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
     
     function saveItemWrap(item,index) {
         saveItem(item,index)
+        
+        console.log(['SAVEITEMWRAP',listRef,listRef ? listRef.current : 'notcurrent'])
         if (listRef && listRef.current) listRef.current.resetAfterIndex(index);
         updateLookups(items)
     }

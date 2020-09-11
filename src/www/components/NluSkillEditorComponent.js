@@ -271,7 +271,7 @@ blah name`} ></textarea>
                             <label style={{fontWeight:'bold', marginLeft:'0.5em'}} > Invocation <input type='text' value={props.invocation} onChange={function(e) {props.setInvocation(e.target.value)}} /></label>
                         </div>
                       </Tab>
-                      <Tab eventKey="alex" title="Alexa">
+                      <Tab eventKey="alexa" title="Alexa">
                         <div style={{marginTop:'0.7em', marginLeft:'1.4em'}} >
                             <label style={{fontWeight:'bold', marginLeft:'0.5em'}} > Invocation <input type='text' value={props.invocation} onChange={function(e) {props.setInvocation(e.target.value)}} /></label>
                         </div>
@@ -290,5 +290,5 @@ blah name`} ></textarea>
         }
         
     }
-
+    return []
 }

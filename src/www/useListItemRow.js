@@ -22,12 +22,18 @@ function useListItemRow(item, saveItem, splitNumber, style) {
       }
      
      function onTagAddition (tag) {
+         console.log(['ontagad',tag, tags])
          if (tag && tag.name.trim().length > 0) {
             const newTags = [].concat(tags, tag)
-            setTags(uniquifyArrayOfObjects(newTags,'name').sort(function(a,b) {if (a.name > b.name) return 1; else return -1} ))
+            console.log(['ontagad new',newTags])
             var newItem = item
-            newItem.tags = uniquifyArray(newTags.map(function(newTag) { return newTag.name})).sort()
+            var tagArray = uniquifyArray(newTags.map(function(newTag) { return newTag.name}))
+            newItem.tags = tagArray.sort()
+            console.log(['ontagad presave',tagArray,JSON.parse(JSON.stringify(newItem)),splitNumber])
             saveItem(newItem,splitNumber)
+            console.log(['ontagad saved'])
+            setTags(uniquifyArrayOfObjects(newTags,'name').sort(function(a,b) {if (a.name > b.name) return 1; else return -1} ))
+            
         }
       }
     

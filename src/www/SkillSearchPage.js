@@ -12,48 +12,116 @@ export default function SkillSearchPage(props) {
     const [searchResults, setSearchResults] = useState([])
     const token = props.user && props.user.token && props.user.token.access_token ? props.user.token.access_token : ''
     const axiosClient = props.getAxiosClient(token)
-    const {saveItem, deleteItem, getItem, searchItems} = useRestEndpoint(axiosClient,"http://localhost:5000/public/api/v1/")
+    const {saveItem, deleteItem, getItem, searchItems} = useRestEndpoint(axiosClient,process.env.REACT_APP_restPublicBaseUrl)
     var importFunctions = useImportFunctions()
     var history = useHistory() 
-
+    var [skills, setSkills] = useState({})
+    var [tags, setTags] = useState({})
     const sourcesDB = useDB('nlutool','sources');
 
-    useEffect((props) => {
-        loadSkills()
-        //doSearch()
-    },[])
+    //useEffect((props) => {
+        //loadSkills()
+        ////doSearch()
+    //},[])
     
-    function loadSkills() {
-        const axiosClient = props.getAxiosClient()
-        axiosClient.get((process.env.REACT_APP_githubSkillsUrl ? process.env.REACT_APP_githubSkillsUrl : '/static/media/skills/')+'index.js').then(function(res) {
-          console.log(['LOD SKILSS',res])  
-        }).catch(function(err) {
-            console.log(err)  
+    useEffect((props) => {
+        doSearch()
+    },[props.lookups.skills])
+    
+    function loadSkill(skill) {
+        console.log(['LOaD SKIL',skill])  
+        return new Promise(function(resolve,reject) {
+            if (skill && skill.file) {
+                console.log(['LOaD SKIL have file',(process.env.REACT_APP_githubSkillsUrl ? process.env.REACT_APP_githubSkillsUrl : '/static/media/skills/')+skill.file])  
+                const axiosClient = props.getAxiosClient()
+                axiosClient.get((process.env.REACT_APP_githubSkillsUrl ? process.env.REACT_APP_githubSkillsUrl : '/static/media/skills/')+skill.file).then(function(res) {
+                  console.log(['LOaDed SKIL',res.data])  
+                  if (res.data) {
+                      //console.log(res.data)
+                      //try {
+                          //var data = JSON.parse(res.data)
+                          resolve({fileType:'opennlu.skill', created_date: new Date().getTime(), title: res.data.title, data: JSON.stringify(res.data)})
+                      //} catch (e) {
+                        //console.log(e)      
+                    //}
+                  } else {
+                      reject('Failed to load skill')  
+                  }
+                }).catch(function(e) {
+                   reject('Failed to load skill')  
+                })
+            } else {
+                reject('Incomplete skill data')
+            }
         })
-        //https://raw.githubusercontent.com/syntithenai/opennludata_data/master/public/skills/index.js
     }
     
-    function importItem(item) {
-        var item = {id:null, data:JSON.stringify(item), title:item.title+'.skill.json', fileType :"opennlu.skill    "}
-        sourcesDB.saveItem(item,0)
-        history.push("/sources")
+    //function loadSkills() {
+        //const axiosClient = props.getAxiosClient()
+        //axiosClient.get((process.env.REACT_APP_githubSkillsUrl ? process.env.REACT_APP_githubSkillsUrl : '/static/media/skills/')+'index.js').then(function(res) {
+          //console.log(['LOaD SKILSS',res.data])  
+          //var tags={}
+          //if (res.data) {
+              //Object.values(res.data).map(function(skill) {
+                  //if (skill.tags) skill.tags.map(function(tag) {
+                      //tags[tag] = true
+                     //return null  
+                  //})
+                  //return null
+              //})
+              //setTags(Object.keys(tags).sort())
+              //setSkills(res.data)
+          //}
+        //}).catch(function(err) {
+            //console.log(err)  
+        //})
+    //}
+    
+    function importItem(skill) {
+        console.log(['import item',skill])  
+        loadSkill(skill).then(function(item) {
+            console.log(['imported item',item])  
+            //var item = {id:null, data:JSON.stringify(item), title:item.title+'.skill.json', fileType :"opennlu.skill    "}
+            sourcesDB.saveItem(item,0)
+            history.push("/sources")
+        }).catch(function(e) {
+           console.log(e)   
+        })
     }
 
     function doSearch(queryIn='') {
         const text = queryIn && queryIn.trim && queryIn.trim() ? queryIn : (searchFilter && searchFilter.trim() ? searchFilter : '')
-        var query = {}
-        var sort = {title: 1}
-        if (text && text.trim()) {
-            //query.title=searchFilter
-            query["$text"]={"$search":text.trim()}
-        } else {
-            sort = {updated_date : -1}
+        if (props.lookups.skills) {
+            if (text) {
+                var filtered = []
+                Object.values(props.lookups.skills).map(function(skill) {
+                    if (skill.userAvatar && skill.userAvatar.indexOf(text) !== -1) {
+                        filtered.push(skill)
+                    } else if (skill.title && skill.title.indexOf(text) !== -1) {
+                        filtered.push(skill)
+                    } else if (skill.tags && skill.tags.indexOf(text) !== -1) {
+                        filtered.push(skill)
+                    }
+                    return null
+                })
+                setSearchResults(filtered)
+            } else {
+                setSearchResults(Object.values(props.lookups.skills))
+            }
         }
-        searchItems('Skill',query, 40, 0, sort).then(function(res) {
-              console.log('doSerach')
-              console.log(res.data)
-              setSearchResults(res.data)
-        })
+        //var query = {}
+        //var sort = {title: 1}
+        //if (text && text.trim()) {
+            ////query.title=searchFilter
+            //query["$text"]={"$search":text.trim()}
+        //} else {
+            //sort = {updated_date : -1}
+        //}
+        //searchItems('Skill',query, 40, 0, sort).then(function(res) {
+              //console.log('doSerach')
+              //console.log(res.data)
+              //setSearchResults(res.data)
+        //})
     }
       
 
@@ -66,9 +134,13 @@ export default function SkillSearchPage(props) {
     // Autosuggest will call this function every time you need to update suggestions.
     // You already implemented this logic above, so just use it.
     function onSuggestionsFetchRequested ({ value }) {
-        searchItems('SkillTags',{tag:{"$regex":value}},20,0,'',{tag:1}).then(function(res) {
-            setSuggestions(res.data && res.data.length > 0 ? res.data : [])
-        })
+         setSuggestions(props.lookups.tags.sort().map(function(tag) {
+             return {tag: tag} 
+          }))
+        
+        //searchItems('SkillTags',{tag:{"$regex":value}},20,0,'',{tag:1}).then(function(res) {
+            //setSuggestions(res.data && res.data.length > 0 ? res.data : [])
+        //})
     };
 
     // Autosuggest will call this function every time you need to clear suggestions.
@@ -103,7 +175,7 @@ export default function SkillSearchPage(props) {
                 />
                 </Col><Col>
                 <Button variant="success" onClick={doSearch}>Search</Button>
-            
+                <Button variant="danger" onClick={function() {setSearchFilter(''); doSearch('')}}>Reset</Button>
             </Col></Row>
         </Form> 
         
@@ -111,17 +183,17 @@ export default function SkillSearchPage(props) {
         {searchFilter.trim() && <h3>Search Results</h3>}
         <Container fluid ><Row>
         {searchResults.map(function(result, key) {
-            const bStyle = {marginLeft:'0.5em'}
+            const bStyle = {marginLeft:'0.5em', marginBottom:'0.2em'}
              return <Col sm={12} md={6} lg={4} xl={4} key={key} style={{border: '2px solid black', padding: '0.5em', margin: '0.5em'}}>
                 <Button variant="success" style={{float:'right'}} onClick={function(e) {importItem(result)}}>Grab</Button>
                 <h4 style={{marginBottom:'0.3em'}} >{result.title} {result.userAvatar && <span>by {result.userAvatar}</span>} </h4>
                 
                 {result.tags && result.tags.length > 0 && <Button style={bStyle} variant="outline-warning" >{result.tags.join(", ")}</Button>}
                 <div>
-                    {result.intents && Object.keys(result.intents).length > 0 && <Button variant="outline-primary"style={bStyle}>{Object.keys(result.intents).length} intents </Button>}
-                    {result.entities && Object.keys(result.entities).length > 0 && <Button variant="outline-primary"style={bStyle}>{Object.keys(result.entities).length} entities</Button>}
-                    {result.regexps && result.regexps.length > 0 && <Button variant="outline-primary"style={bStyle}>{result.regexps.length} regular expressions</Button>}
-                    {result.utterances && result.utterances.length > 0 && <Button variant="outline-primary"style={bStyle}>{result.utterances.length} utterances</Button>}
+                    {result.intents && result.intents > 0 && <Button variant="outline-primary"style={bStyle}>{result.intents} intents </Button>}
+                    {result.entities && result.entities > 0 && <Button variant="outline-primary"style={bStyle}>{result.entities} entities</Button>}
+                    {(result.regexps > 0) && <Button variant="outline-primary"style={bStyle}>{result.regexps} regular expressions</Button>}
+                    {(result.utterances > 0 )&& <Button variant="outline-primary"style={bStyle}>{result.utterances} utterances</Button>}
                     {<Button style={{marginLeft:'0.5em', marginTop:'1em'}} variant="outline-secondary" >Updated: {new Date(result.updated_date).toUTCString()}</Button>}
                 </div>
              </Col>
