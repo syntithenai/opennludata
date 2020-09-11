@@ -1,1 +1,1 @@
-{"5f5966485550fc1996ca8077":{"id":"5f5966485550fc1996ca8077","_id":"5f5c040fc790eb16206d7ce7","title":"mym","userAvatar":"Syntithenai","updated_date":1599865871965,"created_date":1599865871965,"tags":[],"entities":7,"intents":18,"utterances":0,"regexps":9,"file":"Syntithenai-mym-5f5966485550fc1996ca8077.json"}}
+{}
