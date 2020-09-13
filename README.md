@@ -18,3 +18,18 @@ Please note this is a work in progress. The backend is not yet deployed so login
 - internationalisation
 - more formats - ibm, microsoft, native alexa/google
 
+(https://raw.githubusercontent.com/syntithenai/opennludata/master/docs/static/media/screenshots/sources.png)
+
+(https://raw.githubusercontent.com/syntithenai/opennludata/master/docs/static/media/screenshots/intents.png)
+
+(https://raw.githubusercontent.com/syntithenai/opennludata/master/docs/static/media/screenshots/entities.png)
+
+(https://raw.githubusercontent.com/syntithenai/opennludata/master/docs/static/media/screenshots/utterances.png)
+
+(https://raw.githubusercontent.com/syntithenai/opennludata/master/docs/static/media/screenshots/regex.png)
+
+(https://raw.githubusercontent.com/syntithenai/opennludata/master/docs/static/media/screenshots/skill.png)
+
+(https://raw.githubusercontent.com/syntithenai/opennludata/master/docs/static/media/screenshots/publish.png)
+
+(https://raw.githubusercontent.com/syntithenai/opennludata/master/docs/static/media/screenshots/search.png)
