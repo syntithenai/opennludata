@@ -13,7 +13,6 @@ This tool helps voice developers build vocabularies for their applications by pr
             <li>Virtual rendering with react-window is used to allow fast rendering of lists of intents and entities with many thousands of values</li>
             <li>Export training data suitable for RASA, JOVO and Mycroft</li>
             <li>Publish your skill to the community repository under an open source license</li>
-            
         </ul>
         <ul>
             <li>This tool is a Progressive Web Application. Most features work without the Internet.</li>
