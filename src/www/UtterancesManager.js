@@ -18,21 +18,21 @@ const RenderRow = function(props) {
     return <UtterancesManagerRow  
          item={item}  splitNumber={index} style={style}
          saveItem={props.data.saveItem} deleteItem={props.data.deleteItem} saveNlu={props.data.saveNlu}
-         lookups={props.data.lookups} />
+         lookups={props.data.lookups}  lastSelected={props.data.lastSelected} setLastSelected={props.data.setLastSelected} selectBetween={props.data.selectBetween}  />
 }
 
 export default  function UtterancesManager(props) {
-    const {listFilterValue, setListFilterValue, loadAll, deleteItem , findKeyBy, searchFilter, setSearchFilter, tagAllValue, setTagAllValue, listRef, tagAll,untagAll, resetSelection, selectAll, saveItemWrap,  filteredItems, deleteAll, createEmptyItem, sort} = useListItemEditor('nlutool','utterances','alldata', props.updateFunctions.updateUtterances)
+    const {listFilterValue, setListFilterValue, loadAll, deleteItem , findKeyBy, searchFilter, setSearchFilter, tagAllValue, setTagAllValue, listRef, tagAll,untagAll, resetSelection, selectAll, saveItemWrap,  filteredItems, deleteAll, createEmptyItem, sort, lastSelected, setLastSelected, selectBetween} = useListItemEditor('nlutool','utterances','alldata', props.updateFunctions.updateUtterances)
     //const [currentList, setCurrentList] = useState('')
 
     function getItemSize() {
         if (window.innerWidth < 430) {
-               return 220
+               return 380
         // medium screen tablet
         } else if (window.innerWidth <= 768) {
-               return 160
+               return 230
         } else {
-            return 130
+            return 180
         }
     }
 
@@ -61,7 +61,7 @@ export default  function UtterancesManager(props) {
                             <List
                                 key="list"
                                 ref={listRef}
-                                itemData={{items: filteredItems, saveItem: saveItemWrap, deleteItem, findKeyBy, lookups: props.lookups}}
+                                itemData={{items: filteredItems, saveItem: saveItemWrap, deleteItem, findKeyBy, lookups: props.lookups, lastSelected, setLastSelected, selectBetween}}
                                 itemKey={index => index}  
                                 className="List"
                                 height={700}

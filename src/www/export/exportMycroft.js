@@ -2,9 +2,6 @@ import {  uniquifyArray, replaceEntities } from '../utils';
 import {createZip} from './createZip'
 import localforage from 'localforage'
 
-
-
-
 async function exportMycroft(skill) {
     return new Promise(function(resolve,reject) {
         var listsStorage = localforage.createInstance({
@@ -63,7 +60,7 @@ async function exportMycroft(skill) {
                         //})
                        
                        console.log(['add from lists',entity.lists])
-                        lists.map(function(item) {
+                       lists.map(function(item) {
                             entity.lists.map(function(listKey) {
                                 console.log([listKey,item.tags.indexOf(listKey) !== -1, item.tags])
                                 if (item && item.tags && item.tags.indexOf(listKey) !== -1) {
@@ -88,6 +85,13 @@ async function exportMycroft(skill) {
                  modelFiles.push({name: entity+'.entity',content: entities[entity].join("\n")})
                  return null
              })
+             if (skill.utterances) {
+                  Object.keys(skill.utterances).map(function(utterance) {
+                     modelFiles.push({name: utterance.value+'.dialog',content: utterance.synonym})
+                     return null
+                  })   
+             }
+             
               resolve( modelFiles)
         })
     })

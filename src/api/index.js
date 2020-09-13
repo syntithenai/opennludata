@@ -152,7 +152,7 @@ loginSystem(config).then(function(login) {
           console.log(['POSTDELETE', req.url])
             var parts = req.url.split("/")
             var id = parts[parts.length - 1]
-            commitSkill({id: id}, true).then(result => {
+            commitSkill({_id: id}, true).then(result => {
                   console.log(result)
                   next()
                 }).catch(err => {

@@ -38,7 +38,7 @@ export default function useSkillsEditor(props) {
        storeName   : "examples",
      });
     const token = props.user && props.user.token && props.user.token.access_token ? props.user.token.access_token : ''
-    console.log(['SETOKE',token])
+    //console.log(['SETOKE',token])
     const axiosClient = props.getAxiosClient(token)
     const {saveItem, deleteItem, searchItems} = useRestEndpoint(axiosClient,process.env.REACT_APP_restBaseUrl)
 
@@ -205,14 +205,21 @@ export default function useSkillsEditor(props) {
     }
     
     function findOnlineSkill(user,skill) {
+        console.log(['FINDONLINESKILL',user,skill,props.lookups, props.lookups.skills])
         // if user is logged in, try load the matching online skill
         if (user && user._id && skill.title) {
-            var query = {user:user._id, title:skill.title}
+            //var query = {user:user._id, title:skill.title}
             if (props.lookups.skills) {
                 setSkillMatches( Object.values(props.lookups.skills).filter(function(loadedSkill) {
+                    console.log(['FINDONLINESKILL compare',user._id, loadedSkill.user, skill.title, loadedSkill.title])
                     if (loadedSkill && loadedSkill.title ===  skill.title) {
                         if (user._id === loadedSkill.user) {
-                            setSkillMatches([loadedSkill])
+                            console.log(['FINDONLINESKILL match', loadedSkill,   loadedSkill.updated_date  ,skill.updated_date , loadedSkill.updated_date - skill.updated_date ])
+                            //setSkillMatches([loadedSkill])
+                            if (!skill.updated_date || skill.updated_date < loadedSkill.updated_date) {
+                                 console.log(['FINDONLINESKILL match newer', loadedSkill])
+                                setSkillUpdatedMatches([loadedSkill])
+                            }
                         }
                     }
                 }))
@@ -601,8 +608,7 @@ export default function useSkillsEditor(props) {
     }
     
     function addUtterance(utterance) {
-       
-        if (currentSkill && utterance) {
+        if (currentSkill && utterance && utterance.name) {
             var skill = currentSkill;
             if (!Array.isArray(skill.utterances)) skill.utterances=[]
             skill.utterances.push(utterance.name)
@@ -619,7 +625,7 @@ export default function useSkillsEditor(props) {
                  utteranceStorage.getItem('alldata', function (err,utterances) {
                      if (err) throw new Error(err)
                      if (Array.isArray(utterances)) {
-                         utterances.unshift({id:generateObjectId(), value:utterance.name, synonyms:'', tags:[]})
+                         utterances.unshift({id:generateObjectId(), value:utterance && utterance.name ? utterance.name.trim().replaceAll(' ','_') : '', synonym:utterance.name, tags:[]})
                          utteranceStorage.setItem('alldata',utterances)
                      }
                  })

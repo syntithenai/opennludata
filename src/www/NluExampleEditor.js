@@ -1,4 +1,4 @@
-import React, { useEffect} from 'react';
+import React, { useEffect, useState} from 'react';
 import './App.css';
 import {Link} from 'react-router-dom'
 import {Button} from 'react-bootstrap'
@@ -7,6 +7,7 @@ import { VariableSizeList as List } from 'react-window';
 import NluExampleRow from './NluExampleRow'
 import EditorSearchBar from './components/EditorSearchBar'
 import useNluEditor from './useNluEditor'
+import {generateObjectId} from './utils'
 import {MatchesTallies,WithSelectedDropDowns} from './components/Components'
 const RenderRow = function(props) {
     const index = props.index
@@ -15,15 +16,21 @@ const RenderRow = function(props) {
     return <NluExampleRow  
          item={item} splitNumber={index} style={style}
          saveItem={props.data.saveItem} deleteItem={props.data.deleteItem} 
-         lookups={props.data.lookups} setPageMessage={props.data.setPageMessage} />
+         lookups={props.data.lookups} setPageMessage={props.data.setPageMessage} lastSelected={props.data.lastSelected} setLastSelected={props.data.setLastSelected} selectBetween={props.data.selectBetween} />
 }
 
 export default function NluExampleEditor(props) {
-    const {loadAll, deleteItem , items, findKeyBy, searchFilter, setSearchFilter, skillFilterValue, setSkillFilterValue, intentFilterValue, setIntentFilterValue, tagAllValue, setTagAllValue, skillAllValue, setSkillAllValue,  intentAllValue, setIntentAllValue, listRef, tagAll,untagAll, unskillAll, intentAll, resetSelection, selectAll,  skillSetAll, saveItemWrap, getItemSize, deleteAll, filteredItems, createEmptyItem, sort} = useNluEditor('nlutool','examples','alldata', props.updateFunctions.updateLookups)
+    const {loadAll, deleteItem , items, findKeyBy, searchFilter, setSearchFilter, skillFilterValue, setSkillFilterValue, intentFilterValue, setIntentFilterValue, tagAllValue, setTagAllValue, skillAllValue, setSkillAllValue,  intentAllValue, setIntentAllValue, listRef, tagAll,untagAll, unskillAll, intentAll, resetSelection, selectAll,  skillSetAll, saveItemWrap, getItemSize, deleteAll, filteredItems, createEmptyItem, sort, lastSelected, setLastSelected, selectBetween,  tagFilterValue, setTagFilterValue} = useNluEditor('nlutool','examples','alldata', props.updateFunctions.updateLookups)
+ 
     useEffect(() => {
         loadAll()
     // eslint-disable-next-line react-hooks/exhaustive-deps
     },[])
+
+    
+    function createEmptyItemWrap(skill, intent, tag) {
+        createEmptyItem(skill, intent, tag)
+    }
     
     //useEffect(() => {
         //if (importFrom) {
@@ -47,7 +54,7 @@ export default function NluExampleEditor(props) {
           
         if (filteredItems && filteredItems.length > 0) {
             return <div>
-          
+           
           <MatchesTallies items={items} filteredItems={filteredItems}/>
              {props.lookups.selectedTally > 0 && <span style={{float:'right'}}> 
                  <WithSelectedDropDowns
@@ -58,11 +65,11 @@ export default function NluExampleEditor(props) {
                  <Button style={{marginLeft:'1em'}} onClick={deleteAll} variant="danger"  >Delete Selected</Button> 
                
             </span> } 
-               
+              
                 <List
                     key="intentlist"  
                     ref={listRef}
-                    itemData={{items: filteredItems, saveItem: saveItemWrap, deleteItem, findKeyBy, lookups: props.lookups, setPageMessage: props.setPageMessage}}
+                    itemData={{items: filteredItems, saveItem: saveItemWrap, deleteItem, findKeyBy, lookups: props.lookups, setPageMessage: props.setPageMessage, lastSelected, setLastSelected, selectBetween}}
                     itemKey={index => index}  
                     className="List"
                     height={700}
@@ -81,7 +88,7 @@ export default function NluExampleEditor(props) {
     }
     
      return <div>
-        <EditorSearchBar {...props} searchFilter={searchFilter} setSearchFilter={setSearchFilter} skillFilterValue={skillFilterValue} setSkillFilterValue={setSkillFilterValue} resetSelection={resetSelection} selectAll={selectAll}  createEmptyItem={createEmptyItem} intentFilterValue={intentFilterValue} setIntentFilterValue={setIntentFilterValue} untagAll={untagAll} unskillAll={unskillAll} sort={sort}  />
+        <EditorSearchBar {...props} searchFilter={searchFilter} setSearchFilter={setSearchFilter} skillFilterValue={skillFilterValue} setSkillFilterValue={setSkillFilterValue} tagFilterValue={tagFilterValue} setTagFilterValue={setTagFilterValue} resetSelection={resetSelection} selectAll={selectAll}  createEmptyItem={createEmptyItemWrap} intentFilterValue={intentFilterValue} setIntentFilterValue={setIntentFilterValue} untagAll={untagAll} unskillAll={unskillAll} sort={sort}  />
          {renderEditor(props)}
     </div>
     

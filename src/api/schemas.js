@@ -1,13 +1,14 @@
 const mongoose = require('mongoose')
 
 const skillsSchema = new mongoose.Schema({
+  id: { type: String , required: true}, 
   title: { type: String, required: true },
+  created_date: { type: Number}, 
+  updated_date: { type: Number}, 
+  // store the minimum in the hosted database
   invocation: { type: String},
   user: { type: String , required: true}, 
   userAvatar: { type: String , required: true}, 
-  id: { type: String , required: true}, 
-  created_date: { type: Number}, 
-  updated_date: { type: Number}, 
   intents: { type: {}},
   entities: { type: {}},
   entitiesData: { type: {}},
@@ -21,11 +22,11 @@ const skillsSchema = new mongoose.Schema({
   jovo: { type: {}},
   mycroft: { type: {}},
 })
-skillsSchema.index({title: "text", invocation: "text", tags: "text"});
-skillsSchema.on('index', function(error) {
-    console.log('finished index');
-    console.log(error.message);
-  });
+//skillsSchema.index({title: "text", invocation: "text", tags: "text"});
+//skillsSchema.on('index', function(error) {
+    //console.log('finished index');
+    //console.log(error.message);
+  //});
   
 const skillTagsSchema = new mongoose.Schema({
   tag: { type: String, required: true , unique: true}

@@ -227,7 +227,11 @@ function ImportReviewPage(props) {
                                     })
                                 }}>Import</Button>
                             </Card.Header>
-                           
+                           <div>
+                                {utterance.synonym && utterance.synonym.split("\n").map(function(alt) {
+                                   return <div>{alt}</div>
+                                })}
+                           </div>
                     </Card>
                           
                     

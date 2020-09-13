@@ -1,10 +1,12 @@
 import useImportMergeFunctions from './useImportMergeFunctions'
 import useImportUtils from './useImportUtils'
 import {useHistory} from 'react-router-dom'
+const yaml = require('js-yaml');
+
 export default function useImportFunctions(sendPageMessage) {
     
     const {mergeEntities, mergeIntents, mergeUtterances, mergeRegexps, mergeSkill} = useImportMergeFunctions()
-    const {unzip, splitSentences, generateIntentSplits, generateEntitySplits, generateUtteranceSplits, generateIntentSplitsForMycroft, cleanListItem, extractSynonym, sortListSplits, sortExampleSplits, detectFileType, generateSplitsFromJovoJson, generateSplitsFromRasaJson, generateSplitsFromRasaMd} = useImportUtils()
+    const {unzip, splitSentences, generateIntentSplits, generateEntitySplits, generateUtteranceSplits, generateMycroftUtteranceSplits, generateIntentSplitsForMycroft, cleanListItem, extractSynonym, sortListSplits, sortExampleSplits, detectFileType, generateSplitsFromJovoJson, generateSplitsFromRasaJson, generateSplitsFromRasaMd} = useImportUtils()
     const history = useHistory()
     /* ONCLICK FUNCTIONS */   
     
@@ -177,25 +179,74 @@ export default function useImportFunctions(sendPageMessage) {
     
     function importJovo(item) {
         return new Promise(function( resolve, reject) {
-            unzip(item.data,['/project.js','/models/*.js']).then(function(files) {
+            unzip(item.data,['*/project.js','*/models/*.js']).then(function(files) {
                 console.log(['jovo',files])
                 resolve(files)
             })
         })
     }
     
+    function importRASADomainFile(content, skill) {
+        try {
+            var yml = yaml.safeLoad(content);
+            if (yml) {
+                skill.rasa.actions = yml.actions.join("\n")
+                if (yml.slots) {
+                    var newSlots = []
+                    skill.slots = Object.keys(yml.slots).map(function(slot) {
+                        var newSlot = {slotAutofill: slot.auto_fill ? true : false, slotType: slot.type ? slot.type : 'unfeaturized', values : Array.isArray(slot.values) ? slot.values  : [] }
+                        newSlots.push(newSlot)
+                    })
+                    skill.rasa.slots = newSlots
+                }
+                // TODO utterances responses: { utter_ask_mnemonic: [{text: "Would you like to hear a memory aid"}]}
+                // TODO intent - use_entities intents[{ask_followup_attribute: {use_entities:  ["attribute", "word", "person", "place", "thing"]}}]
+                if (yml.responses) {
+                    
+                }
+                if (yml.session_config) {
+                    var configLines = []
+                    Object.keys(yml.session_config).map(function(configLine) {
+                        configLines.push(" - "+configLine+" : "+yml.session_config[configLine])
+                    })
+                    skill.rasa.session = "session_config:\n"+ configLines.join("\n")
+                }
+             }
+            
+            console.log('rasa domain',yml)
+        } catch(e) {}
+        return skill
+    }
+    
     function importRASA(item) {
         return new Promise(function( resolve, reject) {
-            unzip(item.data,['/domain.yml','nlu.md','nlu.json']).then(function(files) {
+            unzip(item.data,['*/config.yaml','*/credentials.yaml','*/endpoints.yaml','*/domain.yaml','*/config.yml','*/credentials.yml','*/endpoints.yml','*/domain.yml','*.md','*.json']).then(function(files) {
                 //console.log(['rasa',files])
-                resolve(files)
+                var skill = {rasa: {}}
+                if (files) files.map(function(file) {
+                    if (file.path && (file.path.endsWith('config.yml') || file.path.endsWith('config.yaml'))) {
+                        skill.rasa.config = file.data
+                    } else if (file.path && (file.path.endsWith('credentials.yml')||file.path.endsWith('credentials.yml'))) {
+                        skill.rasa.credentials = file.data
+                    } else if (file.path && (file.path.endsWith('endpoints.yml') || file.path.endsWith('endpoints.yaml'))) {
+                        skill.rasa.endpoints = file.data
+                    } else if (file.path && (file.path.endsWith('domain.yml') || file.path.endsWith('domain.yaml'))) {
+                        skill = importRASADomainFile(file.data,skill)
+                    } else if (file.path && file.path.endsWith('.json')) {
+                        
+                    } else if (file.path && file.path.endsWith('.md')) {
+                        
+                    }
+                    console.log(file) 
+                })
+                resolve(skill)
             })
         })
     }
     
     function importMycroft(item) {
         return new Promise(function( resolve, reject) {
-            unzip(item.data,['.intent','.dialog','.entity']).then(function(files) {
+            unzip(item.data,['*.intent','*.dialog','*.entity']).then(function(files) {
                 //console.log(['mycroft',files])
                 var skill = {}
                 var utterances=[]
@@ -224,9 +275,11 @@ export default function useImportFunctions(sendPageMessage) {
                                var intent = fileParts.length > 1 ? fileParts[fileParts.length -1].replace('.intent','') : ''
                                intents = [].concat(generateIntentSplitsForMycroft(file.data, intent), intents)
                            } else if (file.path.endsWith('.dialog')) {
+                               var parts = file.path.split("/")
+                               var fileName = parts[parts.length -1]
                                console.log(file.path, file.data, generateUtteranceSplits(file.data, name))   
                                var utterance = fileParts.length > 1 ? fileParts[fileParts.length -1].replace('.dialog','')  : ''
-                               utterances = [].concat(generateUtteranceSplits(file.data, utterance), utterances)
+                               utterances = [].concat(generateMycroftUtteranceSplits(file.data, fileName.replace('.dialog','')), utterances)
                            } else if (file.path.endsWith('.entity')) {
                                console.log(file.path, file.data, generateEntitySplits(file.data, name)) 
                                var entity = fileParts.length > 1 ? fileParts[fileParts.length -1].replace('.entity','')  : ''
@@ -248,20 +301,17 @@ export default function useImportFunctions(sendPageMessage) {
           return new Promise(function(resolve, reject) {
              console.log(['import entities',item])
              if (item) {
-                  switch(item.fileType) {
-                      case 'text':
+                  if (item.fileType === 'text') {
                         resolve({entities:importTextEntities(item, item.title)})
-                        break;
-                    case 'json':
+                  } else if (item.fileType.endsWith('.json')) {
                         importJsonEntities(item).then(function(entities) {
                             resolve({entities:entities})  
                         })
-                        break;
-                    
-                    default:
+                  } else {
                         throw new Error('Invalid file type for import')
                   }
              }
+             
              reject('Failed to import')
         })
     }
@@ -270,17 +320,13 @@ export default function useImportFunctions(sendPageMessage) {
          return new Promise(function(resolve, reject) {
              console.log(['import utterances',item])
              if (item) {
-                  switch(item.fileType) {
-                      case 'text':
+                  if (item.fileType === 'text') {
                         resolve(importTextUtterances(item, item.title))
-                        break;
-                    case 'json':
+                  } else if (item.fileType.endsWith('.json')) {
                         importJsonUtterances(item).then(function(utterances) {
                             resolve({utterances:utterances})  
                         })
-                        break;
-                    
-                    default:
+                  } else {
                         throw new Error('Invalid file type for import')
                   }
              }
@@ -293,17 +339,13 @@ export default function useImportFunctions(sendPageMessage) {
           return new Promise(function(resolve, reject) {
              console.log(['import intents',item])
              if (item) {
-                  switch(item.fileType) {
-                      case 'text':
+                  if (item.fileType === 'text') {
                         resolve({intents:importTextIntents(item, item.title)})
-                        break;
-                    case 'json':
+                  } else if (item.fileType.endsWith('.json')) {
                         importJsonIntents(item).then(function(intents) {
                             resolve({intents:intents})  
                         })
-                        break;
-                    
-                    default:
+                  } else {
                         throw new Error('Invalid file type for import')
                   }
              }

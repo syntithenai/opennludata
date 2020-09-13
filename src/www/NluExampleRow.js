@@ -7,13 +7,14 @@ import ReactTags from 'react-tag-autocomplete'
 import useNluRow from './useNluRow'
 import SuggestionComponent from './components/SuggestionComponent'
 import checkImage from './images/check.svg'
+import TagComponent from './components/TagComponent'
 
 export default function NluExampleRow(props) {
        const  {item, splitNumber , style} = props;
        const {    
             intentTitle, setIntentTitle, selectionState, setSelectionState, newEntity, setNewEntity, tags, skills, reactTags, reactSkills, 
             onTagDelete, onTagAddition, onSkillDelete,onSkillAddition, updateExampleContent, entityClicked, entityTypeChanged, intentChanged, entityDelete, selectItem,  deselectItem
-        } = useNluRow(props.item, props.saveItem, props.splitNumber, props.style, props.setPageMessage)
+        } = useNluRow(props.item, props.saveItem, props.splitNumber, props.style, props.setPageMessage, props.lastSelected, props.setLastSelected, props.selectBetween)
         const [textInput, setTextInput] = useState(props.item && props.item.example ? props.item.example  : '')
          
        var intentOptions = props.lookups.intentLookups && props.lookups.intentLookups.sort().map(function(intentKey,i) {
@@ -71,8 +72,8 @@ export default function NluExampleRow(props) {
        return item && <div style={style} className={splitNumber % 2 ? 'ListItemOdd' : 'ListItemEven'}>
                <div style={{position:'relative', width: '100%', textAlign:'left',  borderTop: '2px solid black'}}>
                   
-                   {!item.isSelected && <Button style={{float: 'left'}} size="lg" variant="secondary" onClick={function() {selectItem(splitNumber)}} ><img  style={{height:'1em'}} src={checkImage} alt="Select" /></Button>}
-                  {item.isSelected && <Button style={{float: 'left'}} size="lg" variant="success" onClick={function() {deselectItem(splitNumber)}} ><img  style={{height:'1em'}} src={checkImage} alt="Deselect" /></Button>}
+                   {!item.isSelected && <Button style={{float: 'left'}} size="lg" variant="secondary" onClick={function(e) {selectItem(splitNumber,e)}} ><img  style={{height:'1em'}} src={checkImage} alt="Select" /></Button>}
+                  {item.isSelected && <Button style={{float: 'left'}} size="lg" variant="success" onClick={function(e) {deselectItem(splitNumber,e)}} ><img  style={{height:'1em'}} src={checkImage} alt="Deselect" /></Button>}
                   
                 <Button  variant="danger" size="sm" style={{float:'right', fontWeight:'bold', borderRadius:'15px', marginTop:'0.2em'}} onClick={function(e) {if (window.confirm('Really delete')) {props.deleteItem(splitNumber,(item.id ? item.id : ''))}}} >X</Button>
                  
@@ -116,13 +117,14 @@ export default function NluExampleRow(props) {
                     allowNew={true}
                     ref={reactTags}
                     tags={tags}
+                    tagComponent={function(iprops) {return <TagComponent {...iprops}   setRegexpEntity={props.setRegexpEntity} setRegexpIntent={props.setRegexpIntent}  lookups={props.lookups}  />}}
                     suggestionComponent={SuggestionComponent}
                     suggestions={props.lookups.tagLookups.map(function(tag,i) {return {id: i, name: tag}})}
                     onDelete={onTagDelete}
                     onAddition={onTagAddition} /> 
                     </div>
                   
-                  <input     
+                  <input  
                    onFocus={ function(e) {
                        setSelectionState(null)
                     }}

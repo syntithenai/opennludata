@@ -239,7 +239,7 @@ function exportRASA(skill,useMD = false) {
                              Object.keys(utterances).map(function(utteranceKey) {
                                     var utterance = utterances[utteranceKey]
                                     domainContentParts.push('utter_'+toSnakeCase(utterance.value))
-                                    domainContentParts.push('- text: '+utterance.value)
+                                    //domainContentParts.push('- text: '+utterance.value)
                                     if (utterance.synonyms && utterance.synonyms.length > 0) {
                                         utterance.synonyms.map(function(synonym) {
                                             domainContentParts.push('- text: '+synonym)

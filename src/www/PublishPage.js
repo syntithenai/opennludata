@@ -27,6 +27,7 @@ export default  function PublishPage(props) {
                
                 <div style={{width: '100%',textAlign:'center'}}>
                    {!props.currentSkill._id && <Button variant="success" style={{display:'inline'}} onClick={function(e) {
+                       props.startWaiting()
                        exportJSON(props.currentSkill).then(function(skillToSave) {
                            props.saveItem('Skill',skillToSave)
                            //{_id:props.currentSkill._id, id:props.currentSkill.id, title:props.currentSkill.title, json: JSON.stringify(props.currentSkill)})
@@ -36,6 +37,7 @@ export default  function PublishPage(props) {
                                    props.setCurrentSkill(res.data)
                                    props.setMongoId(res.data._id)
                                    props.setPageMessage('Published',3000)
+                                   props.stopWaiting()
                                    props.updateFunctions.loadSkills().then(function() {
                                         props.history.push("/skills/skill/"+props.currentSkill.title)
                                    })
@@ -47,6 +49,7 @@ export default  function PublishPage(props) {
                    
                    
                    {props.currentSkill._id && <Button variant="success" style={{display:'inline'}} onClick={function(e) {
+                       props.startWaiting()
                        exportJSON(props.currentSkill).then(function(skillToSave) {
                            props.saveItem('Skill',skillToSave)
                            //{_id:props.currentSkill._id, id:props.currentSkill.id, title:props.currentSkill.title, json: JSON.stringify(props.currentSkill)})
@@ -56,6 +59,7 @@ export default  function PublishPage(props) {
                                    props.setCurrentSkill(res.data)
                                    props.setMongoId(res.data._id)
                                    props.setPageMessage('Published',3000)
+                                   props.stopWaiting()
                                    props.updateFunctions.loadSkills().then(function() {
                                         props.history.push("/skills/skill/"+props.currentSkill.title)
                                    })
@@ -67,10 +71,12 @@ export default  function PublishPage(props) {
                     
                     {props.currentSkill._id && <Button variant="danger" style={{display:'inline'}} onClick={function(e) {
                        props.setMongoId('') 
+                       props.startWaiting()
                        props.deleteItem('Skill',props.currentSkill._id).then(function(res) {
                            props.setMongoId(null)
                            console.log(['SSKIL deleted',res]) 
                                props.setPageMessage('Unpublished',3000)
+                               props.stopWaiting()
                                props.updateFunctions.loadSkills().then(function() {
                                     props.history.push("/skills/skill/"+props.currentSkill.title)
                                 })

@@ -30,19 +30,45 @@ export default  function NluSkillsEditor(props) {
         //<Button style={{float:'right',marginLeft:'0.5em'}}  variant="success" onClick={function() {setShowExportDialog(true)}} >Publish</Button>
         // {JSON.stringify(skillMatches)}
      const skillsList = skillKeys ? skillKeys.map(function(skill,i) {return <Button key={i}  onClick={function(e) {setSkillFilterValue(skill)}}  style={{marginLeft:'1em'}} >{skill}</Button>} )   : []
+     
+     function loadSkill(skill) {
+        console.log(['LOaD SKIL',skill])  
+        return new Promise(function(resolve,reject) {
+            if (skill && skill.file) {
+                console.log(['LOaD SKIL have file',(process.env.REACT_APP_githubSkillsUrl ? process.env.REACT_APP_githubSkillsUrl : '/static/media/skills/')+skill.file])  
+                const axiosClient = props.getAxiosClient()
+                axiosClient.get((process.env.REACT_APP_githubSkillsUrl ? process.env.REACT_APP_githubSkillsUrl : '/static/media/skills/')+skill.file).then(function(res) {
+                  console.log(['LOaDed SKIL',res.data])  
+                  if (res.data) {
+                      //console.log(res.data)
+                      //try {
+                          //var data = JSON.parse(res.data)
+                          setSkill(res.data)
+                          resolve({fileType:'opennlu.skill', created_date: new Date().getTime(), title: res.data.title, data: JSON.stringify(res.data)})
+                      //} catch (e) {
+                        //console.log(e)      
+                    //}
+                  } else {
+                      reject('Failed to load skill')  
+                  }
+                }).catch(function(e) {
+                   reject('Failed to load skill')  
+                })
+            } else {
+                reject('Incomplete skill data')
+            }
+        })
+    }
             
     return <div>
-        {currentSkill && skillMatches && skillMatches.length > 0 && <span style={{color:'red'}} >
-                You have published version of this skill&nbsp;
-                {skillMatches.map(function(match,key) {
-                    return <span key={key} >saved {new Date(match.updated_date).toUTCString()} <Button variant="warning" onClick={function(e) {setSkill(match); setSkillMatches([]); forceReload()}} >Merge</Button></span>
-                })}
-        </span>}
+ 
+    <hr/>
+
         
         {currentSkill && skillUpdatedMatches && skillUpdatedMatches.length > 0 && <span>
                 You have a more recent published version of this skill&nbsp;
                 {skillUpdatedMatches.map(function(match) {
-                    return <span>saved {new Date(match.updated_date).toUTCString()} <Button variant="warning"  onClick={function(e) {setSkill(match); setSkillUpdatedMatches([]); forceReload()}} >Merge</Button></span>
+                    return <span>saved {new Date(match.updated_date).toUTCString()} <Button variant="warning"  onClick={function(e) {loadSkill(match); setSkillUpdatedMatches([]); forceReload()}} >Merge</Button></span>
                 })}
         </span>}         
          {currentSkill && !props.publish && skillFilterValue && skillFilterValue.length > 0 && <><Dropdown style={{float:'right',marginLeft:'0.5em'}}  as={ButtonGroup}>
@@ -80,7 +106,7 @@ export default  function NluSkillsEditor(props) {
             <h1>Skills</h1>
             {skillsList.length > 0 && skillsList}
             {skillsList.length <= 0 && <div>
-                You dont have any skills yet. Import some <Link to='/sources'><Button>Sources</Button></Link> 
+                You dont have any skills yet. Import some <Link to='/sources'><Button>Sources</Button></Link> or <Link to='/search'><Button>Search</Button></Link> the community archive.
             </div>}
         </div>}
          

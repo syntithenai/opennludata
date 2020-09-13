@@ -77,7 +77,7 @@ async function push ({ owner, repo, base, head, changes }) {
 async function commitSkill(skill, deleteSkill) {
     return new Promise(function(resolve,reject) {
       console.log(['COMMIT SKILL',skill])
-      if (skill && skill.id) {
+      if (skill && (skill.id || skill._id)) {
           const owner = process.env.github_data_owner ? process.env.github_data_owner : ''
           const repo = process.env.github_data_repo ? process.env.github_data_repo : ''
           const base = process.env.github_data_base ? process.env.github_data_base : ''
@@ -103,13 +103,16 @@ async function commitSkill(skill, deleteSkill) {
                   }
               }
               skillIndex = typeof skillIndex === "object" ? skillIndex : {}
-              skillIndex[skill._id] = {title: skill.title, userAvatar: skill.userAvatar, updated_date: skill.updated_date, created_date: skill.created_date, tags: skill.tags, entities: skill.entities ? Object.keys(skill.entities).length : 0, intents: skill.intents ? Object.keys(skill.intents).length : 0, utterances: skill.utterances ? skill.utterances.length : 0, regexps: skill.regexps ? skill.regexps.length : 0, file:skillFileName}
-              if (deleteSkill) {
-                   skillIndex[skill._id].deleted = true;
+              
+              skillIndex[skill.id] = {id: skill.id, _id: skill._id, title: skill.title, userAvatar: skill.userAvatar, updated_date: skill.updated_date, created_date: skill.created_date, tags: skill.tags, entities: skill.entities ? Object.keys(skill.entities).length : 0, intents: skill.intents ? Object.keys(skill.intents).length : 0, utterances: skill.utterances ? skill.utterances.length : 0, regexps: skill.regexps ? skill.regexps.length : 0, file:skillFileName, user: skill.user}
+              
+              if (deleteSkill && skill._id && skillIndex[skill.id] && skillIndex[skill.id]._id === skill._id) {
+                   skillIndex[skill.id].deleted = true;
               } 
+              
               var notDeleted = {}
-              Object.values(skillIndex).filter(function(skill) {if (!skill.deleted) return true; else return false }).map(function(skill) {
-                  notDeleted[skill._id] = skill
+              Object.values(skillIndex).filter(function(skill) {if (!skill.deleted) return true; else return false }).map(function(iskill) {
+                  notDeleted[skill.id] = iskill
                   return null
               });
               changes.files[indexPath] = JSON.stringify(notDeleted)       

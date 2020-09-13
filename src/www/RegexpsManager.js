@@ -61,11 +61,11 @@ const RenderRow = function(props) {
     return <RegexpsManagerRow  
          item={item}  splitNumber={index} style={style}
          saveItem={props.data.saveItem} deleteItem={props.data.deleteItem} saveNlu={props.data.saveNlu}
-         lookups={props.data.lookups} />
+         lookups={props.data.lookups}  lastSelected={props.data.lastSelected} setLastSelected={props.data.setLastSelected} selectBetween={props.data.selectBetween}  />
 }
 
 export default  function RegexpsManager(props) {
-    const {listFilterValue, setListFilterValue, loadAll, deleteItem , findKeyBy, searchFilter, setSearchFilter, tagAllValue, setTagAllValue, listRef, tagAll,untagAll, resetSelection, selectAll, saveItemWrap,  filteredItems, deleteAll, createEmptyItem, sort} = useListItemEditor('nlutool','regexps','alldata', props.updateFunctions.updateRegexps, initData)
+    const {listFilterValue, setListFilterValue, loadAll, deleteItem , findKeyBy, searchFilter, setSearchFilter, tagAllValue, setTagAllValue, listRef, tagAll,untagAll, resetSelection, selectAll, saveItemWrap,  filteredItems, deleteAll, createEmptyItem, sort, lastSelected, setLastSelected, selectBetween} = useListItemEditor('nlutool','regexps','alldata', props.updateFunctions.updateRegexps, initData)
     //const [currentList, setCurrentList] = useState('')
 
     function getItemSize() {
@@ -102,7 +102,7 @@ export default  function RegexpsManager(props) {
                             <List
                                 key="list"
                                 ref={listRef}
-                                itemData={{items: filteredItems, saveItem: saveItemWrap, deleteItem, findKeyBy, lookups: props.lookups}}
+                                itemData={{items: filteredItems, saveItem: saveItemWrap, deleteItem, findKeyBy, lookups: props.lookups, lastSelected, setLastSelected, selectBetween}}
                                 itemKey={index => index}  
                                 className="List"
                                 height={700}

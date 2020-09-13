@@ -6,6 +6,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import ReactTags from 'react-tag-autocomplete'
 import useListItemRow from './useListItemRow'
 import SuggestionComponent from './components/SuggestionComponent'
+import TagComponent from './components/TagComponent'
 import checkImage from './images/check.svg'
 
 export default function ListsManagerRow(props) {
@@ -13,7 +14,7 @@ export default function ListsManagerRow(props) {
        const {    
             tags, reactTags, 
             onTagDelete, onTagAddition, updateExampleContent,updateExampleSynonym,  selectItem, deselectItem
-        } = useListItemRow(props.item, props.saveItem, props.splitNumber, props.style)
+        } = useListItemRow(props.item, props.saveItem, props.splitNumber, props.style, props.lastSelected, props.setLastSelected, props.selectBetween)
             
        
        //var buttonImageStyle={color:'white', height:'2em'}
@@ -26,7 +27,7 @@ export default function ListsManagerRow(props) {
                     </div>
                    
                   <div style={{float:'left'}}>
-                     {!item.isSelected && <Button style={{float: 'left'}} size="lg" variant="secondary" onClick={function() {selectItem(splitNumber)}} ><img style={{height:'1em'}} src={checkImage} alt="Select"  /></Button>}
+                     {!item.isSelected && <Button style={{float: 'left'}} size="lg" variant="secondary" onClick={function(e) {selectItem(splitNumber,e)}} ><img style={{height:'1em'}} src={checkImage} alt="Select"  /></Button>}
                       {item.isSelected && <Button style={{float: 'left'}} size="lg" variant="success" onClick={function() {deselectItem(splitNumber)}} ><img style={{height:'1em'}} src={checkImage} alt="Deselect"  /></Button>}
                 </div>
                 
@@ -47,6 +48,7 @@ export default function ListsManagerRow(props) {
                         allowNew={true}
                         ref={reactTags}
                         tags={tags}
+                        tagComponent={function(iprops) {return <TagComponent {...iprops}   setRegexpEntity={props.setRegexpEntity} setRegexpIntent={props.setRegexpIntent}  lookups={props.lookups}  />}}
                         suggestionComponent={SuggestionComponent}
                         suggestions={props.lookups.listsLookups.map(function(listName,i) {return {id: i, name: listName}})}
                         onDelete={onTagDelete}

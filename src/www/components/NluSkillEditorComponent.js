@@ -8,7 +8,7 @@ import {Button, Badge , ListGroup , Tabs, Tab} from 'react-bootstrap'
 import {RASA, GoogleAssistant, Alexa} from '../utils'
 import ReactTags from 'react-tag-autocomplete'
 import SuggestionComponent from './SuggestionComponent'
-import TagComponent from './TagComponent'
+import SkillRegexTagComponent from './SkillRegexTagComponent'
 import DropDownComponent from './DropDownComponent'
 import RASATemplates from '../export/RASATemplates'
 //import ExportPage from './ExportPage'
@@ -118,7 +118,7 @@ export default function NluSkillEditorComponent(props) {
                             autoresize={true}
                             allowNew={false}
                             tags={props.currentSkill && props.currentSkill.regexps ? props.currentSkill.regexps.map(function(tag,i) {return {id: i, name: tag.name, intent: tag.intent ? tag.intent : '', entity: tag.entity ? tag.entity : '', synonym: tag.synonym}}):[]}
-                            tagComponent={function(iprops) {return <TagComponent {...iprops}   setRegexpEntity={props.setRegexpEntity} setRegexpIntent={props.setRegexpIntent}  lookups={props.lookups}  />}}
+                            tagComponent={function(iprops) {return <SkillRegexTagComponent {...iprops}   setRegexpEntity={props.setRegexpEntity} setRegexpIntent={props.setRegexpIntent}  lookups={props.lookups}  />}}
                             suggestionComponent={SuggestionComponent}
                             suggestions={props.lookups.regexpsLookups ? props.lookups.regexpsCompleteLookups.map(function(tag,i) {return {id: i, name: tag.value, intent: tag.intent ? tag.intent : '', entity: tag.entity ? tag.entity : '', synonym: tag.synonym}}):[]}
                            

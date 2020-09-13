@@ -10,6 +10,7 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists, in
     const [tagAllValue, setTagAllValue] = useState('')
     const listRef = React.createRef()
     //const [listFilterValue, setListFilterValue] = useState('')
+    const [lastSelected, setLastSelected] = useState(-1)
     
     var params = useParams()
     var listFilterValue = params.listId ? params.listId : '';
@@ -177,7 +178,29 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists, in
             setItems(newItems)
         }
     }
-    
+        
+    function selectBetween(a,b) {
+         var min = a
+         var max = b
+         if (max <  min) {
+             min = b
+             max = a
+         }
+         if (items) {
+            var newItems = []
+            items.map(function(item,i) {
+                if (item && item.id) {
+                    var newItem = item
+                    if (item.id && filteredItemsKeys[item.id]) {
+                       if (i >= min && i <= max) newItem.isSelected = true
+                       newItems.push(newItem)
+                    } 
+                }
+                return null
+            })
+            setItems(newItems)
+        }
+    }
     //function sort() {
          //console.log(['SORT',items])
          //if (items) {
@@ -189,9 +212,10 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists, in
     //}
     
     function saveItemWrap(item,index) {
-        console.log(['SAVE ITEM WRAP',item,index])
+        console.log(['SAVE ITEM WRAP LI',listRef, JSON.parse(JSON.stringify(item)),index])
         if (item) {
             saveItem(item,index)
+            
             listRef.current.resetAfterIndex(index);
             updateLists(items)
         }
@@ -208,7 +232,10 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists, in
         } else if (window.innerWidth <= 768) {
             baseSize = 70
         }
-        return baseSize
+        var tallyExtras = 0;
+        var item = items[index]
+        if (item && item.tags) tallyExtras += 1;
+        return baseSize + parseInt(tallyExtras+1/3) * 40
     }
     
    function createEmptyItem(list) {
@@ -221,7 +248,7 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists, in
     return {
         loadAll, saveItem, deleteItem , items, setItems, findKeyBy, filter, filteredItems, setFilteredItems, sort, 
         searchFilter, setSearchFilter, tagAllValue, setTagAllValue,listRef, listFilterValue, setListFilterValue,
-        tagAll,untagAll, resetSelection, selectAll, saveItemWrap, getItemSize, deleteAll, createEmptyItem
+        tagAll,untagAll, resetSelection, selectAll, saveItemWrap, getItemSize, deleteAll, createEmptyItem, lastSelected, setLastSelected, selectBetween
     }
 }
 export default useListItemEditor

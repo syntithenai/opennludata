@@ -86,7 +86,7 @@ function App() {
     
     function loadSkills() {
         return axios.get((process.env.REACT_APP_githubSkillsUrl ? process.env.REACT_APP_githubSkillsUrl : '/static/media/skills/')+'index.js').then(function(res) {
-          //console.log(['LOaD SKILSS',res.data])  
+          console.log(['LOaD SKILSS',res.data])  
           var tags={}
           if (res.data) {
               Object.values(res.data).map(function(skill) {
@@ -104,7 +104,7 @@ function App() {
         })
     }
        
-    useEffect(() => loadSkills(),[])   
+    useEffect(() => {loadSkills()},[])   
        
     function startWaiting() {
         setWaiting(true)
@@ -382,7 +382,19 @@ function App() {
                             <Route path='/examples/intent/:intentId' render={(props) => <NluExampleEditor {...props}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}    />} 
                             />
                             
+                            <Route path='/examples/tag/:tag' render={(props) => <NluExampleEditor {...props}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}    />} 
+                            />
+                            
                             <Route exact path='/examples/skill/:skillId/intent/:intentId' render={(props) => <NluExampleEditor {...props}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}    />} 
+                            />
+                            
+                            <Route exact path='/examples/skill/:skillId/tag/:tag' render={(props) => <NluExampleEditor {...props}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}    />} 
+                            />
+                            
+                            <Route exact path='/examples/intent/:intentId/tag/:tag' render={(props) => <NluExampleEditor {...props}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}    />} 
+                            />
+                            
+                            <Route exact path='/examples/skill/:skillId/intent/:intentId/tag/:tag' render={(props) => <NluExampleEditor {...props}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}    />} 
                             />
                             
                             <Route exact path='/skills/:skillId' render={(props) => <NluSkillsEditor {...props}    user={user}   lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}   getAxiosClient={getAxiosClient}  />} 

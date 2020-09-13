@@ -79,6 +79,11 @@ var balanced = require('balanced-match');
  *  unzip a file and extract the content for files matching paths found in pathFilters array
  */
 function unzip(content,pathFilters) {
+    
+    function matchRuleShort(str, rule) {
+      var escapeRegex = (str) => str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+      return new RegExp("^" + rule.split("*").map(escapeRegex).join(".*") + "$").test(str);
+    }
     return new Promise (function( resolve, reject) {
         var zip = new JSZip();
         zip.loadAsync(content)
@@ -89,10 +94,17 @@ function unzip(content,pathFilters) {
                 var found = false
                 for (var j in pathFilters) {
                     var pathFilter = pathFilters[j]
-                    if ( zipEntry.name.indexOf(pathFilter) !== -1) { 
+                    console.log(['COMPARE', matchRuleShort(relativePath, pathFilter), relativePath, pathFilter])
+                    if (matchRuleShort(relativePath, pathFilter)) { 
                         found = true
                     }
                 }
+                //for (var j in pathFilters) {
+                    //var pathFilter = pathFilters[j]
+                    //if ( zipEntry.name.indexOf(pathFilter) !== -1) { 
+                        //found = true
+                    //}
+                //}
                 if (found) { 
                     promises.push( new Promise(function(iresolve,ireject) {
                         zip.file(relativePath).async("string").then(function(fileContent) {
@@ -182,7 +194,7 @@ function generateUtteranceSplits(text, tag) {
     var newSplits=[]
     splits.map(function(text,i) {
         if (text && text.trim().length > 0) {
-            newSplits.push({'id':generateObjectId(), 'value':text, synonym:'', "tags":tag ? [tag] : []})
+            newSplits.push({'id':generateObjectId(), 'value':text.trim().replaceAll(' ','_'), synonym:text, "tags":tag ? [tag] : []})
         }
         return null
     })
@@ -190,6 +202,22 @@ function generateUtteranceSplits(text, tag) {
 }
 
 
+/**
+ *  create entity objects from split sentences
+ */
+function generateMycroftUtteranceSplits(text, utterance) {
+    var newSplits=[]
+    if (utterance) {
+        const splits = splitSentences(text)
+        //splits.map(function(text,i) {
+            if (text && text.trim().length > 0) {
+                newSplits.push({'id':generateObjectId(), 'value':utterance.trim().replaceAll(' ','_'), synonym:splits.join("\n"), "tags":[]})
+            }
+            //return null
+        //})
+    }
+    return newSplits.sort(sortExampleSplits)
+}
     
 function cleanListItem(text) {
     return text ? text.replace(/[^0-9a-z ,]/gi, '') : ''
@@ -494,4 +522,4 @@ function sortExampleSplits(a,b) {
         return {intents: items}
     }   
 
-export default function useImportUtils() { return  {unzip, splitSentences, generateIntentSplits, generateEntitySplits, generateUtteranceSplits, cleanListItem, extractSynonym, sortListSplits, sortExampleSplits, detectFileType, generateSplitsFromJovoJson, generateSplitsFromRasaJson, generateSplitsFromRasaMd, generateIntentSplitsForMycroft}}
+export default function useImportUtils() { return  {unzip, splitSentences, generateIntentSplits, generateEntitySplits, generateUtteranceSplits, generateMycroftUtteranceSplits,  cleanListItem, extractSynonym, sortListSplits, sortExampleSplits, detectFileType, generateSplitsFromJovoJson, generateSplitsFromRasaJson, generateSplitsFromRasaMd, generateIntentSplitsForMycroft}}

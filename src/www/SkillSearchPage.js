@@ -134,7 +134,7 @@ export default function SkillSearchPage(props) {
     // Autosuggest will call this function every time you need to update suggestions.
     // You already implemented this logic above, so just use it.
     function onSuggestionsFetchRequested ({ value }) {
-         setSuggestions(props.lookups.tags.sort().map(function(tag) {
+         if (props.lookups.tags) setSuggestions(props.lookups.tags.sort().map(function(tag) {
              return {tag: tag} 
           }))
         
@@ -190,8 +190,8 @@ export default function SkillSearchPage(props) {
                 
                 {result.tags && result.tags.length > 0 && <Button style={bStyle} variant="outline-warning" >{result.tags.join(", ")}</Button>}
                 <div>
-                    {result.intents && result.intents > 0 && <Button variant="outline-primary"style={bStyle}>{result.intents} intents </Button>}
-                    {result.entities && result.entities > 0 && <Button variant="outline-primary"style={bStyle}>{result.entities} entities</Button>}
+                    {(result.intents > 0) && <Button variant="outline-primary"style={bStyle}>{result.intents} intents </Button>}
+                    {(result.entities > 0) && <Button variant="outline-primary"style={bStyle}>{result.entities} entities</Button>}
                     {(result.regexps > 0) && <Button variant="outline-primary"style={bStyle}>{result.regexps} regular expressions</Button>}
                     {(result.utterances > 0 )&& <Button variant="outline-primary"style={bStyle}>{result.utterances} utterances</Button>}
                     {<Button style={{marginLeft:'0.5em', marginTop:'1em'}} variant="outline-secondary" >Updated: {new Date(result.updated_date).toUTCString()}</Button>}

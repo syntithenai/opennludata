@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react'
 import {findFirstDiffPos, uniquifyArray, uniquifyArrayOfObjects } from './utils'
-function useNluRow(item, saveItem, splitNumber, style, setPageMessage) {
+function useNluRow(item, saveItem, splitNumber, style, setPageMessage, lastSelected, setLastSelected, selectBetween) {
     const [selectionState, setSelectionState] = useState({})
     const [newEntity, setNewEntity] = useState('')
     const [intentTitle, setIntentTitle] = useState(item && item.intent ? item.intent : '')
@@ -216,10 +216,19 @@ function useNluRow(item, saveItem, splitNumber, style, setPageMessage) {
         }
     }
     
-    function selectItem(splitNumber) {
-        var newItem = item
-        item.isSelected = true;
-        saveItem(newItem,splitNumber)
+    function selectItem(splitNumber,e) {
+        if (e.shiftKey && lastSelected >= 0)  {
+            console.log(['SELECT INTENT WITH SHIFT '+splitNumber, lastSelected])
+            selectBetween(splitNumber,lastSelected) 
+            setLastSelected(splitNumber)  
+        } else {
+            console.log(['SELECT INTENT WITHOUT  SHIFT ',lastSelected])
+            var newItem = item
+            item.isSelected = true;
+            saveItem(newItem,splitNumber)
+            setLastSelected(splitNumber)
+            console.log(['LASTSEL ',lastSelected])
+        }
     }
     
     
@@ -229,10 +238,14 @@ function useNluRow(item, saveItem, splitNumber, style, setPageMessage) {
         //props.saveItem(newItem,splitNumber)
     }
     
-    function deselectItem(splitNumber) {
+    function deselectItem(splitNumber,e) {
+        if (e.shiftKey) console.log(['DESELECT INTENT WITH SHIFT '+splitNumber, lastSelected])
+        else console.log(['DESELECT INTENT WITHOUT  SHIFT ',lastSelected])
         var newItem = item
         item.isSelected = false;
         saveItem(newItem,splitNumber)
+        setLastSelected(-2)
+        console.log(['LASTSEL ',lastSelected])
     } 
     
     return {    

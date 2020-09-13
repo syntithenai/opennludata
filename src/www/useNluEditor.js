@@ -17,6 +17,7 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
     //const [intentFilterValue, setIntentFilterValue] = useState('')
     const [intentAllValue, setIntentAllValue] = useState('')
     const listRef = React.createRef()
+    const [lastSelected, setLastSelected] = useState(-1)
     
     const params = useParams()
     const history = useHistory()
@@ -33,7 +34,9 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
         if (intentFilterValue.length > 0) {
             parts.push('/intent/'+intentFilterValue)
         }
-        //console.log(['ssv',parts,value])
+        if (tagFilterValue.length > 0) {
+            parts.push('/tag/'+tagFilterValue)
+        }//console.log(['ssv',parts,value])
         history.push(parts.join(''))
     }
     var intentFilterValue = params.intentId ? params.intentId : '';
@@ -47,6 +50,27 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
         }
         if (intentFilterValue.length > 0) {
             parts.push('/intent/'+intentFilterValue)
+        }
+        if (tagFilterValue.length > 0) {
+            parts.push('/tag/'+tagFilterValue)
+        }
+        history.push(parts.join(''))
+    }
+    
+    var tagFilterValue = params.tag ? params.tag : '';
+    function setTagFilterValue(value) {
+        console.log(['STETAGFIL',value,tagFilterValue])
+        var root = history.location.pathname.split("/")
+        var parts=['/'+root[1]]
+        tagFilterValue = value;
+        if (skillFilterValue.length > 0) {
+            parts.push('/skill/'+skillFilterValue)
+        }
+        if (intentFilterValue.length > 0) {
+            parts.push('/intent/'+intentFilterValue)
+        }
+        if (tagFilterValue.length > 0) {
+            parts.push('/tag/'+tagFilterValue)
         }
         history.push(parts.join(''))
     }
@@ -68,7 +92,7 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
         //updateFilteredTimeout = setTimeout(function() {
              //console.log('UPDATE FILTERED NOW')
              var filteredItems = filter(function(item) {
-                if ((!searchFilter || searchFilter.trim().length <=0 ) && (!skillFilterValue || skillFilterValue.trim().length <=0 ) && (!intentFilterValue || intentFilterValue.trim().length <=0 )) return true;
+                if ((!searchFilter || searchFilter.trim().length <=0 ) && (!skillFilterValue || skillFilterValue.trim().length <=0 ) && (!intentFilterValue || intentFilterValue.trim().length <=0 ) && (!tagFilterValue || tagFilterValue.trim().length <=0 )) return true;
                 var intentFilter = true
                 if (intentFilterValue && intentFilterValue.length > 0) {
                     if (item.intent === intentFilterValue) {
@@ -77,6 +101,16 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
                         intentFilter = false
                     }
                 }
+
+                var tagFilter = true
+                if (tagFilterValue && tagFilterValue.length > 0) {
+                    if (item.tags && item.tags.indexOf(tagFilterValue) !== -1) {
+                        tagFilter = true
+                    } else {
+                        tagFilter = false
+                    }
+                }
+
                 var skillFilter = true
                 if (skillFilterValue && skillFilterValue.length > 0) {
                     if (item.skills && item.skills.indexOf(skillFilterValue) !== -1) {
@@ -93,7 +127,7 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
                         searchFilterBool = false
                     }
                 }         
-                return searchFilterBool && skillFilter && intentFilter;       
+                return searchFilterBool && skillFilter && intentFilter && tagFilter;       
                 //intentFilterValue
                 //return (item.example.indexOf(searchFilter) !== -1 
                             //&& intentFilter 
@@ -243,7 +277,29 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
         }
     }
     
-    
+    function selectBetween(a,b) {
+         console.log(['SELECTBETWEEN',a,b,items])
+         var min = a
+         var max = b
+         if (max <  min) {
+             min = b
+             max = a
+         }
+         if (items) {
+            var newItems = []
+            items.map(function(item,i) {
+                if (item && item.id) {
+                    var newItem = item
+                    if (item.id && filteredItemsKeys[item.id]) {
+                       if (i >= min && i <= max) newItem.isSelected = true
+                       newItems.push(newItem)
+                    } 
+                }
+                return null
+            })
+            setItems(newItems)
+        }
+    }
     
      function skillSetAll(val) {
          //console.log(['set skill all',tagAllValue,val])
@@ -322,23 +378,31 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
          
     }
    
-    function createEmptyItem(skill, intent) {
+    function createEmptyItem(skill, intent, tag) {
         console.log(['CREATE EMPTY EXAMPLE'])
         setSearchFilter('')
         var skills=[]
         if (skill && skill.trim().length > 0) skills.push(skill)
+        var tags=[]
+        if (tag && tag.trim().length > 0) tags.push(tag)
+        
         var newIntent=''
         if (intent && intent.trim().length > 0) newIntent = intent
-        saveItemWrap({id:generateObjectId(), example:'', intent:newIntent, skills:skills,tags:[]},0)
-        console.log(['SAVED NEW EXAMPLE',{id:null, example:'', intent:newIntent, skills:skills,tags:[]}])
+        saveItem({id:null, example:'', intent:newIntent, skills:skills,tags:tags})
+        console.log(['SAVED NEW EXAMPLE',{id:null, example:'', intent:newIntent, skills:skills,tags:tags}])
     }
     
     function saveItemWrap(item,index) {
         saveItem(item,index)
-        
-        console.log(['SAVEITEMWRAP',listRef,listRef ? listRef.current : 'notcurrent'])
-        if (listRef && listRef.current) listRef.current.resetAfterIndex(index);
         updateLookups(items)
+        console.log(['SAVEITEMWRAP',listRef ? listRef.current : 'notcurrent'])
+        if (listRef && listRef.current) {
+            console.log(['HAVE CURRENT',listRef.current.resetAfterIndex, index])
+            listRef.current.resetAfterIndex(index);
+            //listRef.current.scrollToItem(20);
+            //listRef.current.scrollToItem(0);
+        }
+        
     }
     
     function getItemSize(index) {
@@ -419,8 +483,8 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
     return {
         loadAll, saveItem, deleteItem , items, setItems, findKeyBy, filter, filteredItems, setFilteredItems,createEmptyItem, sort, 
         searchFilter, setSearchFilter, tagAllValue, setTagAllValue, skillAllValue, setSkillAllValue, skillFilterValue, setSkillFilterValue,intentFilterValue, setIntentFilterValue,
-         intentAllValue, setIntentAllValue, listRef, 
-        tagAll,untagAll, unskillAll, intentAll, resetSelection, selectAll,  skillSetAll, saveItemWrap, getItemSize, deleteAll, saveAll, saveNlu
+         intentAllValue, setIntentAllValue, listRef, tagFilterValue, setTagFilterValue,
+        tagAll,untagAll, unskillAll, intentAll, resetSelection, selectAll,  skillSetAll, saveItemWrap, getItemSize, deleteAll, saveAll, saveNlu,  lastSelected, setLastSelected, selectBetween,
     }
 }
 export default useNluEditor
