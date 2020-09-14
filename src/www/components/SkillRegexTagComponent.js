@@ -6,7 +6,7 @@ import DropDownComponent from './DropDownComponent'
 
 export default function SkillRegexTagComponent(props) {
      let that = this
-     console.log(props.tag)
+     //console.log(props.tag)
     // hack to pass functions through
     const {lookups, setRegexpEntity, setRegexpIntent}  = props
   return (

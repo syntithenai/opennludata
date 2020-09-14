@@ -86,7 +86,7 @@ function App() {
     
     function loadSkills() {
         return axios.get((process.env.REACT_APP_githubSkillsUrl ? process.env.REACT_APP_githubSkillsUrl : '/static/media/skills/')+'index.js').then(function(res) {
-          console.log(['LOaD SKILSS',res.data])  
+          //console.log(['LOaD SKILSS',res.data])  
           var tags={}
           if (res.data) {
               Object.values(res.data).map(function(skill) {
@@ -100,7 +100,7 @@ function App() {
               setSkills(res.data)
           }
         }).catch(function(err) {
-            console.log(err)  
+            //console.log(err)  
         })
     }
        
@@ -118,7 +118,7 @@ function App() {
 
     
     function updateRegexps() {
-        //console.log('UPDATE regexps')
+        ////console.log('UPDATE regexps')
         var storage = localforage.createInstance({
            name: "nlutool",
            storeName   : "regexps",
@@ -130,10 +130,10 @@ function App() {
                 var utteranceIndex={}
                 var utteranceCompleteIndex={}
                 var utteranceTags={}
-                //console.log(['UPDATE UTTERANCES',err,utterances])
+                ////console.log(['UPDATE UTTERANCES',err,utterances])
                 if (Array.isArray(utterances)) {
                     utterances.map(function(utterance,i) {
-                        //console.log(['UPDATE regexp',utterance])
+                        ////console.log(['UPDATE regexp',utterance])
                          if (utterance.isSelected) {
                              selectedTally += 1
                         }
@@ -163,7 +163,7 @@ function App() {
                     setRegexpTagsLookups(Object.keys(utteranceTags))
                     setRegexpListsLookups(Object.keys(utteranceLists))
                 }
-                //console.log(['UPDATE UTTERANCES',utteranceIndex,utteranceLists])
+                ////console.log(['UPDATE UTTERANCES',utteranceIndex,utteranceLists])
                     
               });
             //});
@@ -171,7 +171,7 @@ function App() {
     }
     
     function updateUtterances() {
-        //console.log('UPDATE UTTERANCES')
+        ////console.log('UPDATE UTTERANCES')
         var utteranceStorage = localforage.createInstance({
            name: "nlutool",
            storeName   : "utterances",
@@ -182,14 +182,14 @@ function App() {
                 var utteranceLists={}
                 var utteranceIndex={}
                 var utteranceTags={}
-                //console.log(['UPDATE UTTERANCES',err,utterances])
+                ////console.log(['UPDATE UTTERANCES',err,utterances])
                 if (Array.isArray(utterances)) {
                     utterances.map(function(utterance,i) {
                         if (utterance.isSelected) {
                              selectedTally += 1
                         }
                         tally += 1;
-                        //console.log(['UPDATE UTTERANCE',utterance])
+                        ////console.log(['UPDATE UTTERANCE',utterance])
                          if (utterance.value) {
                              utteranceIndex[utterance.value]=true
                          }
@@ -213,7 +213,7 @@ function App() {
                     setUtteranceTagsLookups(Object.keys(utteranceTags))
                     setUtteranceListsLookups(Object.keys(utteranceLists))
                 }
-                //console.log(['UPDATE UTTERANCES',utteranceIndex,utteranceLists])
+                ////console.log(['UPDATE UTTERANCES',utteranceIndex,utteranceLists])
                     
               });
             //});
@@ -226,7 +226,7 @@ function App() {
            storeName   : "lists",
          });
          listsStorage.getItem('alldata', function (err,lists) {
-            //console.log(['UPDATELISTS',lists])
+            ////console.log(['UPDATELISTS',lists])
             if (lists) {
                 var newSelectedLists = {}
                 var newLists = {}
@@ -253,13 +253,13 @@ function App() {
                     }
                     return null
                 })
-                //console.log(['UPDATELISTS',tally, selectedTally])
+                ////console.log(['UPDATELISTS',tally, selectedTally])
                 setListTally(tally)
                 setSelectedListTally(selectedTally)
                 setSelectedListTallyByList(newSelectedLists)
                 setListTallyByList(newLists)
                 setListsLookups(Object.keys(newLists))
-                //console.log('updated lists', newLists)
+                ////console.log('updated lists', newLists)
             }
         })
     }
@@ -270,7 +270,7 @@ function App() {
            storeName   : "examples",
          });
         examplesStorage.getItem('alldata', function (err,items) {
-            //console.log(['UPDATELOOKUPS',items])
+            ////console.log(['UPDATELOOKUPS',items])
             if (items && items.length > 0) {
                 var tags = {}
                 var intents = {}
@@ -279,7 +279,7 @@ function App() {
                 var selected = 0;
                 items.map(function(item) {
                     if (item) {
-                        //console.log(['UPDATELOOKUPS single',item])
+                        ////console.log(['UPDATELOOKUPS single',item])
                         if (item.isSelected) selected = selected + 1;
                        intents[item.intent] = true
                        if (item.tags && item.tags.length > 0) {
@@ -308,14 +308,14 @@ function App() {
                 const distinct = function(value,index,self) {
                     return self.indexOf(value) === index;
                 }
-                //console.log(['UPDATELOOKUPS single res',intents,entities])
+                ////console.log(['UPDATELOOKUPS single res',intents,entities])
                     
                 setIntentLookups([].concat(Object.keys(intents),intentLookups).filter(distinct))
                 setEntityLookups([].concat(Object.keys(entities),entityLookups).filter(distinct))
                 setTagLookups([].concat(Object.keys(tags),tagLookups).filter(distinct))
                 setSkillLookups([].concat(Object.keys(skills),skillLookups).filter(distinct))
                 setSelectedTally(selected)
-                //console.log(entityLookups, intentLookups)
+                ////console.log(entityLookups, intentLookups)
             }
         })
     }

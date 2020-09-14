@@ -30,7 +30,7 @@ export default function useImportMergeFunctions() {
      */
     function mergeIntents(examples,skill) {
         return new Promise(function(resolve, reject) {
-            console.log(['import examples',examples, typeof examples,skill])
+            //console.log(['import examples',examples, typeof examples,skill])
             if (examples) {
                 localforageStorageIntents.getItem('alldata').then(function(allItems) {
                     var allItemsIndex = {}
@@ -76,7 +76,7 @@ export default function useImportMergeFunctions() {
                     } else {
                         final = [].concat(newItems,allItems)
                     }
-                    console.log('IMPORT MERGE',final)
+                    //console.log('IMPORT MERGE',final)
                     localforageStorageIntents.setItem('alldata',final).then(function() {
                       resolve({updated:replacements.length, created: newItems.length})  
                     })
@@ -91,11 +91,11 @@ export default function useImportMergeFunctions() {
 
 
     function mergeEntities(entities, list) {
-        console.log(['merge entities',entities, list])
+        //console.log(['merge entities',entities, list])
         return new Promise(function(resolve, reject) {
             if (entities) {
                 localforageStorageEntities.getItem('alldata').then(function(allLists) {
-                    //console.log(['got list ',allLists])
+                    ////console.log(['got list ',allLists])
                     var allListsIndex = {}
                     if (!allLists) {
                         allLists = []
@@ -137,7 +137,7 @@ export default function useImportMergeFunctions() {
                         return null
                     })
                     
-                    //console.log('IMPORT MERGE',res,parsed,[].concat(parsed,res))
+                    ////console.log('IMPORT MERGE',res,parsed,[].concat(parsed,res))
                     localforageStorageEntities.setItem('alldata',Object.values(allListsIndex)).then(function() {
                         resolve({updated:updated, created: created})  
                     })
@@ -155,11 +155,11 @@ export default function useImportMergeFunctions() {
     }
     
     function mergeUtterances(utterances,addTag) {
-        console.log(['merge utterances',utterances, addTag])
+        //console.log(['merge utterances',utterances, addTag])
         return new Promise(function(resolve, reject) {
             if (utterances) {
                 localforageStorageUtterances.getItem('alldata').then(function(allLists) {
-                    //console.log(['got list ',allLists])
+                    ////console.log(['got list ',allLists])
                     var allListsIndex = {}
                     if (!allLists) {
                         allLists = []
@@ -201,7 +201,7 @@ export default function useImportMergeFunctions() {
                         return null
                     })
                     
-                    //console.log('IMPORT MERGE',res,parsed,[].concat(parsed,res))
+                    ////console.log('IMPORT MERGE',res,parsed,[].concat(parsed,res))
                     localforageStorageUtterances.setItem('alldata',Object.values(allListsIndex)).then(function() {
                         resolve({updated:updated, created: created})  
                     })
@@ -220,11 +220,11 @@ export default function useImportMergeFunctions() {
     
     
     function mergeRegexps(regexps,addTag) {
-        console.log(['merge regexps',regexps, addTag])
+        //console.log(['merge regexps',regexps, addTag])
         return new Promise(function(resolve, reject) {
             if (regexps) {
                 localforageStorageRegexps.getItem('alldata').then(function(allLists) {
-                    //console.log(['got list ',allLists])
+                    ////console.log(['got list ',allLists])
                     var allListsIndex = {}
                     if (!allLists) {
                         allLists = []
@@ -266,7 +266,7 @@ export default function useImportMergeFunctions() {
                         return null
                     })
                     
-                    console.log('IMPORT MERGE reg',allListsIndex)
+                    //console.log('IMPORT MERGE reg',allListsIndex)
                     localforageStorageRegexps.setItem('alldata',Object.values(allListsIndex)).then(function() {
                         resolve({updated:updated, created: created})  
                     })
@@ -279,18 +279,18 @@ export default function useImportMergeFunctions() {
     }
     
     function mergeSkill(skill) {
-        console.log(['merge skill',skill])
+        //console.log(['merge skill',skill])
         return new Promise(function(resolve, reject) {
             if (skill && skill.title) {
                 localforageStorageSkill.getItem(skill.title).then(function(found) {
                     // merge ?
                     if (found) {
-                        console.log(['found skill',skill])
+                        //console.log(['found skill',skill])
                         localforageStorageSkill.setItem(skill.title,skill).then(function() {
                             resolve({})  
                         })
                     } else {
-                        console.log(['create skill',skill])
+                        //console.log(['create skill',skill])
                         localforageStorageSkill.setItem(skill.title,skill).then(function() {
                             resolve({})  
                         })

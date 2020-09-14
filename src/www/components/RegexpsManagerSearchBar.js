@@ -8,7 +8,7 @@ import checkImage from '../images/check.svg'
 const RegexpsManagerSearchBar = function(props) {
     const [topTagOptions,setTopTagOptions] = useState([])
     useEffect(() => {
-        //console.log(['kust nabager ',props.lookups.listsLookups])
+        ////console.log(['kust nabager ',props.lookups.listsLookups])
         var topTagOptionss = props.lookups.regexpTagsLookups && props.lookups.regexpTagsLookups.sort().map(function(listKey,i) {
               return <Dropdown.Item key={i} value={listKey} onClick={function(e) {props.setListFilterValue(listKey)}}  >{listKey}</Dropdown.Item>
         })

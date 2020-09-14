@@ -7,7 +7,7 @@ var balanced = require('balanced-match');
 
     function detectFileType(item) {
         return new Promise(function(resolve,reject) {
-            console.log(['DETECT FILE TYPE',item])
+            //console.log(['DETECT FILE TYPE',item])
             try {
                 var json = JSON.parse(item.data)
                 // RASA JSON FORMAT
@@ -34,7 +34,7 @@ var balanced = require('balanced-match');
                 .then(function(zip) {
                     var found={}
                     zip.forEach(function (relativePath, zipEntry) {  // 2) print entries
-                        console.log( zipEntry.name)
+                        //console.log( zipEntry.name)
                         // rasa
                         if (zipEntry.name.indexOf('/domain.yml') !== -1) found['rasa_domain'] = true 
                         if (zipEntry.name.indexOf('/data/nlu.md') !== -1) found['rasa_data'] = true
@@ -44,9 +44,9 @@ var balanced = require('balanced-match');
                         // mycroft
                         if (zipEntry.name.indexOf('/__init__.py') !== -1) found['mycroft_index'] = true
                         if (zipEntry.name.indexOf('/vocab') !== -1) found['mycroft_vocab'] = true
-                        console.log(['FOUND',found])
+                        //console.log(['FOUND',found])
                     });
-                    console.log(['FOUND',found])
+                    //console.log(['FOUND',found])
                     if (found['rasa_domain'] && found['rasa_data']) {
                         resolve({type: 'rasa.zip'})
                     } else if (found['rasa_domain'] && found['rasa_data']) {
@@ -59,8 +59,8 @@ var balanced = require('balanced-match');
                         resolve()
                     }
                 }, function (e) {
-                    //console.log('NOT ZIP')
-                    //console.log(e)
+                    ////console.log('NOT ZIP')
+                    ////console.log(e)
                     
                     if (item.data && item.data.indexOf('## intent:') !== -1) {
                         resolve({type: 'rasa.markdown'})
@@ -90,11 +90,11 @@ function unzip(content,pathFilters) {
         .then(function(zip) {
             var promises=[]
             zip.forEach(function (relativePath, zipEntry) {
-                //console.log(relativePath,zipEntry)
+                ////console.log(relativePath,zipEntry)
                 var found = false
                 for (var j in pathFilters) {
                     var pathFilter = pathFilters[j]
-                    console.log(['COMPARE', matchRuleShort(relativePath, pathFilter), relativePath, pathFilter])
+                    //console.log(['COMPARE', matchRuleShort(relativePath, pathFilter), relativePath, pathFilter])
                     if (matchRuleShort(relativePath, pathFilter)) { 
                         found = true
                     }
@@ -109,7 +109,7 @@ function unzip(content,pathFilters) {
                     promises.push( new Promise(function(iresolve,ireject) {
                         zip.file(relativePath).async("string").then(function(fileContent) {
                             
-                             //console.log('got ont')
+                             ////console.log('got ont')
                              iresolve({path:zipEntry.name, data: fileContent})
                         })
                     }).catch(function(e) {
@@ -189,7 +189,7 @@ function generateEntitySplits(text, entity) {
  *  create entity objects from split sentences
  */
 function generateUtteranceSplits(text, tag) {
-        //console.log(['GEN UTT',text,tag])
+        ////console.log(['GEN UTT',text,tag])
     const splits = splitSentences(text)
     var newSplits=[]
     splits.map(function(text,i) {
@@ -312,7 +312,7 @@ function sortExampleSplits(a,b) {
 
     function generateSplitsFromRasaMd(item, files) {
         var allIntents=[]
-        //var allEntities={}
+        var allEntities={}
         var allRegexps={}
         var allSynonyms={}
         var entitiesFromLookup={}
@@ -330,7 +330,7 @@ function sortExampleSplits(a,b) {
                         var value = dataLines[i].slice(1).trim() // remove leading -
                         if (regexTitle && value) {
                             allRegexps[regexTitle] = Array.isArray(allRegexps[regexTitle]) ? allRegexps[regexTitle]  : []
-                            allRegexps[regexTitle].push(value)
+                            allRegexps[regexTitle].push({id: generateObjectId(), value: regexTitle, synonym: value})
                         }
                     }
                 } else if (headerLine.startsWith("synonym")) {
@@ -353,7 +353,7 @@ function sortExampleSplits(a,b) {
                                 entityLines.map(function(value) {
                                     if (value && value.trim()) {
                                         if (entitiesFromLookup[value]) {
-                                            entitiesFromLookup[value].tags = entitiesFromLookup[value].tags ? entitiesFromLookup[value].tags : []
+                                            entitiesFromLookup[value].tags = entitiesFromLookup[value].tags ? uniquifyArray(entitiesFromLookup[value].tags.push(entityType)) : []
                                         } else {
                                             entitiesFromLookup[value] = {tags:  [entityType]}
                                         }
@@ -370,11 +370,11 @@ function sortExampleSplits(a,b) {
                         var example = dataLines[i].slice(1).trim() // remove leading -
                         var intentData = {intent: intent, example: example}
                         if (example.length > 0) {
-                            console.log(example)// extract entities
+                            //console.log(example)// extract entities
                             var remainder = example
                             var cleanString = example
                             var parts = balanced('[', ']', remainder)
-                            //console.log(['PAREN',parts])
+                            ////console.log(['PAREN',parts])
                             var limit=10
                             while (limit > 0 && parts && parts !== undefined && typeof parts === "object") {
                                 var entity = {}
@@ -388,7 +388,7 @@ function sortExampleSplits(a,b) {
                                 
                                 var remainderParts = balanced('(',')',parts.post)
                                 var remainderJSONParts = balanced('{','}',parts.post)
-                                //console.log(['PARENEND',entity, cleanString, remainderParts])
+                                ////console.log(['PARENEND',entity, cleanString, remainderParts])
                                 if ((remainderParts && remainderParts.body) && (remainderJSONParts && remainderJSONParts.body)) {
                                     // both in remainder so use earliest start
                                     if (remainderJSONParts.start < remainderParts.start) {
@@ -437,15 +437,16 @@ function sortExampleSplits(a,b) {
                                 } else {
                                     throw new Error('Invalid bracket structure at line '+intentKey)
                                 }
-                                console.log(['ENTITY',entity, cleanString])
+                                //console.log(['ENTITY',entity, cleanString])
                                 //allEntities[entity.type] = entity
                                 intentData.entities = Array.isArray(intentData.entities) ? intentData.entities : []
                                 intentData.entities.push(entity)
+                                if (entity.value) allEntities[entity.value] = {id: generateObjectId(), value: entity.value, synonym: entity.synonym, start: entity.start, end: entity.end, tags: [entity.type]}
                                 parts = balanced('[', ']', remainder)
                             }
                             intentData.example = cleanString
                             allIntents.push(intentData)
-                            console.log(['INTENT',intentData])
+                            //console.log(['INTENT',intentData])
                             
                             
                         }
@@ -454,31 +455,134 @@ function sortExampleSplits(a,b) {
                 
             })
             
-           
-            
         } 
-        console.log(['rasa json IMPORT',allIntents, allRegexps, allSynonyms, entitiesFromLookup])
-        return {intents: allIntents}
+        // merge synonyms into all entities
+        //console.log(['rasa MD IMPORT MERGE',allSynonyms, entitiesFromLookup, allEntities])
+        // merge entities from lookups
+        Object.keys(entitiesFromLookup).map(function(entity) {
+            var entityData = entitiesFromLookup[entity]
+            if (entityData.value) {
+                if (allEntities[entityData.value]) {
+                    allEntities[entityData.value].tags = allEntities[entityData.value].tags ? uniquifyArray([].concat(allEntities[entityData.value].tags, entityData.tags)) : entityData.tags
+                }
+            }
+            return null
+        }) 
+        Object.keys(allSynonyms).map(function(synonym) {
+            if (Array.isArray(allSynonyms[synonym])) allSynonyms[synonym].map(function(synValue) {
+                if (allEntities[synValue]) {
+                    allEntities[synValue].synonym = synonym
+                } else {
+                    allEntities[synValue] = {id: generateObjectId(), value: synValue, synonym: synonym}
+                }
+            })  
+            return null
+        }) 
+   
+        var final = {intents: allIntents, regexps: Object.values(allRegexps), entities : Object.values(allEntities)}
+        //console.log(['rasa MD IMPORT',final])
+        return final
     }
 
-    function generateSplitsFromRasaJson(item) {
-        var items = []
+    function generateSplitsFromRasaJson(item, files) {
+        var allIntents={}
+        var allEntities={}
+        var allRegexps={}
+        var allSynonyms={}
+        var entitiesFromLookup={}
         try {
             var json = JSON.parse(item.data)
-            if (json && json.rasa_nlu_data && json.rasa_nlu_data.common_examples) {
-                for (var i in json.rasa_nlu_data.common_examples) {
-                    var entity = json.rasa_nlu_data.common_examples[i]
-                    var cleanEntities = entity.entities && entity.entities.map(function(el,j) { return {type:el.entity, value:el.value, start:el.start, end:el.end} })
-                    if (entity.text && entity.text.trim().length > 0) {
-                        items.push({'id':generateObjectId(), 'example':entity.text,'intent':entity.intent,"entities":cleanEntities, tags:[]})
+            console.log(['rasa JSON impORT',json])
+            if (json && json.rasa_nlu_data && json.rasa_nlu_data.regex_features) {
+                for (var i in json.rasa_nlu_data.regex_features) {
+                    var regex = json.rasa_nlu_data.regex_features[i]
+                    if (regex.name && regex.name.trim().length > 0 && regex.pattern && regex.pattern.trim().length > 0) {
+                        allRegexps[regex.name]={'id':generateObjectId(), 'value':regex.name,'synonym': synonym.pattern}
                     }
                 }
             }
-            console.log(['rasa json IMPORT',items])
-        } catch(e) {}
-        return {intents: items}
+            if (json && json.rasa_nlu_data && json.rasa_nlu_data.entity_synonyms) {
+                for (var i in json.rasa_nlu_data.entity_synonyms) {
+                    var synonym = json.rasa_nlu_data.entity_synonyms[i]
+                    if (synonym.value && synonym.value.trim().length > 0 && synonym.synonyms && synonym.synonyms.length > 0) {
+                        allSynonyms[synonym.value] = allSynonyms[synonym.value] ? [].concat(allSynonyms[synonym.value], synonym.synonyms) : []
+                        //allSynonyms[synonym.value].push({'id':generateObjectId(), 'value':synonym.value,'synonym': synonym.pattern})
+                    }
+                }
+            }
+            if (files && json && json.rasa_nlu_data && json.rasa_nlu_data.lookup_tables) {
+                for (var i in json.rasa_nlu_data.lookup_tables) {
+                    var lookup = json.rasa_nlu_data.lookup_tables[i]
+                    var entityType = lookup.name
+                    var path = lookup.elements.trim()
+                    if (path && files[path]) {
+                        var entityLines = files[path].split("\n")
+                        entityLines.map(function(value) {
+                            if (value && value.trim()) {
+                                if (entitiesFromLookup[value]) {
+                                    entitiesFromLookup[value].tags = entitiesFromLookup[value].tags ? uniquifyArray(entitiesFromLookup[value].tags.push(entityType)) : []
+                                } else {
+                                    entitiesFromLookup[value] = {tags:  [entityType]}
+                                }
+                            }
+                        })
+                    } 
+                
+                }
+            }
+ 
+            if (json && json.rasa_nlu_data && json.rasa_nlu_data.common_examples) {
+                for (var i in json.rasa_nlu_data.common_examples) {
+                    var entity = json.rasa_nlu_data.common_examples[i]
+                    //console.log(entity)
+                    var cleanEntities = entity.entities ? entity.entities.map(function(el,j) { return {type:el.entity, value:el.value, start:el.start, end:el.end} }) : []
+                    // entities
+                    cleanEntities.map(function(entity) {
+                        if (allEntities[entity.value]) {
+                            allEntities[entity.value].tags = allEntities[entity.value].tags ? uniquifyArray([].concat(allEntities[entity.value].tags, [entity.type])) : [entity.type]
+                        } else {
+                            allEntities[entity.value] = {id: generateObjectId(), value: entity.value, start: entity.start, stop: entity.stop,  tags: [entity.type]}
+                        }
+                        //= allEntities[entity.value] ? allEntities[entity.value] : {}
+                        //allEntities[entity.value].
+                    })
+                    //if (entity.text && entity.text.trim()) {
+                        allIntents[entity.text] = {'id':generateObjectId(), 'example':entity.text,'intent':entity.intent,"entities":cleanEntities, tags:[]}
+                    //}
+                }
+            }
+            //console.log(['rasa json IMPORT INTENTS',allIntents])
+        } catch(e) {
+            console.log(e)
+        }
+       
+        // merge synonyms into all entities
+        //console.log(['rasa MD IMPORT MERGE',allSynonyms, entitiesFromLookup, allEntities])
+        // merge entities from lookups
+        Object.keys(entitiesFromLookup).map(function(entity) {
+            var entityData = entitiesFromLookup[entity]
+            if (entityData.value) {
+                if (allEntities[entityData.value]) {
+                    allEntities[entityData.value].tags = allEntities[entityData.value].tags ? uniquifyArray([].concat(allEntities[entityData.value].tags, entityData.tags)) : entityData.tags
+                }
+            }
+            return null
+        }) 
+        Object.keys(allSynonyms).map(function(synonym) {
+            if (Array.isArray(allSynonyms[synonym])) allSynonyms[synonym].map(function(synValue) {
+                if (allEntities[synValue]) {
+                    allEntities[synValue].synonym = synonym
+                } else {
+                    allEntities[synValue] = {id: generateObjectId(), value: synValue, synonym: synonym}
+                }
+            })  
+            return null
+        }) 
+   
+        var final = {intents: Object.values(allIntents), regexps: Object.values(allRegexps), entities : Object.values(allEntities)}
+        console.log(['rasa MD IMPORT',final])
+        return final
     }
-
 
     function generateSplitsFromJovoJson(item) {
         var items = []
@@ -489,13 +593,13 @@ function sortExampleSplits(a,b) {
                 json.intents.map(function(intent) {
                     if (intent && intent.phrases) {
                         intent.phrases.map(function(phrase) {
-                            console.log(['JOVO IMPORT',phrase])
+                            //console.log(['JOVO IMPORT',phrase])
                             if (phrase && phrase.trim().length > 0)  {
                                  var entities = []
                                 if (intent.inputs) {
                                     for (var inputKey in intent.inputs) {
                                        var input = intent.inputs[inputKey]
-                                       //console.log([phrase,input.name])
+                                       ////console.log([phrase,input.name])
                                        const markerStart = phrase.indexOf("{"+input.name+"}")
                                        if (markerStart !== -1)  {
                                            phrase = phrase.replace("{"+input.name+"}",input.name)
@@ -505,10 +609,10 @@ function sortExampleSplits(a,b) {
                                        return null
                                     }
                                 }
-                                console.log(['JOVO IMPORT pushg item',intent.name])
+                                //console.log(['JOVO IMPORT pushg item',intent.name])
                                 
                                 items.push({'id':generateObjectId(), 'example':phrase.trim(),'intent':intent.name,"entities": entities, tags: []})
-                                console.log(['JOVO IMPORT pushed item',JSON.parse(JSON.stringify(items))])
+                                //console.log(['JOVO IMPORT pushed item',JSON.parse(JSON.stringify(items))])
                                 
                             }
                             return null

@@ -29,20 +29,20 @@ export default function SkillSearchPage(props) {
     },[props.lookups.skills])
     
     function loadSkill(skill) {
-        console.log(['LOaD SKIL',skill])  
+        //console.log(['LOaD SKIL',skill])  
         return new Promise(function(resolve,reject) {
             if (skill && skill.file) {
-                console.log(['LOaD SKIL have file',(process.env.REACT_APP_githubSkillsUrl ? process.env.REACT_APP_githubSkillsUrl : '/static/media/skills/')+skill.file])  
+                //console.log(['LOaD SKIL have file',(process.env.REACT_APP_githubSkillsUrl ? process.env.REACT_APP_githubSkillsUrl : '/static/media/skills/')+skill.file])  
                 const axiosClient = props.getAxiosClient()
                 axiosClient.get((process.env.REACT_APP_githubSkillsUrl ? process.env.REACT_APP_githubSkillsUrl : '/static/media/skills/')+skill.file).then(function(res) {
-                  console.log(['LOaDed SKIL',res.data])  
+                  //console.log(['LOaDed SKIL',res.data])  
                   if (res.data) {
-                      //console.log(res.data)
+                      ////console.log(res.data)
                       //try {
                           //var data = JSON.parse(res.data)
                           resolve({fileType:'opennlu.skill', created_date: new Date().getTime(), title: res.data.title, data: JSON.stringify(res.data)})
                       //} catch (e) {
-                        //console.log(e)      
+                        ////console.log(e)      
                     //}
                   } else {
                       reject('Failed to load skill')  
@@ -59,7 +59,7 @@ export default function SkillSearchPage(props) {
     //function loadSkills() {
         //const axiosClient = props.getAxiosClient()
         //axiosClient.get((process.env.REACT_APP_githubSkillsUrl ? process.env.REACT_APP_githubSkillsUrl : '/static/media/skills/')+'index.js').then(function(res) {
-          //console.log(['LOaD SKILSS',res.data])  
+          ////console.log(['LOaD SKILSS',res.data])  
           //var tags={}
           //if (res.data) {
               //Object.values(res.data).map(function(skill) {
@@ -73,19 +73,19 @@ export default function SkillSearchPage(props) {
               //setSkills(res.data)
           //}
         //}).catch(function(err) {
-            //console.log(err)  
+            ////console.log(err)  
         //})
     //}
     
     function importItem(skill) {
-        console.log(['import item',skill])  
+        //console.log(['import item',skill])  
         loadSkill(skill).then(function(item) {
-            console.log(['imported item',item])  
+            //console.log(['imported item',item])  
             //var item = {id:null, data:JSON.stringify(item), title:item.title+'.skill.json', fileType :"opennlu.skill    "}
             sourcesDB.saveItem(item,0)
             history.push("/sources")
         }).catch(function(e) {
-           console.log(e)   
+           //console.log(e)   
         })
     }
 
@@ -118,8 +118,8 @@ export default function SkillSearchPage(props) {
             //sort = {updated_date : -1}
         //}
         //searchItems('Skill',query, 40, 0, sort).then(function(res) {
-              //console.log('doSerach')
-              //console.log(res.data)
+              ////console.log('doSerach')
+              ////console.log(res.data)
               //setSearchResults(res.data)
         //})
     }

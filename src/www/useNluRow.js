@@ -7,7 +7,7 @@ function useNluRow(item, saveItem, splitNumber, style, setPageMessage, lastSelec
     // for ReactTags format using objects
     const [tags, setTags] = useState([])
     const [skills, setSkills] = useState([])
-    //console.log(['USENLUROW',splitNumber])
+    ////console.log(['USENLUROW',splitNumber])
     const reactTags = React.createRef()
     const reactSkills = React.createRef()
      // tags
@@ -74,9 +74,9 @@ function useNluRow(item, saveItem, splitNumber, style, setPageMessage, lastSelec
     }
     
     function updateExampleContent(content) {
-        //console.log('UPDTEXT')
+        ////console.log('UPDTEXT')
         if (item && typeof item.example === "string" && typeof content === "string") {
-            //console.log('UPDTEXTREAL')
+            ////console.log('UPDTEXTREAL')
             const newItem = JSON.parse(JSON.stringify(item));
             if (item.entities && item.entities.length > 0) {
                 var entities = item.entities
@@ -85,7 +85,7 @@ function useNluRow(item, saveItem, splitNumber, style, setPageMessage, lastSelec
                 // insertion
                 if (content.length - item.example.length > 0) {
                     
-                    //console.log('UPDTEXT insert')
+                    ////console.log('UPDTEXT insert')
                     const insertionLength = content.length - item.example.length
                     // update start and end subtract deletionLength
                     newItem.entities = entities.map(function(entity,entityIndex) {
@@ -102,7 +102,7 @@ function useNluRow(item, saveItem, splitNumber, style, setPageMessage, lastSelec
                 // replace    
                 } 
                 else if (content.length === item.example.length) {
-                    //console.log('UPDTEXT replace')
+                    ////console.log('UPDTEXT replace')
                     // check if was inside an entity and update value as required
                     newItem.entities = entities.map(function(entity,entityIndex) {
                         if (diffPos >= entity.start && diffPos < entity.end) {
@@ -113,7 +113,7 @@ function useNluRow(item, saveItem, splitNumber, style, setPageMessage, lastSelec
                     })
                 // deletion
                 } else {
-                    //console.log('UPDTEXT delete')
+                    ////console.log('UPDTEXT delete')
                     const deletionLength = content.length - item.example.length
                     // update start and end subtract deletionLength
                     newItem.entities = entities.map(function(entity,entityIndex) {
@@ -149,19 +149,19 @@ function useNluRow(item, saveItem, splitNumber, style, setPageMessage, lastSelec
     }
     
     function entityTypeChanged(entityNumber,type) {
-        //console.log(['ENTY TYPE CHANGE',entityNumber,type])
+        ////console.log(['ENTY TYPE CHANGE',entityNumber,type])
         var newItem = item
         if (!Array.isArray(item.entities)) {
             item.entities = []
         }
-         //console.log(['ENTY TYPE CHANGE ITEM ENT',item.entities])
+         ////console.log(['ENTY TYPE CHANGE ITEM ENT',item.entities])
         var newEntities = item.entities 
         var entity = newEntities[entityNumber] ? newEntities[entityNumber] : {}
         const typeChanged = !(type && type.length > 0 && type === entity.type)
-        //console.log(['ENTY TYPE CHANGED',typeChanged,type,entity.type])
+        ////console.log(['ENTY TYPE CHANGED',typeChanged,type,entity.type])
         entity.type = type
         if (selectionState && selectionState.textSelection) {
-            //console.log(['HAVE SELECTION',selectionState.textSelection])
+            ////console.log(['HAVE SELECTION',selectionState.textSelection])
             const start = selectionState.startTextSelection
             const end = selectionState.endTextSelection
             var isOverlapProblem = false;
@@ -170,7 +170,7 @@ function useNluRow(item, saveItem, splitNumber, style, setPageMessage, lastSelec
                     // is OK if updating entity 
                     const bypass = !typeChanged && entity.type === type
                     const isOverlap = (entity.start > start && entity.start < end) || (entity.end > start && entity.end < end)
-                    //console.log(['CHECK ENTITY',bypass, isOverlap, entity.type,start,end,entity.start,entity.end])
+                    ////console.log(['CHECK ENTITY',bypass, isOverlap, entity.type,start,end,entity.start,entity.end])
                     if (!bypass && isOverlap) isOverlapProblem = true
                     return null
                 })
@@ -218,16 +218,16 @@ function useNluRow(item, saveItem, splitNumber, style, setPageMessage, lastSelec
     
     function selectItem(splitNumber,e) {
         if (e.shiftKey && lastSelected >= 0)  {
-            console.log(['SELECT INTENT WITH SHIFT '+splitNumber, lastSelected])
+            //console.log(['SELECT INTENT WITH SHIFT '+splitNumber, lastSelected])
             selectBetween(splitNumber,lastSelected) 
             setLastSelected(splitNumber)  
         } else {
-            console.log(['SELECT INTENT WITHOUT  SHIFT ',lastSelected])
+            //console.log(['SELECT INTENT WITHOUT  SHIFT ',lastSelected])
             var newItem = item
             item.isSelected = true;
             saveItem(newItem,splitNumber)
             setLastSelected(splitNumber)
-            console.log(['LASTSEL ',lastSelected])
+            //console.log(['LASTSEL ',lastSelected])
         }
     }
     
@@ -239,13 +239,13 @@ function useNluRow(item, saveItem, splitNumber, style, setPageMessage, lastSelec
     }
     
     function deselectItem(splitNumber,e) {
-        if (e.shiftKey) console.log(['DESELECT INTENT WITH SHIFT '+splitNumber, lastSelected])
-        else console.log(['DESELECT INTENT WITHOUT  SHIFT ',lastSelected])
+        if (e.shiftKey) //console.log(['DESELECT INTENT WITH SHIFT '+splitNumber, lastSelected])
+        //else //console.log(['DESELECT INTENT WITHOUT  SHIFT ',lastSelected])
         var newItem = item
         item.isSelected = false;
         saveItem(newItem,splitNumber)
         setLastSelected(-2)
-        console.log(['LASTSEL ',lastSelected])
+        //console.log(['LASTSEL ',lastSelected])
     } 
     
     return {    

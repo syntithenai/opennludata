@@ -16,7 +16,7 @@ import localforage from 'localforage'
 
 // COMPONENTS
 function IndexPage(props) {
-    //console.log(['man index ',props])
+    ////console.log(['man index ',props])
     return <div>
                  <NewFileButtons {...props} />
                  <h1>Sources</h1>
@@ -27,7 +27,7 @@ function IndexPage(props) {
 
 
 function FilesList(props) {
-    //console.log(['man fl ',props])
+    ////console.log(['man fl ',props])
        
     var localforageStorageImport = localforage.createInstance({
         name: 'nlutool',
@@ -105,8 +105,8 @@ function FilesList(props) {
                        //{/* Only import entities */}
                        //{<ImportListsDropDown lookups={props.lookups} importListTo={function(listName) {props.importFunctions.importEntities(items[i],listName)}} importTo={items[i].title} /> }
 export default function LocalStorageUploadManager(props) {
-    //console.log('man')
-    //console.log(props)
+    ////console.log('man')
+    ////console.log(props)
      
     var importFunctions = useImportFunctions(props.setPageMessage)
      
@@ -126,7 +126,7 @@ export default function LocalStorageUploadManager(props) {
         if (results) {
             results.forEach(result => {
               const [e, file] = result;
-              console.log(['upl result',e, file,e.target.result])
+              //console.log(['upl result',e, file,e.target.result])
                var item = {id:null, data:e.target.result, title:file.name}
                importFunctions.detectFileType(item).then(function(fileData) {
                     if (fileData && fileData.type) {
@@ -135,7 +135,7 @@ export default function LocalStorageUploadManager(props) {
                         //if (item.fileType.endsWith('.zip')) {
                             //item.data = new File([item.data],'application/zip')
                         //}
-                        console.log(['SET ITEM TYPE', item.fileType])
+                        //console.log(['SET ITEM TYPE', item.fileType])
                         saveItem(item,0)
                     } else {
                         props.setPageMessage('Invalid file type')
@@ -153,12 +153,12 @@ export default function LocalStorageUploadManager(props) {
         importFunctions.detectFileType(item).then(function(fileData) {
             item.fileType = fileData.type
             item.created_date = new Date().getTime()
-            console.log(['SET ITEM TYPE', item.fileType])
+            //console.log(['SET ITEM TYPE', item.fileType])
             saveItem(item,index)
         })
     }
     
-    //console.log(['RENDER LOMAN',props])
+    ////console.log(['RENDER LOMAN',props])
     return (
         <div className="LocalStorageUploadManager" >
             <Route 

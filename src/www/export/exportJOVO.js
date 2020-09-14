@@ -10,7 +10,7 @@ async function exportJOVO(skill) {
          });
          listsStorage.getItem('alldata').then(function(lists) {
              var jovo={invocation: skill.invocation}
-             //console.log(['JVO export',skill])
+             ////console.log(['JVO export',skill])
              var intents = {}
              var entityTypes={}
              if (skill.intents) {
@@ -46,7 +46,7 @@ async function exportJOVO(skill) {
                  }) 
              }
              jovo.intents = Object.values(intents)
-             //console.log(['skill lists',entityTypes, skill.lists])
+             ////console.log(['skill lists',entityTypes, skill.lists])
              //var usedLists = {}
              //if (skill.entities) {
                 //Object.keys(skill.entities).map(function(entity,i) {
@@ -59,11 +59,11 @@ async function exportJOVO(skill) {
              //}
             
              //lists.map(function(item) {
-                 //console.log(['LIST',item])
+                 ////console.log(['LIST',item])
                  //Object.keys(usedLists).map(function(listKey) {
-                    //console.log([listKey,item.tags.indexOf(listKey) !== -1, item.tags])
+                    ////console.log([listKey,item.tags.indexOf(listKey) !== -1, item.tags])
                     //if (item && item.tags && item.tags.indexOf(listKey) !== -1) {
-                        //console.log('list item used ')
+                        ////console.log('list item used ')
                         //entityTypes[listKey].push(item.value)
                     //}
                 //})
@@ -80,9 +80,9 @@ async function exportJOVO(skill) {
                     Object.keys(entityTypes).map(function(entityType) {
                         if (skill.entities && skill.entities[entityType]  && skill.entities[entityType].lists)  {
                             skill.entities[entityType].lists.map(function(entityExtrasList) {
-                                //console.log(['li',entityExtrasList,item.tags,item.tags.indexOf(entityExtrasList)])
+                                ////console.log(['li',entityExtrasList,item.tags,item.tags.indexOf(entityExtrasList)])
                                 if (item && item.tags && item.tags.indexOf(entityExtrasList) !== -1) {
-                                    //console.log(['USE ENTITY',entityType, entityExtrasList,lists[entityExtrasList]])
+                                    ////console.log(['USE ENTITY',entityType, entityExtrasList,lists[entityExtrasList]])
                                     entityTypes[entityType].push(item.value)
                                }
                                return null
@@ -94,10 +94,10 @@ async function exportJOVO(skill) {
                 return null
             })
              
-            console.log(['synonyms',synonyms, synonymsIndex])
+            //console.log(['synonyms',synonyms, synonymsIndex])
         
             jovo.inputTypes = Object.keys(entityTypes).map(function(entityType) {
-            //console.log(['JOVOEX',lists,entityType])
+            ////console.log(['JOVOEX',lists,entityType])
                 const values = []
                 uniquifyArray(entityTypes[entityType]).sort().map(function(value) {
                     if (!synonyms[value]) {
@@ -114,11 +114,11 @@ async function exportJOVO(skill) {
                     
             
             
-            console.log(['inputtypes',jovo.inputTypes])
-            //console.log(['JVO final',jovo])
+            //console.log(['inputtypes',jovo.inputTypes])
+            ////console.log(['JVO final',jovo])
             const content = JSON.stringify(jovo)
              const final =  {folders:[{'name':'models', files:[{name:'en-US.json', content: content}] }]   }
-             //console.log(['JVO final',final])
+             ////console.log(['JVO final',final])
              resolve(final)
               
         })

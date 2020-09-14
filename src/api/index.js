@@ -66,17 +66,17 @@ loginSystem(config).then(function(login) {
          
         preCreate: (req, res, next) => {
             var loginUser = res.locals && res.locals.oauth && res.locals.oauth.token && res.locals.oauth.token.user ? res.locals.oauth.token.user : {}
-            console.log(['PRECREATE ',loginUser, res.locals, res.body])
+            ////console.log(['PRECREATE ',loginUser, res.locals, res.body])
             if (loginUser && loginUser._id) { 
                 req.body.created_date = new Date().getTime();
                 req.body.updated_date = new Date().getTime();
                 req.body.user = loginUser._id
                 req.body.userAvatar = loginUser.avatar
-                console.log(['PRECREATEdd ',req.body.tags])
+                ////console.log(['PRECREATEdd ',req.body.tags])
                 //if (req.body.tags) {
                     //skillTagModel = mongoose.model('SkillTags',skillTagsSchema)
                     //skillTagModel.insertMany(req.body.tags.map(function(tag) { return {tag:tag}  }), {ordered: true}).then(function(res) {
-                      //console.log(['INSERTED TAGS',res])  
+                      //////console.log(['INSERTED TAGS',res])  
                     //})
                 //}
                
@@ -88,16 +88,16 @@ loginSystem(config).then(function(login) {
         
         preUpdate: (req, res, next) => {
             var loginUser = res.locals && res.locals.oauth && res.locals.oauth.token && res.locals.oauth.token.user ? res.locals.oauth.token.user : {}
-            console.log(['PREUPDATE',loginUser,res.locals, res.body])
+            ////console.log(['PREUPDATE',loginUser,res.locals, res.body])
             if (loginUser&& loginUser._id) { 
                 req.body.updated_date = new Date().getTime();
                 req.body.user = loginUser._id
                 req.body.userAvatar = loginUser.avatar
-                console.log(['PREUPDATEdd ',req.body.tags])
+                ////console.log(['PREUPDATEdd ',req.body.tags])
                 //if (req.body.tags) {
                     //skillTagModel = mongoose.model('SkillTags',skillTagsSchema)
                     //skillTagModel.insertMany(req.body.tags.map(function(tag) { return {tag:tag}  }), {ordered: true}).then(function(res) {
-                      //console.log(['INSERTED TAGS',res])  
+                      //////console.log(['INSERTED TAGS',res])  
                     //})
                 //}
                 //if ()
@@ -112,7 +112,7 @@ loginSystem(config).then(function(login) {
           var loginUser = res.locals && res.locals.oauth && res.locals.oauth.token && res.locals.oauth.token.user ? res.locals.oauth.token.user : {}
             
             if (loginUser&& loginUser._id) { 
-                //console.log(['NOW GIT RM',skill])
+                //////console.log(['NOW GIT RM',skill])
                 
                 next()
             } else {
@@ -125,7 +125,7 @@ loginSystem(config).then(function(login) {
             const statusCode = req.erm.statusCode // 201 created OK
 
             commitSkill(skill).then(result => {
-              console.log(result)
+              ////console.log(result)
               next()
             }).catch(err => {
               console.error(err)
@@ -138,7 +138,7 @@ loginSystem(config).then(function(login) {
           const statusCode = req.erm.statusCode // 200 updated OK
 
           commitSkill(skill).then(result => {
-              console.log(result)
+              ////console.log(result)
               next()
             }).catch(err => {
               console.error(err)
@@ -149,11 +149,11 @@ loginSystem(config).then(function(login) {
         postDelete: (req, res, next) => {
           const skill = req.erm.result         // unfiltered document or object
           const statusCode = req.erm.statusCode // 204 deleted OK
-          console.log(['POSTDELETE', req.url])
+          ////console.log(['POSTDELETE', req.url])
             var parts = req.url.split("/")
             var id = parts[parts.length - 1]
             commitSkill({_id: id}, true).then(result => {
-                  console.log(result)
+                  ////console.log(result)
                   next()
                 }).catch(err => {
                   console.error(err)
@@ -185,7 +185,7 @@ loginSystem(config).then(function(login) {
     //};
 
     //var webServer = https.createServer(options, app).listen(port, function(){
-      //console.log("Express server listening on port " + port);
+      //////console.log("Express server listening on port " + port);
     //});
     const app = express();
     app.use(cors())
@@ -199,7 +199,7 @@ loginSystem(config).then(function(login) {
     app.use('/public',cors(),restifyRouter);
     app.use("/",authenticate, cors(), restifyRouter);
     router.use('/',function(req,res,next) {
-        console.log(['URL',req.url]); //,req.cookies,req.headers
+        ////console.log(['URL',req.url]); //,req.cookies,req.headers
         next()
     });
 
@@ -209,18 +209,18 @@ loginSystem(config).then(function(login) {
 
 
     //router.use('/api',function (req,res) {
-        //console.log('API')
+        //////console.log('API')
         //res.send({error:'Invalid request'})
     //});
 
     app.use(function (err, req, res, next) {
-        console.log('ERR');
-        console.log(err);
+        //console.log('ERR');
+        //console.log(err);
         res.sendStatus("500")
     });
     var options = {}
     let port=config.authServerPort ? String(parseInt(config.authServerPort))  : '5000'
     app.listen(port, () => {
-      console.log(`opennludata listening at http://localhost:${port}`)
+      //console.log(`opennludata listening at http://localhost:${port}`)
     })
 })

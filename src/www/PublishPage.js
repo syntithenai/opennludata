@@ -32,7 +32,7 @@ export default  function PublishPage(props) {
                            props.saveItem('Skill',skillToSave)
                            //{_id:props.currentSkill._id, id:props.currentSkill.id, title:props.currentSkill.title, json: JSON.stringify(props.currentSkill)})
                            .then(function(res) {
-                               console.log(['SSKIL created',res]) 
+                               //console.log(['SSKIL created',res]) 
                                if (res && res.data && res.data._id) {
                                    props.setCurrentSkill(res.data)
                                    props.setMongoId(res.data._id)
@@ -41,7 +41,7 @@ export default  function PublishPage(props) {
                                    props.updateFunctions.loadSkills().then(function() {
                                         props.history.push("/skills/skill/"+props.currentSkill.title)
                                    })
-                                   //console.log('updtecurrent skill ',currentSkill)
+                                   ////console.log('updtecurrent skill ',currentSkill)
                                } 
                             })
                         })
@@ -54,7 +54,7 @@ export default  function PublishPage(props) {
                            props.saveItem('Skill',skillToSave)
                            //{_id:props.currentSkill._id, id:props.currentSkill.id, title:props.currentSkill.title, json: JSON.stringify(props.currentSkill)})
                            .then(function(res) {
-                               console.log(['SSKIL updated',res]) 
+                               //console.log(['SSKIL updated',res]) 
                                if (res && res.data && res.data._id) {
                                    props.setCurrentSkill(res.data)
                                    props.setMongoId(res.data._id)
@@ -74,7 +74,7 @@ export default  function PublishPage(props) {
                        props.startWaiting()
                        props.deleteItem('Skill',props.currentSkill._id).then(function(res) {
                            props.setMongoId(null)
-                           console.log(['SSKIL deleted',res]) 
+                           //console.log(['SSKIL deleted',res]) 
                                props.setPageMessage('Unpublished',3000)
                                props.stopWaiting()
                                props.updateFunctions.loadSkills().then(function() {

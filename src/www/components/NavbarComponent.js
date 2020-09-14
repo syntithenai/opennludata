@@ -10,7 +10,7 @@ import ReactGA from 'react-ga';
 ReactGA.initialize('UA-3712973-4');
 
 export default function NavbarComponent(props) {
-    //console.log(props)
+    ////console.log(props)
     ReactGA.pageview(props.history.location.pathname);
     var astyle={paddingLeft:'0.3em'}
     const currentPage = props.history && props.history.location && props.history.location.pathname ? props.history.location.pathname : '/'
@@ -30,11 +30,11 @@ export default function NavbarComponent(props) {
    
     //useEffect(() => {
         //if (props.user && props.user.token && props.user.token.access_token) { 
-             //console.log('GETresS' )
+             ////console.log('GETresS' )
             //var axiosClient = props.getAxiosClient(props.user.token.access_token)
             //axiosClient.get('http://localhost:5000/api/v1/skill/count').then(function(res) {
                 //setStuff(res)
-                //console.log(res)
+                ////console.log(res)
             //})
         //}
     //},[(props.user && props.user.token && props.user.token.access_token ? props.user.token.access_token: '')])

@@ -77,7 +77,7 @@ function concatText(text,words) {
     }
 
     function uniquifyArray(a) {
-        //console.log(['UNIQARRAY',a])
+        ////console.log(['UNIQARRAY',a])
         if (Array.isArray(a)) {
             var index = {}
             a.map(function(value) {

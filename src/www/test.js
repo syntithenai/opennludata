@@ -42,7 +42,7 @@ function concatText(text,words) {
     }
 
     function uniquifyArray(a) {
-        //console.log(['UNIQARRAY',a])
+        ////console.log(['UNIQARRAY',a])
         if (Array.isArray(a)) {
             var index = {}
             a.map(function(value) {
@@ -192,7 +192,7 @@ function generateIntentSplits(text, intent) {
     return newSplits.sort(sortExampleSplits)
 }
 
-console.log(JSON.stringify(generateIntentSplits('he was a (boy|man) (named|called|going by) {name}','desc')))
+//console.log(JSON.stringify(generateIntentSplits('he was a (boy|man) (named|called|going by) {name}','desc')))
 
 
 ////import Octokit from '@octokit/rest'
@@ -218,7 +218,7 @@ console.log(JSON.stringify(generateIntentSplits('he was a (boy|man) (named|calle
       //const repos = await octo.repos.listForOrg({
         //org: ORGANIZATION
       //})
-  //} catch (e) {console.log(e)}
+  //} catch (e) {//console.log(e)}
   ////if (!repos.data.map((repo) => repo.name).includes(REPO)) {
     ////await createRepo(octo, ORGANIZATION, REPO)
   ////}
@@ -384,7 +384,7 @@ console.log(JSON.stringify(generateIntentSplits('he was a (boy|man) (named|calle
     ////commitMessage: "HELLO"
 ////})
     ////.then(res => {
-        ////console.log("success", res);
+        //////console.log("success", res);
     ////})
     ////.catch(err => {
         ////console.error(err);

@@ -76,7 +76,7 @@ async function push ({ owner, repo, base, head, changes }) {
     
 async function commitSkill(skill, deleteSkill) {
     return new Promise(function(resolve,reject) {
-      console.log(['COMMIT SKILL',skill])
+      //console.log(['COMMIT SKILL',skill])
       if (skill && (skill.id || skill._id)) {
           const owner = process.env.github_data_owner ? process.env.github_data_owner : ''
           const repo = process.env.github_data_repo ? process.env.github_data_repo : ''
@@ -117,7 +117,7 @@ async function commitSkill(skill, deleteSkill) {
               });
               changes.files[indexPath] = JSON.stringify(notDeleted)       
               changes.files[filePath] = fileContent  
-              console.log(['COMMIT SKILL push',changes, owner, repo, base, head])
+              //console.log(['COMMIT SKILL push',changes, owner, repo, base, head])
               push({ owner, repo, base, head, changes }).then(function() {
                 resolve()
               })      
@@ -127,7 +127,7 @@ async function commitSkill(skill, deleteSkill) {
           
         
     } else {
-      console.log(['COMMIT SKILL missing data in skill'])
+      //console.log(['COMMIT SKILL missing data in skill'])
       resolve()
     }
   })

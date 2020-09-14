@@ -2,7 +2,7 @@ export default function useRestEndpoint(axiosClient,restUrl=process.env.REACT_AP
    
     // to  endpoint root
     function doPost(modelType,data) {
-        console.log(['POST', modelType, data, restUrl])  
+        //console.log(['POST', modelType, data, restUrl])  
         return new Promise(function(resolve,reject) {
             if (modelType && data) {
                 axiosClient.post(restUrl+modelType,
@@ -13,14 +13,14 @@ export default function useRestEndpoint(axiosClient,restUrl=process.env.REACT_AP
                       },
                   }
                 ).then(function(res) {
-                  console.log(res)  
+                  //console.log(res)  
                   resolve(res)
                 }).catch(function(res) {
-                  console.log(res)  
+                  //console.log(res)  
                   reject(res)
                 })
             } else {
-                console.log('Missing post params')
+                //console.log('Missing post params')
                 reject('Missing post params')
             }
         })
@@ -28,7 +28,7 @@ export default function useRestEndpoint(axiosClient,restUrl=process.env.REACT_AP
     
     // to  endpoint with id
     function doPut(modelType,data) {
-        console.log('PUT')  
+        //console.log('PUT')  
         return new Promise(function(resolve,reject) {
             if (modelType && data && data._id) {
                 axiosClient.put(restUrl+modelType+"/"+data._id,
@@ -39,14 +39,14 @@ export default function useRestEndpoint(axiosClient,restUrl=process.env.REACT_AP
                       },
                   }
                 ).then(function(res) {
-                  console.log(res)  
+                  //console.log(res)  
                   resolve(res)
                 }).catch(function(res) {
-                  console.log(res)  
+                  //console.log(res)  
                   reject(res)
                 })
             } else {
-                console.log('Missing post params')
+                //console.log('Missing post params')
                 reject('Missing post params')
             }
         })
@@ -65,10 +65,10 @@ export default function useRestEndpoint(axiosClient,restUrl=process.env.REACT_AP
                       },
                   }
                 ).then(function(res) {
-                  console.log(['GET',res])  
+                  //console.log(['GET',res])  
                   resolve(res)
                 }).catch(function(res) {
-                  console.log(res)  
+                  //console.log(res)  
                   reject(res)
                 })
             } else {
@@ -97,10 +97,10 @@ export default function useRestEndpoint(axiosClient,restUrl=process.env.REACT_AP
                   },
               }
             ).then(function(res) {
-              console.log(['GET many',res])  
+              //console.log(['GET many',res])  
               resolve(res)
             }).catch(function(res) {
-              console.log(res)  
+              //console.log(res)  
               reject(res)
             })
         })
@@ -119,21 +119,21 @@ export default function useRestEndpoint(axiosClient,restUrl=process.env.REACT_AP
                     },
                   }
                 ).then(function(res) {
-                  console.log(['DEL',res])  
+                  //console.log(['DEL',res])  
                   resolve(res)
                 }).catch(function(res) {
-                  console.log(res)  
+                  //console.log(res)  
                   reject(res)
                 })
             } else {
-                 console.log(['DEL request missing id'])  
+                 //console.log(['DEL request missing id'])  
                  reject('DELETE request missing id')
             }
         })
     }
     // to  endpoint with id
     function doPatch(modelType, data) {
-        console.log('patch')  
+        //console.log('patch')  
         return new Promise(function(resolve,reject) {
             if (modelType && data && data._id) {
                 axiosClient.patch(restUrl+modelType+"/"+data._id,
@@ -144,14 +144,14 @@ export default function useRestEndpoint(axiosClient,restUrl=process.env.REACT_AP
                       },
                   }
                 ).then(function(res) {
-                      console.log(['update',res])  
+                      //console.log(['update',res])  
                       resolve(res)
                 }).catch(function(res) {
-                  console.log(res)  
+                  //console.log(res)  
                   reject(res)
                 })
             } else {
-                console.log('Missing post params')
+                //console.log('Missing post params')
                 reject('Missing post params')
             }
         })

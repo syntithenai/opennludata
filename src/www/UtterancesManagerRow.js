@@ -17,14 +17,14 @@ export default function UtterancesManagerRow(props) {
         
         function updateExampleSynonymWrap(content) {
             updateExampleSynonym(content)
-            console.log(['UES',content])
+            //console.log(['UES',content])
             var lines = content ? content.split("\n") : []
-            console.log(['UES lines ',lines])
+            //console.log(['UES lines ',lines])
                 
             if (lines && lines.length > 1) {
                 if (!(item && item.value && item.value.trim().length > 0)) {
                     var newContent = lines[0].trim().replaceAll(' ','_')
-                    console.log(['UES update ',newContent])
+                    //console.log(['UES update ',newContent])
                     updateExampleContent(newContent)
                 }
             }

@@ -11,7 +11,7 @@ import localforage from 'localforage'
 
 
 export default function useSkillsEditor(props) {
-    //console.log(props)
+    ////console.log(props)
 
     //const {loadAll, skillFilterValue, setSkillFilterValue, filteredItems} = useNluEditor('nlutool','examples','alldata', props.updateFunctions.updateLookups)
     const [skillKeys, setSkillKeys] = useState([])
@@ -38,7 +38,7 @@ export default function useSkillsEditor(props) {
        storeName   : "examples",
      });
     const token = props.user && props.user.token && props.user.token.access_token ? props.user.token.access_token : ''
-    //console.log(['SETOKE',token])
+    ////console.log(['SETOKE',token])
     const axiosClient = props.getAxiosClient(token)
     const {saveItem, deleteItem, searchItems} = useRestEndpoint(axiosClient,process.env.REACT_APP_restBaseUrl)
 
@@ -50,15 +50,15 @@ export default function useSkillsEditor(props) {
     
     var skillFilterValue = params.skillId ? params.skillId : '';
     function setSkillFilterValue(value) {
-        //console.log('SETSKILLVAL')
-        //console.log(history)
+        ////console.log('SETSKILLVAL')
+        ////console.log(history)
         var root = history.location.pathname.split("/")
         var parts=['/'+root[1]]
         skillFilterValue = value;
         if (skillFilterValue.length > 0) {
             parts.push('/skill/'+skillFilterValue)
         }
-        //console.log(['ssv',parts,value])
+        ////console.log(['ssv',parts,value])
         history.push(parts.join(''))
     }
     
@@ -74,7 +74,7 @@ export default function useSkillsEditor(props) {
     //// load list lookups
     useEffect(() => {
         if (listsManager.items.length > 0) { 
-            //console.log(['UPD ITEMS',listsManager.items,listsManager.items[0]])
+            ////console.log(['UPD ITEMS',listsManager.items,listsManager.items[0]])
             props.updateFunctions.updateLists(listsManager.items[0])
             //props.updateFunctions.updateRegexps(listsManager.items[0])
             //props.updateFunctions.updateUtterances(listsManager.items[0])
@@ -86,7 +86,7 @@ export default function useSkillsEditor(props) {
     // load mongo id into skill when changed
     useEffect(() => {
         if (currentSkill) {
-          //console.log(['SET mongoid HAVE CURRENT SKILL',currentSkill,mongoId])
+          ////console.log(['SET mongoid HAVE CURRENT SKILL',currentSkill,mongoId])
           var skill = currentSkill
           skill._id = mongoId
           setCurrentSkill(skill)
@@ -97,7 +97,7 @@ export default function useSkillsEditor(props) {
     // load invocation into skill when changed
     useEffect(() => {
         if (currentSkill) {
-          //console.log(['SET INVOC HAVE CURRENT SKILL',currentSkill,invocation])
+          ////console.log(['SET INVOC HAVE CURRENT SKILL',currentSkill,invocation])
           var skill = currentSkill
           skill.invocation = invocation
           setCurrentSkill(skill)
@@ -107,9 +107,9 @@ export default function useSkillsEditor(props) {
     
     // look for published version of skill 
     useEffect(() => {
-        //console.log(['USER UPDATE',currentSkill,props.user,props.user._id])
+        ////console.log(['USER UPDATE',currentSkill,props.user,props.user._id])
         if (currentSkill && props.user && props.user._id) {
-          //console.log(['USER UPDATE FIND ONLINE'])
+          ////console.log(['USER UPDATE FIND ONLINE'])
           findOnlineSkill(props.user,currentSkill)
       }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -131,10 +131,10 @@ export default function useSkillsEditor(props) {
             }
             // merge in intents
             skill.intents = collatedItems
-            console.log('SAVE NOW - change cs or inv',JSON.parse(JSON.stringify(skill)))
+            //console.log('SAVE NOW - change cs or inv',JSON.parse(JSON.stringify(skill)))
             skillsStorage.setItem(skillFilterValue, currentSkill, function (err) {
                 if (err)  {
-                    console.log(err)
+                    //console.log(err)
                     throw new Error(err)
                 }
             })
@@ -145,9 +145,9 @@ export default function useSkillsEditor(props) {
   
   
   //function setInvocation(val) {
-      //console.log('SET INVOCK')
+      ////console.log('SET INVOCK')
       ////if (currentSkill) {
-          ////console.log(['SET INVOCK HAVE CURRENT SKILL',currentSkill,val])
+          //////console.log(['SET INVOCK HAVE CURRENT SKILL',currentSkill,val])
           ////var skill = currentSkill
           ////skill.invocation = val 
           ////setCurrentSkill(skill)
@@ -175,9 +175,9 @@ export default function useSkillsEditor(props) {
                 })
                 setSkillKeys(Object.keys(skillKeys))
                 setFilteredItems(filteredItems)
-                //console.log('loaded skill items for init',filteredItems, Object.keys(skillKeys),allItems)
+                ////console.log('loaded skill items for init',filteredItems, Object.keys(skillKeys),allItems)
                 if (skillFilterValue) {
-                    //console.log(['LOAD SKILL',skillFilterValue])
+                    ////console.log(['LOAD SKILL',skillFilterValue])
                     skillsStorage.getItem(skillFilterValue, function (err, skill) {
                         if (err) throw new Error(err)
                         var newSkill = skill && skill.id ? skill : {}
@@ -196,7 +196,7 @@ export default function useSkillsEditor(props) {
                         props.updateFunctions.updateUtterances()
                         props.updateFunctions.updateRegexps()
                         props.updateFunctions.updateLookups()
-                        //console.log(['LOADED LOCAL SKILL ',JSON.parse(JSON.stringify(newSkill))])
+                        ////console.log(['LOADED LOCAL SKILL ',JSON.parse(JSON.stringify(newSkill))])
                         forceReload(newSkill)
                     })
                 }
@@ -205,19 +205,19 @@ export default function useSkillsEditor(props) {
     }
     
     function findOnlineSkill(user,skill) {
-        console.log(['FINDONLINESKILL',user,skill,props.lookups, props.lookups.skills])
+        //console.log(['FINDONLINESKILL',user,skill,props.lookups, props.lookups.skills])
         // if user is logged in, try load the matching online skill
         if (user && user._id && skill.title) {
             //var query = {user:user._id, title:skill.title}
             if (props.lookups.skills) {
                 setSkillMatches( Object.values(props.lookups.skills).filter(function(loadedSkill) {
-                    console.log(['FINDONLINESKILL compare',user._id, loadedSkill.user, skill.title, loadedSkill.title])
+                    //console.log(['FINDONLINESKILL compare',user._id, loadedSkill.user, skill.title, loadedSkill.title])
                     if (loadedSkill && loadedSkill.title ===  skill.title) {
                         if (user._id === loadedSkill.user) {
-                            console.log(['FINDONLINESKILL match', loadedSkill,   loadedSkill.updated_date  ,skill.updated_date , loadedSkill.updated_date - skill.updated_date ])
+                            //console.log(['FINDONLINESKILL match', loadedSkill,   loadedSkill.updated_date  ,skill.updated_date , loadedSkill.updated_date - skill.updated_date ])
                             //setSkillMatches([loadedSkill])
                             if (!skill.updated_date || skill.updated_date < loadedSkill.updated_date) {
-                                 console.log(['FINDONLINESKILL match newer', loadedSkill])
+                                 //console.log(['FINDONLINESKILL match newer', loadedSkill])
                                 setSkillUpdatedMatches([loadedSkill])
                             }
                         }
@@ -226,17 +226,17 @@ export default function useSkillsEditor(props) {
             }
         }    
             //if (skill._id) query._id = skill._id
-            //console.log(['SEARCH ONLINE ',query])
+            ////console.log(['SEARCH ONLINE ',query])
             //searchItems('Skill',query).then(function (res) {
-                //console.log(['SKILL RESULTS'])
-                //console.log(res.data)
+                ////console.log(['SKILL RESULTS'])
+                ////console.log(res.data)
                 //if (res.data && res.data.length > 0) {
                     //var found = false
                     //res.data.map(function(skillItem) {
-                        //console.log(['SKILL RESULTS', skill ? skill._id : '',skillItem ? skillItem._id:''])
+                        ////console.log(['SKILL RESULTS', skill ? skill._id : '',skillItem ? skillItem._id:''])
                         //if (skill._id && skill._id === skillItem._id) {
                             //found = true
-                            //console.log(['SKILL RESULTS DATES',skill.updated_date ,skillItem.updated_date, skill.updated_date - skillItem.updated_date])
+                            ////console.log(['SKILL RESULTS DATES',skill.updated_date ,skillItem.updated_date, skill.updated_date - skillItem.updated_date])
                             //if (skill.updated_date < skillItem.updated_date) {
                                 //setSkillUpdatedMatches([res.data[0]])
                             //}
@@ -254,7 +254,7 @@ export default function useSkillsEditor(props) {
                    //setSkillMatches([])
                 //}
             //}).catch(function(err) {
-                //console.log(err)  
+                ////console.log(err)  
             //})
             
         //} else {
@@ -264,7 +264,7 @@ export default function useSkillsEditor(props) {
     }
     
     function indexEntities(currentSkill, filteredItems) {
-         //console.log(['INDEX ENETITIES',currentSkill,filteredItems])
+         ////console.log(['INDEX ENETITIES',currentSkill,filteredItems])
          var entities = {}
             // collate entities from filteredItems
             if (Array.isArray(filteredItems)) {
@@ -298,12 +298,12 @@ export default function useSkillsEditor(props) {
                //}
                return null
             })
-            //console.log(["ENT",entities])
+            ////console.log(["ENT",entities])
             setEntitiesForSkill(entities)
             return entities;
     }
     function indexIntentsAndTags(currentSkill, filteredItems) {
-        //console.log(['INDEX INTENTS',currentSkill])
+        ////console.log(['INDEX INTENTS',currentSkill])
         if (currentSkill) {
             // collate intents and tags from items
              var newCollatedItems = collatedItems
@@ -341,26 +341,26 @@ export default function useSkillsEditor(props) {
 
 
     function setSkill(skill) {
-        console.log(['SETSKILL',currentSkill,skill])
+        //console.log(['SETSKILL',currentSkill,skill])
         if (skill && skill.id) {
             setCurrentSkill(skill)
             //setInvocation(skill.invocation)
             setMongoId(skill._id)
            // forceReload()
         } else {
-            console.log(['NOSETSKILL',currentSkill,skill])
+            //console.log(['NOSETSKILL',currentSkill,skill])
         }
     }
 
     function addListToSkillEntity(entity,list) {
-      //console.log(['ADSKOI',currentSkill,currentSkill.entities,entity,list])
+      ////console.log(['ADSKOI',currentSkill,currentSkill.entities,entity,list])
       if (entity && list && list.name) {
             var skill = currentSkill;
             if (!skill.entities) skill.entities={}
             if (!skill.entities[entity]) skill.entities[entity] = {lists:[]}
             if (!Array.isArray(skill.entities[entity].lists)) skill.entities[entity].lists = []
             //var newListsForEntity = listsForEntity
-            //console.log(['ADSKOI1.5',skill])
+            ////console.log(['ADSKOI1.5',skill])
             skill.entities[entity].lists.push(list.name)
             skill.entities[entity].lists = uniquifyArray(skill.entities[entity].lists).sort()
            //newListsForEntity[entity] = uniquifyArray(newListsForEntity).sort()
@@ -368,19 +368,19 @@ export default function useSkillsEditor(props) {
             // force render
             forceReload()  
             //} else {
-                //console.log(['ADSKOI new'])
+                ////console.log(['ADSKOI new'])
                //newListsForEntity[entity] = [list.name]
             //}
-             //console.log(['ADSKOI2 final',newListsForEntity])
+             ////console.log(['ADSKOI2 final',newListsForEntity])
             //setListsForEntity(newListsForEntity)
        } else {
-           console.log([' missing data'])
+           //console.log([' missing data'])
        }
     }
   
     function removeListFromSkillEntity(entity, listIndex) {
       var skill = currentSkill
-      //console.log(['REMOVESKILLFROMLIST',entity,listIndex])
+      ////console.log(['REMOVESKILLFROMLIST',entity,listIndex])
       if (skill && skill.entities && entity && skill.entities[entity] && skill.entities[entity].lists) {
           var lists = skill.entities[entity].lists
           //lists = uniquifyArray([lists.slice(0, listIndex),lists.slice(listIndex + 1)]).sort()
@@ -389,7 +389,7 @@ export default function useSkillsEditor(props) {
           skill.entities[entity].lists = lists
           setCurrentSkill(skill)  
           forceReload()  
-          //console.log(['REMOVESKILLFROMLIST ddd',lists])
+          ////console.log(['REMOVESKILLFROMLIST ddd',lists])
       } 
        //var newEntitiesForSkill = entitiesForSkill
        //if (newEntitiesForSkill[entity]) {
@@ -417,8 +417,8 @@ export default function useSkillsEditor(props) {
             if (!skill.entities[entity]) skill.entities[entity] = {}
             skill.entities[entity].alexaType = type
             setCurrentSkill(skill)  
-            console.log('ALEXA')
-            console.log(skill)
+            //console.log('ALEXA')
+            //console.log(skill)
             forceReload()  
        } 
     }
@@ -432,8 +432,8 @@ export default function useSkillsEditor(props) {
             rasa.slots = newSlots
             skill.rasa = rasa
             setCurrentSkill(skill)  
-            console.log('RASA')
-            console.log(skill)
+            //console.log('RASA')
+            //console.log(skill)
             forceReload()  
        } 
     }
@@ -489,7 +489,7 @@ export default function useSkillsEditor(props) {
     }
     
     function setRASAConfig(data) {
-        console.log(['setrasaconfig',data, currentSkill])
+        //console.log(['setrasaconfig',data, currentSkill])
           if (currentSkill) {
             var skill = currentSkill;
             skill.rasa = skill.rasa ? skill.rasa : {}
@@ -538,7 +538,7 @@ export default function useSkillsEditor(props) {
     }  
         
     function addRegexp(regexp) {
-        console.log(['ADDREGEX',regexp])
+        //console.log(['ADDREGEX',regexp])
         if (currentSkill && regexp) {
             var skill = currentSkill;
             if (!Array.isArray(skill.regexps)) skill.regexps=[]
@@ -564,19 +564,19 @@ export default function useSkillsEditor(props) {
     }
     
     function removeRegexp(index) {
-        console.log(['RE UTTERANCE',index])
+        //console.log(['RE UTTERANCE',index])
         if (typeof index === "number" && currentSkill && currentSkill.regexps && currentSkill.regexps.length > index) {
             var skill = currentSkill;
             skill.regexps = [...skill.regexps.slice(0,index),...skill.regexps.slice(index+1)]
             setCurrentSkill(skill)  
-            console.log('RASA')
-            console.log(skill)
+            //console.log('RASA')
+            //console.log(skill)
             forceReload()
         }
     }
     
     function setRegexpIntent(index, intent) {
-        console.log(['set reg intent',index, intent])
+        //console.log(['set reg intent',index, intent])
         if (typeof index === "number" && currentSkill && currentSkill.regexps && currentSkill.regexps.length > index) {
             var skill = currentSkill;
             skill.regexps = skill.regexps ? skill.regexps : []
@@ -585,14 +585,14 @@ export default function useSkillsEditor(props) {
             regexp.intent = intent
             skill.regexps[key] = regexp
             setCurrentSkill(skill)  
-            console.log('RASA')
-            console.log(skill)
+            //console.log('RASA')
+            //console.log(skill)
             forceReload()
         }
     }
     
     function setRegexpEntity(index,entity) {
-        console.log(['set reg entity',index, entity])
+        //console.log(['set reg entity',index, entity])
         if (typeof index === "number" && currentSkill && currentSkill.regexps && currentSkill.regexps.length > index) {
             var skill = currentSkill;
             skill.regexps = skill.regexps ? skill.regexps : []
@@ -601,8 +601,8 @@ export default function useSkillsEditor(props) {
             regexp.entity = entity
             skill.regexps[key] = regexp
             setCurrentSkill(skill)  
-            console.log('RASA')
-            console.log(skill)
+            //console.log('RASA')
+            //console.log(skill)
             forceReload()
         }
     }
@@ -614,8 +614,8 @@ export default function useSkillsEditor(props) {
             skill.utterances.push(utterance.name)
             skill.utterances = uniquifyArray(skill.utterances)
             setCurrentSkill(skill)  
-            console.log('RASA')
-            console.log(skill)
+            //console.log('RASA')
+            //console.log(skill)
             // if this is a new utterance, add it to the main database
             if (!props.lookups.utteranceListsLookups[utterance.name] && !props.lookups.utterancesLookups[utterance.name]) {
                 var utteranceStorage = localforage.createInstance({
@@ -635,26 +635,26 @@ export default function useSkillsEditor(props) {
     }
     
     function removeUtterance(index) {
-        console.log(['RE UTTERANCE',index])
+        //console.log(['RE UTTERANCE',index])
         if (typeof index === "number" && currentSkill && currentSkill.utterances && currentSkill.utterances.length > index) {
             var skill = currentSkill;
             skill.utterances = [...skill.utterances.slice(0,index),...skill.utterances.slice(index+1)]
             setCurrentSkill(skill)  
-            console.log('RASA')
-            console.log(skill)
+            //console.log('RASA')
+            //console.log(skill)
             forceReload()
         }
     }
     function addUtteranceList(utterance) {
-          console.log(['ADD UTTERANCE LIST',utterance, currentSkill])
+          //console.log(['ADD UTTERANCE LIST',utterance, currentSkill])
           if (currentSkill && utterance) {
             var skill = currentSkill;
             if (!Array.isArray(skill.utterancesLists)) skill.utterancesLists=[]
             skill.utterancesLists.push(utterance.name)
             skill.utterancesLists = uniquifyArray(skill.utterancesLists)
             setCurrentSkill(skill)  
-            console.log('add ut list')
-            console.log(skill.utterancesLists)
+            //console.log('add ut list')
+            //console.log(skill.utterancesLists)
             forceReload()
        } 
     }
@@ -664,14 +664,14 @@ export default function useSkillsEditor(props) {
             var skill = currentSkill;
             skill.utterancesLists = [...skill.utterancesLists.slice(0,index),...skill.utterancesLists.slice(index+1)]
             setCurrentSkill(skill)  
-            console.log('RASA')
-            console.log(skill)
+            //console.log('RASA')
+            //console.log(skill)
             forceReload()
         }
     }  
     
     function addSkillTag(tag) {
-          console.log(['ADD skill tag',tag, currentSkill])
+          //console.log(['ADD skill tag',tag, currentSkill])
           if (currentSkill && tag) {
             var skill = currentSkill;
             if (!Array.isArray(skill.tags)) skill.tags=[]
@@ -683,7 +683,7 @@ export default function useSkillsEditor(props) {
     }
      
     function removeSkillTag(index) {
-          console.log(['rm skill tag',index, currentSkill])
+          //console.log(['rm skill tag',index, currentSkill])
         if (typeof index === "number" && currentSkill && currentSkill.tags) {
             var skill = currentSkill;
             skill.tags = [...skill.tags.slice(0,index),...skill.tags.slice(index+1)]

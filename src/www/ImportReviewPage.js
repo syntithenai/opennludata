@@ -56,9 +56,11 @@ function ImportReviewPage(props) {
              if (importData.intents) {
                  var collatedIntents = {}
                  importData.intents.map(function(intent) {
-                     var key = intent.intent ? intent.intent : '_'
-                     collatedIntents[key] = collatedIntents[key] ? collatedIntents[key] : []
-                     collatedIntents[key].push(intent)
+                     if (intent) {
+                         var key = intent.intent ? intent.intent : '_'
+                         collatedIntents[key] = collatedIntents[key] ? collatedIntents[key] : []
+                         collatedIntents[key].push(intent)
+                    }
                     return null
                  })
                  setCollatedIntents(collatedIntents)

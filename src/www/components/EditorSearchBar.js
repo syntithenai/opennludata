@@ -44,6 +44,7 @@ const EditorSearchBar = function(props) {
                       {intentOptions}
                   </Dropdown.Menu>
                 </Dropdown>}
+                
             {<Dropdown style={{marginLeft:'0.5em'}}  as={ButtonGroup}>
                   <Dropdown.Toggle split   id="dropdown-split-basic" ></Dropdown.Toggle>
                   <Button  >{'Tag '+(props.tagFilterValue ? ' - '+ props.tagFilterValue : '')} </Button>

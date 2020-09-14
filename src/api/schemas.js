@@ -24,8 +24,8 @@ const skillsSchema = new mongoose.Schema({
 })
 //skillsSchema.index({title: "text", invocation: "text", tags: "text"});
 //skillsSchema.on('index', function(error) {
-    //console.log('finished index');
-    //console.log(error.message);
+    ////console.log('finished index');
+    ////console.log(error.message);
   //});
   
 const skillTagsSchema = new mongoose.Schema({

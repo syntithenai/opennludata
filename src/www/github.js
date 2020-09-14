@@ -8,7 +8,7 @@
 //let files =  [{content: 'You are a Wizard, Harry', path: 'harry.txt'},{content: 'May the Force be with you', path: 'jedi.txt'}]
 //let api = new GithubAPI({token: 'API_TOKEN'});
 //api.setRepo('syntithenai', 'opennludata_data');
-//api.setBranch('master').then( () => api.pushFiles('Making a commit with my adorable files',files)    )    .then(function() {        console.log('Files committed!');    });
+//api.setBranch('master').then( () => api.pushFiles('Making a commit with my adorable files',files)    )    .then(function() {        //console.log('Files committed!');    });
 
 
 function GithubAPI(auth) {

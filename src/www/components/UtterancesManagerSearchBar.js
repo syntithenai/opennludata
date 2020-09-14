@@ -8,7 +8,7 @@ import checkImage from '../images/check.svg'
 const UtterancesManagerSearchBar = function(props) {
     const [topTagOptions,setTopTagOptions] = useState([])
     useEffect(() => {
-        //console.log(['kust nabager ',props.lookups.listsLookups])
+        ////console.log(['kust nabager ',props.lookups.listsLookups])
         var topTagOptionss = props.lookups.utteranceTagsLookups && props.lookups.utteranceTagsLookups.sort().map(function(listKey,i) {
               return <Dropdown.Item key={i} value={listKey} onClick={function(e) {props.setListFilterValue(listKey)}}  >{listKey}</Dropdown.Item>
         })
@@ -21,8 +21,8 @@ const UtterancesManagerSearchBar = function(props) {
     return <div>
             {<span>
             
-                {props.lookups.selectedUtteranceTally > 0 && <Button size="lg"  onClick={function(e) {console.log(['reset sel']); props.resetSelection(e) }} variant="success"  ><img style={{height:'1em'}} src={checkImage} alt="Deselect" /></Button> }
-                {props.lookups.selectedUtteranceTally <= 0 && <Button size="lg" onClick={function(e) {console.log(['sel all']); props.selectAll(e) }} variant="secondary"  ><img style={{height:'1em'}} src={checkImage} alt="Select" /></Button> }
+                {props.lookups.selectedUtteranceTally > 0 && <Button size="lg"  onClick={function(e) {props.resetSelection(e) }} variant="success"  ><img style={{height:'1em'}} src={checkImage} alt="Deselect" /></Button> }
+                {props.lookups.selectedUtteranceTally <= 0 && <Button size="lg" onClick={function(e) {props.selectAll(e) }} variant="secondary"  ><img style={{height:'1em'}} src={checkImage} alt="Select" /></Button> }
                 
                 
            </span>}   

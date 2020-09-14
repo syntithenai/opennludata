@@ -32,21 +32,21 @@ export default  function NluSkillsEditor(props) {
      const skillsList = skillKeys ? skillKeys.map(function(skill,i) {return <Button key={i}  onClick={function(e) {setSkillFilterValue(skill)}}  style={{marginLeft:'1em'}} >{skill}</Button>} )   : []
      
      function loadSkill(skill) {
-        console.log(['LOaD SKIL',skill])  
+        //console.log(['LOaD SKIL',skill])  
         return new Promise(function(resolve,reject) {
             if (skill && skill.file) {
-                console.log(['LOaD SKIL have file',(process.env.REACT_APP_githubSkillsUrl ? process.env.REACT_APP_githubSkillsUrl : '/static/media/skills/')+skill.file])  
+                //console.log(['LOaD SKIL have file',(process.env.REACT_APP_githubSkillsUrl ? process.env.REACT_APP_githubSkillsUrl : '/static/media/skills/')+skill.file])  
                 const axiosClient = props.getAxiosClient()
                 axiosClient.get((process.env.REACT_APP_githubSkillsUrl ? process.env.REACT_APP_githubSkillsUrl : '/static/media/skills/')+skill.file).then(function(res) {
-                  console.log(['LOaDed SKIL',res.data])  
+                  //console.log(['LOaDed SKIL',res.data])  
                   if (res.data) {
-                      //console.log(res.data)
+                      ////console.log(res.data)
                       //try {
                           //var data = JSON.parse(res.data)
                           setSkill(res.data)
                           resolve({fileType:'opennlu.skill', created_date: new Date().getTime(), title: res.data.title, data: JSON.stringify(res.data)})
                       //} catch (e) {
-                        //console.log(e)      
+                        ////console.log(e)      
                     //}
                   } else {
                       reject('Failed to load skill')  
@@ -84,7 +84,7 @@ export default  function NluSkillsEditor(props) {
                     //skill.intents = 
                     //skill.entities = 
                     exportFormat.exportFunction(currentSkill).then(function(zipBody) {
-                        console.log(['TRIGGER DL',title,zipBody])
+                        //console.log(['TRIGGER DL',title,zipBody])
                         if (exportFormat.name==='JSON') {
                             saveAs(zipBody, title+'.json')
                         } else {

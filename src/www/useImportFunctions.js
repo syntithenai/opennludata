@@ -1,6 +1,7 @@
 import useImportMergeFunctions from './useImportMergeFunctions'
 import useImportUtils from './useImportUtils'
 import {useHistory} from 'react-router-dom'
+import {generateObjectId} from './utils'
 const yaml = require('js-yaml');
 
 export default function useImportFunctions(sendPageMessage) {
@@ -20,7 +21,7 @@ export default function useImportFunctions(sendPageMessage) {
             var data = {}
             try {
                 data = JSON.parse(item.data)
-                console.log(['IMPSKILL',data])
+                //console.log(['IMPSKILL',data])
         
                 // create examples (intents)
                 if (data.title) {
@@ -83,7 +84,7 @@ export default function useImportFunctions(sendPageMessage) {
      */
     function importAll(item) {
         return new Promise(function(resolve, reject) {
-             console.log(['import examples',item])
+             //console.log(['import examples',item])
              if (item) {
                   switch(item.fileType) {
                     case 'opennlu.skill':
@@ -138,50 +139,56 @@ export default function useImportFunctions(sendPageMessage) {
     
     
     function importTextIntents(item, intent = '') {
-         console.log(['text',item.data])
+         //console.log(['text',item.data])
          return generateIntentSplits(item.data, intent)
        }
     
         
     function importTextEntities(item, entity = '') {
-         console.log(['text',item.data])
+         //console.log(['text',item.data])
          return generateEntitySplits(item.data, entity)
     }
     
         
     function importTextUtterances(item, utterance = '') {
-         console.log(['text',item.data])
+         //console.log(['text',item.data])
          return {utterances: generateUtteranceSplits(item.data, utterance)}
     }
     
     
     function importJsonIntents(item) {
         return new Promise(function( resolve, reject) {
-            console.log(['json',item.data])
+            //console.log(['json',item.data])
             resolve([])
         })
     }
     
     function importJsonEntities(item) {
         return new Promise(function( resolve, reject) {
-            console.log(['json',item.data])
+            //console.log(['json',item.data])
             resolve([])
         })
     }
     
     function importJsonUtterances(item) {
         return new Promise(function( resolve, reject) {
-            console.log(['json',item.data])
+            //console.log(['json',item.data])
             resolve([])
         })
     }
     
     
     function importJovo(item) {
+        console.log(['imp jovo',item])
         return new Promise(function( resolve, reject) {
-            unzip(item.data,['*/project.js','*/models/*.js']).then(function(files) {
-                console.log(['jovo',files])
-                resolve(files)
+            unzip(item.data,['*/en-US.json']).then(function(files) {
+                console.log(['jovo fil',files])
+                if (files) files.map(function(file) {
+                    var splits = generateSplitsFromJovoJson(file)
+                    console.log(['jovo spl',splits])
+                    resolve(splits)
+                
+                })
             })
         })
     }
@@ -199,10 +206,16 @@ export default function useImportFunctions(sendPageMessage) {
                     })
                     skill.rasa.slots = newSlots
                 }
-                // TODO utterances responses: { utter_ask_mnemonic: [{text: "Would you like to hear a memory aid"}]}
                 // TODO intent - use_entities intents[{ask_followup_attribute: {use_entities:  ["attribute", "word", "person", "place", "thing"]}}]
                 if (yml.responses) {
-                    
+                    var utterances=[]
+                    Object.keys(yml.responses).map(function(utteranceKey) {
+                        var alts=[]
+                        yml.responses[utteranceKey].map(function(alt) {
+                            alts.push(alt.text)
+                        })
+                        utterances.push({'id':generateObjectId(), 'value':utteranceKey, synonym:alts.join("\n")})
+                    })
                 }
                 if (yml.session_config) {
                     var configLines = []
@@ -213,7 +226,7 @@ export default function useImportFunctions(sendPageMessage) {
                 }
              }
             
-            console.log('rasa domain',yml)
+            ////console.log('rasa domain',yml)
         } catch(e) {}
         return skill
     }
@@ -221,7 +234,7 @@ export default function useImportFunctions(sendPageMessage) {
     function importRASA(item) {
         return new Promise(function( resolve, reject) {
             unzip(item.data,['*/config.yaml','*/credentials.yaml','*/endpoints.yaml','*/domain.yaml','*/config.yml','*/credentials.yml','*/endpoints.yml','*/domain.yml','*.md','*.json']).then(function(files) {
-                //console.log(['rasa',files])
+                ////console.log(['rasa',files])
                 var skill = {rasa: {}}
                 if (files) files.map(function(file) {
                     if (file.path && (file.path.endsWith('config.yml') || file.path.endsWith('config.yaml'))) {
@@ -233,12 +246,19 @@ export default function useImportFunctions(sendPageMessage) {
                     } else if (file.path && (file.path.endsWith('domain.yml') || file.path.endsWith('domain.yaml'))) {
                         skill = importRASADomainFile(file.data,skill)
                     } else if (file.path && file.path.endsWith('.json')) {
-                        
+                        var intentSkill = generateSplitsFromRasaJson(file, files)
+                        console.log(['IMPORTED RASA JSON',intentSkill,file]) 
+                        skill.intents = [].concat(skill.intents,intentSkill.intents)
+                        skill.regexps = [].concat(skill.regexps,intentSkill.regexps)
                     } else if (file.path && file.path.endsWith('.md')) {
-                        
+                        var intentSkill = generateSplitsFromRasaMd(file, files)
+                        console.log(['IMPORTED RASA MD',intentSkill,file]) 
+                        skill.intents = [].concat(skill.intents,intentSkill.intents)
+                        skill.regexps = [].concat(skill.regexps,intentSkill.regexps)
                     }
-                    console.log(file) 
+                    //console.log(file) 
                 })
+                console.log(['IMPORTED RASA',skill]) 
                 resolve(skill)
             })
         })
@@ -247,7 +267,7 @@ export default function useImportFunctions(sendPageMessage) {
     function importMycroft(item) {
         return new Promise(function( resolve, reject) {
             unzip(item.data,['*.intent','*.dialog','*.entity']).then(function(files) {
-                //console.log(['mycroft',files])
+                ////console.log(['mycroft',files])
                 var skill = {}
                 var utterances=[]
                 var intents=[]
@@ -271,17 +291,17 @@ export default function useImportFunctions(sendPageMessage) {
                            var fileParts = file.path.split("/")
                            var name = nameFromFilename(file.path)
                            if (file.path.endsWith('.intent') && file.data) {
-                               console.log(file.path, file.data, generateIntentSplits(file.data, name))
+                               //console.log(file.path, file.data, generateIntentSplits(file.data, name))
                                var intent = fileParts.length > 1 ? fileParts[fileParts.length -1].replace('.intent','') : ''
                                intents = [].concat(generateIntentSplitsForMycroft(file.data, intent), intents)
                            } else if (file.path.endsWith('.dialog')) {
                                var parts = file.path.split("/")
                                var fileName = parts[parts.length -1]
-                               console.log(file.path, file.data, generateUtteranceSplits(file.data, name))   
+                               //console.log(file.path, file.data, generateUtteranceSplits(file.data, name))   
                                var utterance = fileParts.length > 1 ? fileParts[fileParts.length -1].replace('.dialog','')  : ''
                                utterances = [].concat(generateMycroftUtteranceSplits(file.data, fileName.replace('.dialog','')), utterances)
                            } else if (file.path.endsWith('.entity')) {
-                               console.log(file.path, file.data, generateEntitySplits(file.data, name)) 
+                               //console.log(file.path, file.data, generateEntitySplits(file.data, name)) 
                                var entity = fileParts.length > 1 ? fileParts[fileParts.length -1].replace('.entity','')  : ''
                                entities = [].concat(generateEntitySplits(file.data, entity), entities)
                            }
@@ -291,7 +311,7 @@ export default function useImportFunctions(sendPageMessage) {
                 skill.utterances = utterances
                 skill.intents = intents
                 skill.entities = entities
-                console.log(['MYIMNPO',skill])
+                //console.log(['MYIMNPO',skill])
                 resolve(skill)
             })
         })
@@ -299,7 +319,7 @@ export default function useImportFunctions(sendPageMessage) {
 
     function importEntities(item) {
           return new Promise(function(resolve, reject) {
-             console.log(['import entities',item])
+             //console.log(['import entities',item])
              if (item) {
                   if (item.fileType === 'text') {
                         resolve({entities:importTextEntities(item, item.title)})
@@ -318,7 +338,7 @@ export default function useImportFunctions(sendPageMessage) {
 
     function importUtterances(item) {
          return new Promise(function(resolve, reject) {
-             console.log(['import utterances',item])
+             //console.log(['import utterances',item])
              if (item) {
                   if (item.fileType === 'text') {
                         resolve(importTextUtterances(item, item.title))
@@ -337,7 +357,7 @@ export default function useImportFunctions(sendPageMessage) {
 
     function importIntents(item) {
           return new Promise(function(resolve, reject) {
-             console.log(['import intents',item])
+             //console.log(['import intents',item])
              if (item) {
                   if (item.fileType === 'text') {
                         resolve({intents:importTextIntents(item, item.title)})

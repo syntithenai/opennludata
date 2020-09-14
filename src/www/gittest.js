@@ -90,7 +90,7 @@ And the only thing left is Step 6 — update the branch to point to the new Comm
 function updateHead() {    return repo.updateHead(        'heads/' + currentBranch.name,        newCommit.sha    );}
 That’s it! Now you can use this beauty to push your files:
 
-let api = new GithubAPI({token: 'API_TOKEN'});api.setRepo('GITHUB_USER', 'REPOSITORY');api.setBranch('AWESOME_BRANCH')    .then( () => api.pushFiles(        'Making a commit with my adorable files',        [            {content: 'You are a Wizard, Harry', path: 'harry.txt'},            {content: 'May the Force be with you', path: 'jedi.txt'}        ])    )    .then(function() {        console.log('Files committed!');    });
+let api = new GithubAPI({token: 'API_TOKEN'});api.setRepo('GITHUB_USER', 'REPOSITORY');api.setBranch('AWESOME_BRANCH')    .then( () => api.pushFiles(        'Making a commit with my adorable files',        [            {content: 'You are a Wizard, Harry', path: 'harry.txt'},            {content: 'May the Force be with you', path: 'jedi.txt'}        ])    )    .then(function() {        //console.log('Files committed!');    });
 You can find the ready-to-use resulting implementation in this Gist.
 
 //What About Binary Files?

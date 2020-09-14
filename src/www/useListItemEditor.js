@@ -36,7 +36,7 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists, in
             }
             var matchPicklist = true
             if (listFilterValue === "Not In A List") {
-                //console.log(['tags',item.tags])
+                ////console.log(['tags',item.tags])
                 if (!item.tags || (item.tags && item.tags.length === 0)) {
                     matchPicklist =  true
                 } else {
@@ -90,7 +90,7 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists, in
     }
     
     function tagAll(val) {
-        console.log(['tagall',tagAllValue,val])
+        //console.log(['tagall',tagAllValue,val])
         var tagValue = val ? val : tagAllValue;
         if (items) {
             var newItems = []
@@ -112,7 +112,7 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists, in
     }
 
     function untagAll(val) {
-        console.log(['untagall',tagAllValue,val])
+        //console.log(['untagall',tagAllValue,val])
         //var tagValue = val ? val : tagAllValue;
         if (items) {
             var newItems = []
@@ -142,7 +142,7 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists, in
     
     
     function resetSelection() {
-         //console.log('reset sa')
+         ////console.log('reset sa')
          if (items) {
             var newItems = []
             items.map(function(item,i) {
@@ -159,7 +159,7 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists, in
     }
     
      function selectAll() {
-         console.log(['SELECTALL',items])
+         //console.log(['SELECTALL',items])
          if (items) {
             var newItems = []
             items.map(function(item,i) {
@@ -202,17 +202,17 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists, in
         }
     }
     //function sort() {
-         //console.log(['SORT',items])
+         ////console.log(['SORT',items])
          //if (items) {
             //var newItems = items.sort(function(a,b) { if (a.value < b.value) return -1; else return 1;})
             //setItems(newItems)
             //listRef.current.resetAfterIndex(0);
-            //console.log(['SORTed',newItems])
+            ////console.log(['SORTed',newItems])
         //}
     //}
     
     function saveItemWrap(item,index) {
-        console.log(['SAVE ITEM WRAP LI',listRef, JSON.parse(JSON.stringify(item)),index])
+        //console.log(['SAVE ITEM WRAP LI',listRef, JSON.parse(JSON.stringify(item)),index])
         if (item) {
             saveItem(item,index)
             
@@ -222,7 +222,7 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists, in
     }
     
     function getItemSize(index) {
-        //console.log(window.innerWidth,window.innerHeight)
+        ////console.log(window.innerWidth,window.innerHeight)
         // set parameters for full size > 1024
         var baseSize = 40
         //// tiny screen mobile 

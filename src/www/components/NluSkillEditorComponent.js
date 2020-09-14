@@ -17,7 +17,7 @@ import RASATemplates from '../export/RASATemplates'
 //import useRestEndpoint from './useRestEndpoint'
        
 export default function NluSkillEditorComponent(props) {
-    //console.log(['skill ',props])
+    ////console.log(['skill ',props])
     if (props.skillFilterValue && props.skillFilterValue.length > 0) {
         if (props.filteredItems && props.filteredItems.length > 0) {
            
@@ -73,7 +73,7 @@ export default function NluSkillEditorComponent(props) {
                             
                            
                             const listTags = props.currentSkill && props.currentSkill.entities && props.currentSkill.entities[collatedEntity] && props.currentSkill.entities[collatedEntity].lists ? props.currentSkill.entities[collatedEntity].lists.map(function(listItem,listItemKey) {return {id:listItemKey, name:listItem} }) : []
-                            //console.log(listTags)
+                            ////console.log(listTags)
                                 return <ListGroup.Item key={collatedEntity} >
                                         
                                          <span style={{marginLeft:'1em', float:'left', fontWeight:'bold'}}>&nbsp;{collatedEntity}</span>

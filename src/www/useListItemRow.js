@@ -5,7 +5,7 @@ function useListItemRow(item, saveItem, splitNumber, style, lastSelected, setLas
     //const [newEntity, setNewEntity] = useState('')
     // for ReactTags format using objects
     const [tags, setTags] = useState([])
-    //console.log(['USENLUROW',splitNumber])
+    ////console.log(['USENLUROW',splitNumber])
     const reactTags = React.createRef()
      // tags
     useEffect(() => {
@@ -13,7 +13,7 @@ function useListItemRow(item, saveItem, splitNumber, style, lastSelected, setLas
     },[item, JSON.stringify(item.tags)])
 
      function onTagDelete (i) {
-        console.log(['ontagdel',i, tags])
+        //console.log(['ontagdel',i, tags])
         const newTags = tags.slice(0)
         newTags.splice(i, 1)
         setTags(newTags)
@@ -24,25 +24,25 @@ function useListItemRow(item, saveItem, splitNumber, style, lastSelected, setLas
       }
      
      function onTagAddition (tag) {
-         console.log(['ontagad',tag, tags])
+         //console.log(['ontagad',tag, tags])
          if (tag && tag.name.trim().length > 0) {
             const newTags = [].concat(tags, tag)
-            console.log(['ontagad new',newTags])
+            //console.log(['ontagad new',newTags])
             var newItem = item
             var tagArray = uniquifyArray(newTags.map(function(newTag) { return newTag.name}))
             newItem.tags = tagArray.sort()
-            console.log(['ontagad presave',tagArray,JSON.parse(JSON.stringify(newItem)),splitNumber])
+            //console.log(['ontagad presave',tagArray,JSON.parse(JSON.stringify(newItem)),splitNumber])
             saveItem(newItem,splitNumber)
-            console.log(['ontagad saved'])
+            //console.log(['ontagad saved'])
             //setTags(uniquifyArrayOfObjects(newTags,'name').sort(function(a,b) {if (a.name > b.name) return 1; else return -1} ))
             return true
         }
       }
     
     function updateExampleContent(content) {
-        console.log(['UPDTEXT', item, content])
+        //console.log(['UPDTEXT', item, content])
         if (item && typeof content === "string") {
-            //console.log('UPDTEXTREAL')
+            ////console.log('UPDTEXTREAL')
             const newItem = item //JSON.parse(JSON.stringify(item));
             
             newItem.value = content;
@@ -51,9 +51,9 @@ function useListItemRow(item, saveItem, splitNumber, style, lastSelected, setLas
     }
     
      function updateExampleSynonym(content) {
-        console.log('UPDTEXT')
+        //console.log('UPDTEXT')
         if (item && typeof content === "string") {
-            //console.log('UPDTEXTREAL')
+            ////console.log('UPDTEXTREAL')
             const newItem = item //JSON.parse(JSON.stringify(item));
             
             newItem.synonym = content;
@@ -63,16 +63,16 @@ function useListItemRow(item, saveItem, splitNumber, style, lastSelected, setLas
     
     function selectItem(splitNumber,e) {
         if (e.shiftKey && lastSelected >= 0)  {
-            console.log(['SELECT INTENT WITH SHIFT '+splitNumber, lastSelected])
+            //console.log(['SELECT INTENT WITH SHIFT '+splitNumber, lastSelected])
             selectBetween(splitNumber,lastSelected) 
             setLastSelected(splitNumber)  
         } else {
-            console.log(['SELECT INTENT WITHOUT  SHIFT ',lastSelected])
+            //console.log(['SELECT INTENT WITHOUT  SHIFT ',lastSelected])
             var newItem = item
             item.isSelected = true;
             saveItem(newItem,splitNumber)
             setLastSelected(splitNumber)
-            console.log(['LASTSEL ',lastSelected])
+            //console.log(['LASTSEL ',lastSelected])
         }
     }
    
@@ -80,7 +80,7 @@ function useListItemRow(item, saveItem, splitNumber, style, lastSelected, setLas
     function deselectItem(splitNumber) {
         var newItem = item
         item.isSelected = false;
-        console.log(['DESELECT LIST ITEM',newItem,splitNumber])
+        //console.log(['DESELECT LIST ITEM',newItem,splitNumber])
         saveItem(newItem,splitNumber)
     } 
     

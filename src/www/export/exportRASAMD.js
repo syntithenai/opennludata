@@ -21,7 +21,7 @@ import RASATemplates from './RASATemplates'
             }
         ]
     }
-    console.log(['TREE GEN',folderTree])
+    //console.log(['TREE GEN',folderTree])
     return folderTree
 }
 
@@ -37,7 +37,7 @@ function exportRASAMD(skill) {
     //}
     //{"rasa_nlu_data":{"regex_features":[],"entity_synonyms":[{"synonyms":["biggest city","capital city"],"value":"capital"}],"common_examples":[{"text":"sounds good sounds good thank you","intent":"affirmative","entities":[]},
       //{"text":"what is the use of a actinometer","intent":"ask_attribute","entities":[{"end":15,"entity":"attribute","start":12,"value":"use"},{"end":32,"entity":"thing","start":21,"value":"actinometer"}]}
-    console.log(['EXPPORT RASA',skill])
+    //console.log(['EXPPORT RASA',skill])
     return new Promise(function(resolve,reject) {
          var listsStorage = localforage.createInstance({
            name: "nlutool",
@@ -53,7 +53,7 @@ function exportRASAMD(skill) {
          // LOAD ENTITY LISTS
          listsStorage.getItem('alldata').then(function(lists) {
             
-            console.log(['LISTS',lists])
+            //console.log(['LISTS',lists])
             
             // for each entity, collate entity values and lists values
             var entityLists = {}
@@ -79,7 +79,7 @@ function exportRASAMD(skill) {
                     return null
                 })
             }
-             console.log(['LISTS2',entityLists])
+             //console.log(['LISTS2',entityLists])
              // lookup lists
              var fileLookups=[]
              var lookups = []
@@ -105,7 +105,7 @@ function exportRASAMD(skill) {
                 }
                 return null
             })
-            console.log(['synonyms',synonymsIndex])
+            //console.log(['synonyms',synonymsIndex])
             var synonymsOut = []
             Object.keys(synonymsIndex).map(function(synonym) {
                 synonymsOut.push('## synonym:'+synonym)
@@ -117,20 +117,20 @@ function exportRASAMD(skill) {
                 synonymsOut.push("\n")
                 return null
             })
-            console.log(['synonyms OUT',synonymsOut])
+            //console.log(['synonyms OUT',synonymsOut])
             
             // COMMON EXAMPLES  
             var nluOut=[]
             if (skill.intents) {
-                console.log(['have intents',skill.intents])
+                //console.log(['have intents',skill.intents])
                 Object.keys(skill.intents).map(function(intentKey) {
                     const intentItem = skill.intents[intentKey]
-                    console.log('have intent ',intentKey,intentItem)
+                    //console.log('have intent ',intentKey,intentItem)
                     nluOut.push('## intent:'+intentKey)
                     var examples = []
                     intentItem.map(function(example) {
                         // TODO CONVERT TO RASA MD EXAMPLE WITH ENTITIES
-                        console.log(['INTY',example])
+                        //console.log(['INTY',example])
                         if (example && example.example && example.example.trim().length > 0) {  
                             var key = replaceEntitiesWithValues(example.example, example.entities)
                             examples[key] = '- '+key
@@ -143,7 +143,7 @@ function exportRASAMD(skill) {
                 })
             }
             var nluContent = nluOut.join("\n")+"\n"+synonymsOut.join("\n")+lookups.join("\n")
-            console.log(nluContent)
+            //console.log(nluContent)
             // CONSTANTS
              var configContent = skill.rasaConfig ? skill.rasaConfig : RASATemplates.config
             //var domainContent = ''
@@ -178,7 +178,7 @@ function exportRASAMD(skill) {
                 }
                return null
             })
-            console.log(['DOMAIN',domainEntities, domainIntents, domainSlots, domainSlotsMeta])
+            //console.log(['DOMAIN',domainEntities, domainIntents, domainSlots, domainSlotsMeta])
             
             var domainContentParts=[]
             if (domainIntents.length > 0) {

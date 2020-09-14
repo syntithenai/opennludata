@@ -87,7 +87,7 @@ const main = async () => {
 }
 
 main().then(result => {
-  console.log(result)
+  //console.log(result)
 }).catch(err => {
   console.error(err)
 })

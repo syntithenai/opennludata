@@ -38,7 +38,7 @@ function HelpText(props) {
        <hr/>
        <p><Link to="/search" ><Button>Search </Button></Link> the community database of NLU example records.</p>
          <p><Link to="/sources" ><Button>Sources</Button></Link> to edit and import skills, pasted text or uploaded files.</p>
-        <p><Link to="/examples" ><Button>Organise</Button></Link> your examples using tags and cleanup untagged examples.</p>
+        <p><Link to="/examples" ><Button>Organise</Button></Link> your examples using tags and markup the entities in your intent examples.</p>
         <p><Link to="/skills" ><Button>Skills</Button></Link> to add platform metadata for export in various training formats or publishing to the community database.</p>
         
         <hr/>
@@ -72,32 +72,47 @@ function HelpTextImport(props) {
     return <div style={{marginLeft:'0.5em'}}>
     <HelpMenu/>
             <h1>Importing Data</h1>
-            <div>This tool can import files a variety of file formats and allows you to cherry pick intents, entities and utterances.
-            <br/>
-            You can use zip files to to upload and import many files that make up a skill for Mycroft, RASA or JOVO 
-            <br/>
-           <ul>
-                <li><h3>Text</h3>
-                    
-                </li>
-                <li><h3>JSON</h3>
+            <div>
+                This tool can import files a variety of file formats and allows you to cherry pick intents, entities and utterances.
+                <br/>
+                You can use zip files to to upload and import many files that make up a skill for Mycroft, RASA or JOVO.
+                <br/><br/>
+                <br/>
+                <h3>Supported File Types</h3>
+                <h4>OpenNlu JSON</h4>
+                The native format for this tool is a JSON based structure that describes a skill and related data. Grab and edit a skill from the search page to see the structure.
+                <br/><br/>
                 
-                </li>
-                <li><h3>OpenNlu JSON</h3>
+                <h4>Text</h4>
+                    Text files can be imported as intents, entities or utterances.<br/>
+                    The editor for text files provides sort and transformation tools.<br/>
+                    <ul>
+                    <li>One record is created for each line in the import file.</li>
+                    <li>When importing intents, multiple records are created for lines that use Mycroft style options expansion eg <i>the (man|woman|child) (walked to the (zoo|park)|ran to the train)</i></li>
+                    <li>It is possible to use RASA style entity markup which is converted to entities on import.</li>
+                    <li>When importing entities, ____ can be used to split a value and synonym from a line eg <i>synonymvalue____entityvalue</i></li>
+                    <li>When importing utterances, ____ can be used to create many addition alternatives eg <i>hi there____gday____howsitgoing</i>  </li>
+                    </ul>
+                <br/><br/>
                 
-                </li>
-                <li><h3>RASA</h3>
+                <h4>RASA</h4>
+                The tool can import rasa intent training data files in MD and JSON format.<br/>
+                Intents, entities, regular expressions (but not lookups) are imported.<br/><br/>
+                A zip file containing a root level domain.yml and some .md or .json files can also be imported.<br/>
+                Where the training data references lookup files, and those files are available in the zip, the lookup files will be used to import entities.
+                <br/><br/>
                 
-                </li>
-                <li><h3>JOVO</h3>
+                <h4>JOVO</h4>
+                The tool can read either a single JSON model file or search in zip file for models/en-US.json.
+                This file is used to import intents and entities and an invocation for the skill.
+                JOVO entity markers provide an entity type but no example value so intents are imported with the entity type as the value. :(
+                <br/><br/>
                 
-                </li>
-                <li><h3>Mycroft</h3>
+                <h4>Mycroft</h4>
+                The tool can read a zip file containing .dialog, .intent and .entity files.
+                <br/><br/>
                 
-                </li>
-
-            </ul>
-            
+                
             </div>
             <hr/>
         </div>

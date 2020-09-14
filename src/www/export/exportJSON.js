@@ -8,7 +8,7 @@ import localforage from 'localforage'
  * which are both arrays of objects containing value and synonym(alternatives) eg {value:"cat", synonym:"kitty\npussy"}
  */
 function exportJSON(skill) {
-    console.log(['EXPPORT JSON',skill])
+    //console.log(['EXPPORT JSON',skill])
     var listsStorage = localforage.createInstance({
         name: "nlutool",
         storeName   : "lists",
@@ -24,7 +24,7 @@ function exportJSON(skill) {
              listsStorage.getItem('alldata').then(function(dbEntities) {
                  var usedLists = {}
                  var filledLists = {}
-                 console.log(skill.entities)
+                 //console.log(skill.entities)
                  if (skill && skill.entities) {
                      Object.values(skill.entities).map(function(entity) {
                         if (entity.lists) entity.lists.map(function(list) {
@@ -32,14 +32,14 @@ function exportJSON(skill) {
                         })  
                         return null
                      })
-                     console.log(['USEDLISTS',usedLists])
+                     //console.log(['USEDLISTS',usedLists])
                      Object.keys(usedLists).map(function(useList) {
                          filledLists[useList] = dbEntities.filter(function(item) {if (item.tags && item.tags.indexOf(useList) !== -1) return true; else return false }).map(function(iitem) {
                              return {value:iitem.value, synonym: iitem.synonym}  
                          })
                      })
-                     console.log(['FILLEDLISTS',filledLists])
-                    console.log(['SETSKILL',JSON.parse(JSON.stringify(skill))])
+                     //console.log(['FILLEDLISTS',filledLists])
+                    //console.log(['SETSKILL',JSON.parse(JSON.stringify(skill))])
                  }
                  resolve(filledLists)
              })
@@ -49,7 +49,7 @@ function exportJSON(skill) {
     }))
     promises.push(new Promise(function(resolve,reject) {
         var utterances = {}
-        console.log(['SHOULD ADD UTTS',skill.utterancesLists, skill.utterances])
+        //console.log(['SHOULD ADD UTTS',skill.utterancesLists, skill.utterances])
         if (skill.utterancesLists || skill.utterances) { 
             utterancesStorage.getItem('alldata').then(function(allUtterances) {
                 if (Array.isArray(allUtterances)) {
@@ -70,7 +70,7 @@ function exportJSON(skill) {
                         }
                         return null 
                     })
-                    console.log(['SET UITTER GLOLBA',utterances])
+                    //console.log(['SET UITTER GLOLBA',utterances])
                     
                 }
                 resolve(utterances)
@@ -84,11 +84,11 @@ function exportJSON(skill) {
        //skill.entitiesData = filledLists
         //skill.utterancesData = utterances                   
         Promise.all(promises).then(function(data) {
-            console.log(['LOIADED LOOKUPS',data])
+            //console.log(['LOIADED LOOKUPS',data])
             var newSkill = skill
             newSkill.entitiesData = data[0]
             newSkill.utterancesData = data[1]
-            console.log(['resolve JSON',newSkill])
+            //console.log(['resolve JSON',newSkill])
             oresolve(newSkill)
         })
         
@@ -98,7 +98,7 @@ function exportJSON(skill) {
 function exportJSONZip(skill) {
     return new Promise(function(resolve,reject) {
         exportJSON(skill).then(function(content) {
-            console.log(['content',skill])
+            //console.log(['content',skill])
             const blob = new Blob([JSON.stringify(content, null, 2)], {type : 'application/json'});
             resolve(blob)
         })
@@ -111,7 +111,7 @@ export {exportJSON, exportJSONZip}
 
           
  //listsStorage.getItem('alldata').then(function(lists) {
-             //console.log(['LISTS',lists])
+             ////console.log(['LISTS',lists])
             //var usedLists = {}
             //if (skill.entities) {
                 //Object.keys(skill.entities).map(function(entity,i) {
@@ -131,9 +131,9 @@ export {exportJSON, exportJSONZip}
             //})
             //if (lists) lists.map(function(item) {
                 //Object.keys(usedLists).map(function(listKey) {
-                    ////console.log([listKey,item.tags.indexOf(listKey) !== -1, item.tags])
+                    //////console.log([listKey,item.tags.indexOf(listKey) !== -1, item.tags])
                     //if (item && item.tags && item.tags.indexOf(listKey) !== -1) {
-                        ////console.log('list item used ')
+                        //////console.log('list item used ')
                         //skillLists[listKey].push(item.value)
                     //}
                     //return null
@@ -147,19 +147,19 @@ export {exportJSON, exportJSONZip}
                      //utterancesStorage.getItem('alldata').then(function(dbUtterances) {
                          //var usedLists = {}
                          //var filledLists = {}
-                         //console.log(props.currentSkill.utterances)
+                         ////console.log(props.currentSkill.utterances)
                          //if (props.currentSkill && props.currentSkill.utterancesLists) {
                              //Object.values(props.currentSkill.utterancesLists).map(function(utterance) {
                                 //usedLists[utterance] = true  
                                 //return null
                              //})
-                             //console.log(['USEDLISTS',usedLists])
+                             ////console.log(['USEDLISTS',usedLists])
                              //Object.keys(usedLists).map(function(useList) {
                                  //filledLists[useList] = dbUtterances.filter(function(item) {if (item.tags && item.tags.indexOf(useList) !== -1) return true; else return false }).map(function(iitem) {
                                      //return {value:iitem.value, synonym: iitem.synonym}  
                                  //})
                              //})
-                             //console.log(['FILLEDLISTS',filledLists])
+                             ////console.log(['FILLEDLISTS',filledLists])
                               //var skill = props.currentSkill
                               //skill.utterancesData = filledLists
                               //resolve(skill)

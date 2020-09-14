@@ -59,12 +59,12 @@ async function exportMycroft(skill) {
                           //return null
                         //})
                        
-                       console.log(['add from lists',entity.lists])
+                       //console.log(['add from lists',entity.lists])
                        lists.map(function(item) {
                             entity.lists.map(function(listKey) {
-                                console.log([listKey,item.tags.indexOf(listKey) !== -1, item.tags])
+                                //console.log([listKey,item.tags.indexOf(listKey) !== -1, item.tags])
                                 if (item && item.tags && item.tags.indexOf(listKey) !== -1) {
-                                    console.log('list item used ')
+                                    //console.log('list item used ')
                                     combinedEntities.push(item.value)
                                 }
                                 return null

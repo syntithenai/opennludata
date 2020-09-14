@@ -9,7 +9,7 @@ import localforage from 'localforage'
 // handle list updates with minimum disruption to top level items
 function reducer(state, action) {
     const index = parseInt(action.index)
-    //console.log(['REDUCE',action.type,action.index, action.item,action.items,state])
+    ////console.log(['REDUCE',action.type,action.index, action.item,action.items,state])
     switch (action.type) {
     case "append":
       if (action.item) {
@@ -49,10 +49,10 @@ function reducer(state, action) {
             return action.items
         } else return state
     case "sort":
-    //console.log(['DISP SORT',action.sort])
+        console.log(['DISP SORT',action.sort])
         if (typeof action.sort === "function") {
             var ret = state.sort(action.sort)
-            //console.log(['DISP SORT ret',ret])
+            console.log(['DISP SORT ret',ret, ret[0],ret[1]])
             return [...ret]
         } else return state
     default:
@@ -63,7 +63,7 @@ function reducer(state, action) {
 
 // state manager with local storage backing
 export default function useDB(database, databaseTable,singleKey, initialData=[]) {
-    //console.log(['use db single key', database, databaseTable,singleKey])
+    ////console.log(['use db single key', database, databaseTable,singleKey])
     if (!singleKey) singleKey = 'data'
      const [items, dispatch] = useReducer(reducer,initialData);
      var localforageStorage = localforage.createInstance({
@@ -73,13 +73,13 @@ export default function useDB(database, databaseTable,singleKey, initialData=[])
 
     
     useEffect(function() {
-        //console.log(['dbsingle key items loaded',items])
+        ////console.log(['dbsingle key items loaded',items])
         //loadAll()
     // eslint-disable-next-line react-hooks/exhaustive-deps
     },[])
     
     useEffect(function() {
-        //console.log(['dbsingle key items updated',items])
+        ////console.log(['dbsingle key items updated',items])
         localforageStorage.setItem(singleKey,items)  
     // eslint-disable-next-line react-hooks/exhaustive-deps
     },[items])
@@ -95,7 +95,7 @@ export default function useDB(database, databaseTable,singleKey, initialData=[])
     function loadAll() {
         return new Promise(function(resolve, reject) {
             localforageStorage.getItem(singleKey).then(function(res) {
-              //console.log(['loadall',database, databaseTable,singleKey,res])
+              ////console.log(['loadall',database, databaseTable,singleKey,res])
               dispatch({ type: "replaceall", items: res ? res : initialData});
               resolve(res)
             })
@@ -105,7 +105,7 @@ export default function useDB(database, databaseTable,singleKey, initialData=[])
     
     // save or create
     function saveItem(item,index) {
-        //console.log(['save',item,index])
+        ////console.log(['save',item,index])
         if (item) {
             // update sources and save text in seperate localstorage
             // ensure id

@@ -95,7 +95,7 @@ export default function useDB(database, databaseTable) {
     // save or create
     function saveItem(item,index) {
         if (item) {
-            console.log(['SAVEDB',item,index])
+            //console.log(['SAVEDB',item,index])
             // update sources and save text in seperate localstorage
             // ensure id
             var isNewItem = false;
