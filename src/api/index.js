@@ -42,8 +42,8 @@ function startMainWebServer() {
             //// proxy to 3000 in dev mode
             app2.use('/', proxy('http://localhost:3000'));
          }
-
-         if (config.sslKeyFile && config.sslKeyFile.trim() && config.sslCertFile && config.sslCertFile.trim()) {
+        console.log(['ssl',config.sslKeyFile,config.sslCertFile])
+         if (config.sslKeyFile && config.sslKeyFile.trim() && config.sslCertFile && config.sslCertFile.trim() && fs.existsSync(config.sslCertFile) && fs.existsSync(config.sslKeyFile)) {
             var port=443
             https.createServer({
                 key: fs.readFileSync(config.sslKeyFile),
