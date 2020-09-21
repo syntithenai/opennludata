@@ -389,6 +389,14 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
         var newIntent=''
         if (intent && intent.trim().length > 0) newIntent = intent
         saveItem({id:null, example:'', intent:newIntent, skills:skills,tags:tags})
+        setTimeout(function() {
+            if (listRef && listRef.current) {
+                console.log(['HAVE CURRENT',listRef.current.resetAfterIndex])
+                listRef.current.resetAfterIndex(0);
+                listRef.current.scrollToItem(20);
+                listRef.current.scrollToItem(0);
+            }
+        },1000)
         //console.log(['SAVED NEW EXAMPLE',{id:null, example:'', intent:newIntent, skills:skills,tags:tags}])
     }
     

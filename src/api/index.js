@@ -31,11 +31,11 @@ function startMainWebServer() {
         console.log(staticPath)
         const app2 = express();
         
-         if (fs.existsSync(path.join(staticPath.join("/"), 'build', 'index.html'))) {
+         if (fs.existsSync(path.join(staticPath.join("/"), 'docs', 'index.html'))) {
             console.log('serve www')
-             app2.use(express.static(path.join(staticPath.join("/"), 'build')));
+             app2.use(express.static(path.join(staticPath.join("/"), 'docs')));
              app2.get('/*', function (req, res) {
-               res.sendFile(path.join(staticPath.join("/"), 'build', 'index.html'));
+               res.sendFile(path.join(staticPath.join("/"), 'docs', 'index.html'));
              });
           } else {
             console.log('PROXY www DEV')
