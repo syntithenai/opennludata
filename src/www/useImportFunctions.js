@@ -235,7 +235,7 @@ export default function useImportFunctions(sendPageMessage) {
         return new Promise(function( resolve, reject) {
             unzip(item.data,['*/config.yaml','*/credentials.yaml','*/endpoints.yaml','*/domain.yaml','*/config.yml','*/credentials.yml','*/endpoints.yml','*/domain.yml','*.md','*.json']).then(function(files) {
                 ////console.log(['rasa',files])
-                var skill = {rasa: {}}
+                var skill = {rasa: {}, entities:[], regexps: [], intents: []}
                 if (files) files.map(function(file) {
                     if (file.path && (file.path.endsWith('config.yml') || file.path.endsWith('config.yaml'))) {
                         skill.rasa.config = file.data
@@ -250,11 +250,13 @@ export default function useImportFunctions(sendPageMessage) {
                         console.log(['IMPORTED RASA JSON',intentSkill,file]) 
                         skill.intents = [].concat(skill.intents,intentSkill.intents)
                         skill.regexps = [].concat(skill.regexps,intentSkill.regexps)
+                        skill.entities = [].concat(skill.entities,intentSkill.entities)
                     } else if (file.path && file.path.endsWith('.md')) {
                         var intentSkill = generateSplitsFromRasaMd(file, files)
                         console.log(['IMPORTED RASA MD',intentSkill,file]) 
                         skill.intents = [].concat(skill.intents,intentSkill.intents)
                         skill.regexps = [].concat(skill.regexps,intentSkill.regexps)
+                        skill.entities = [].concat(skill.entities,intentSkill.entities)
                     }
                     //console.log(file) 
                 })

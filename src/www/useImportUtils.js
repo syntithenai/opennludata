@@ -322,9 +322,11 @@ function sortExampleSplits(a,b) {
             item.data.split("##").map(function(intentData,intentKey) {
                 var lines = intentData.split("\n")  
                 var headerLine = lines[0].trim()
+                var headerLineParts = headerLine.split(":")
+                var section = headerLineParts[0]
                 var dataLines = (lines.length > 1) ? lines.slice(1) : []
                 
-                if (headerLine.startsWith("regex")) {
+                if (section === "regex") {
                     var regexTitle = headerLine.slice(6).trim()
                     for (var i in dataLines) {
                         var value = dataLines[i].slice(1).trim() // remove leading -
@@ -333,7 +335,7 @@ function sortExampleSplits(a,b) {
                             allRegexps[regexTitle].push({id: generateObjectId(), value: regexTitle, synonym: value})
                         }
                     }
-                } else if (headerLine.startsWith("synonym")) {
+                } else if (section === "synonym") {
                     var synonym = headerLine.slice(8).trim()
                     for (var i in dataLines) {
                         var value = dataLines[i].slice(1).trim() // remove leading -
@@ -342,7 +344,7 @@ function sortExampleSplits(a,b) {
                             allSynonyms[synonym].push(value)
                         }
                     }
-                } else if (headerLine.startsWith("lookup")) {
+                } else if (section === "lookup") {
                     // NOTE lookups can only be loaded if files are also provided (from zip), reading a single MD/JSON nlu data file will skip the lookups
                     if (files) {
                         var entityType = headerLine.slice(7).trim()
@@ -362,7 +364,7 @@ function sortExampleSplits(a,b) {
                             } 
                         }
                     }
-                } else if (headerLine.startsWith("intent")) {
+                } else if (section === "intent") {
                     
                     var intent = headerLine.slice(7)
                     for (var i in dataLines) {
@@ -412,11 +414,10 @@ function sortExampleSplits(a,b) {
                                         }
                                         //cleanString = cleanString.slice(0,remainderParts.start) + cleanString.slice(remainderParts.end+1)
                                     } 
-                                    
-                                
                                 } else if (remainderJSONParts && remainderJSONParts.body) {
                                     try {
                                             var entityTypeParts = JSON.parse("{"+remainderJSONParts.body+"}")
+                                            //console.log(['JS ent parts',entityTypeParts])
                                             entity.type = entityTypeParts.entityTypes
                                             if (entityTypeParts.synonym && entityTypeParts.synonym.length > 0) {
                                                 allSynonyms[entityTypeParts.synonym] = allSynonyms[entityTypeParts.synonym] ? allSynonyms[entityTypeParts.synonym] : []
@@ -427,6 +428,7 @@ function sortExampleSplits(a,b) {
                                         //cleanString = cleanString.slice(0,remainderJSONParts.start) + cleanString.slice(remainderJSONParts.end+1)
                                 } else if (remainderParts && remainderParts.body) {
                                     var entityTypeParts = remainderParts.body.split(":")
+                                    //console.log(['OT ent parts',entityTypeParts])
                                     entity.type = entityTypeParts[0]
                                     if (entityTypeParts.length > 1 && entityTypeParts[1].length > 0) {
                                         allSynonyms[entityTypeParts[1]] = allSynonyms[entityTypeParts[1]] ? allSynonyms[entityTypeParts[1]] : []
@@ -437,7 +439,8 @@ function sortExampleSplits(a,b) {
                                 } else {
                                     throw new Error('Invalid bracket structure at line '+intentKey)
                                 }
-                                //console.log(['ENTITY',entity, cleanString])
+                                if (entity.value && entity.type) console.log(['ENTITY',entity, cleanString])
+                                else console.log(['NOENTITY',entity, cleanString])
                                 //allEntities[entity.type] = entity
                                 intentData.entities = Array.isArray(intentData.entities) ? intentData.entities : []
                                 intentData.entities.push(entity)
@@ -456,28 +459,28 @@ function sortExampleSplits(a,b) {
             })
             
         } 
-        // merge synonyms into all entities
+        //// merge synonyms into all entities
         //console.log(['rasa MD IMPORT MERGE',allSynonyms, entitiesFromLookup, allEntities])
-        // merge entities from lookups
-        Object.keys(entitiesFromLookup).map(function(entity) {
-            var entityData = entitiesFromLookup[entity]
-            if (entityData.value) {
-                if (allEntities[entityData.value]) {
-                    allEntities[entityData.value].tags = allEntities[entityData.value].tags ? uniquifyArray([].concat(allEntities[entityData.value].tags, entityData.tags)) : entityData.tags
-                }
-            }
-            return null
-        }) 
-        Object.keys(allSynonyms).map(function(synonym) {
-            if (Array.isArray(allSynonyms[synonym])) allSynonyms[synonym].map(function(synValue) {
-                if (allEntities[synValue]) {
-                    allEntities[synValue].synonym = synonym
-                } else {
-                    allEntities[synValue] = {id: generateObjectId(), value: synValue, synonym: synonym}
-                }
-            })  
-            return null
-        }) 
+        //// merge entities from lookups
+        //Object.keys(entitiesFromLookup).map(function(entity) {
+            //var entityData = entitiesFromLookup[entity]
+            //if (entityData.value) {
+                //if (allEntities[entityData.value]) {
+                    //allEntities[entityData.value].tags = allEntities[entityData.value].tags ? uniquifyArray([].concat(allEntities[entityData.value].tags, entityData.tags)) : entityData.tags
+                //}
+            //}
+            //return null
+        //}) 
+        //Object.keys(allSynonyms).map(function(synonym) {
+            //if (Array.isArray(allSynonyms[synonym])) allSynonyms[synonym].map(function(synValue) {
+                //if (allEntities[synValue]) {
+                    //allEntities[synValue].synonym = synonym
+                //} else {
+                    //allEntities[synValue] = {id: generateObjectId(), value: synValue, synonym: synonym}
+                //}
+            //})  
+            //return null
+        //}) 
    
         var final = {intents: allIntents, regexps: Object.values(allRegexps), entities : Object.values(allEntities)}
         //console.log(['rasa MD IMPORT',final])

@@ -68,7 +68,7 @@ function ImportReviewPage(props) {
              if (importData.entities) {
                  var collatedEntities = {}
                  importData.entities.map(function(entity,index) {
-                     if (entity.tags  && entity.tags.length > 0) {
+                     if (entity && entity.tags  && entity.tags.length > 0) {
                          entity.tags.map(function(tag) {
                              collatedEntities[tag]  = collatedEntities[tag] ? collatedEntities[tag] : []
                              collatedEntities[tag].push(index)
@@ -183,7 +183,7 @@ function ImportReviewPage(props) {
                             {<Accordion.Collapse eventKey={"entity-"+key}>
                                 <Card.Body>
                                     <ul>{collatedEntities[entityKey] && collatedEntities[entityKey].map(function(example,ikey) {
-                                        return <li key={ikey}>{importData.entities[example].value}</li> 
+                                        return <li key={ikey}>{importData && importData.entities[example] && importData.entities[example].value ? importData.entities[example].value : ''}</li> 
                                     })}</ul>
                                 </Card.Body>
                             </Accordion.Collapse>}
