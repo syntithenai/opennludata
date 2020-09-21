@@ -98,9 +98,10 @@ export default  function NluSkillsEditor(props) {
          }
          {(currentSkill && !props.publish && props.user && props.user.token && props.user.token.access_token ) && <Link to={"/skills/skill/"+currentSkill.title+"/publish"} ><Button variant="success" style={{float:'right'}} >Publish</Button></Link>}
        
-       {(currentSkill && !props.publish && !(props.user && props.user.token && props.user.token.access_token)) && <Link to={"/login/login"} ><Button variant="success" style={{float:'right'}} >Login to Publish</Button></Link>}
+       {(currentSkill && !props.publish && !(props.user && props.user.token && props.user.token.access_token)) && <Button variant="success" style={{float:'right'}} onClick={props.doLogin} >{'Login to Publish'}</Button>}
        
-       
+      
+        
         {currentSkill && !props.publish && <NluSkillEditorComponent user={props.user} lookups={props.lookups} {...skillsEditor  } />}
         {!currentSkill && <div>
             <h1>Skills</h1>

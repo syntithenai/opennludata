@@ -16,7 +16,7 @@ import ImportReviewPage from './ImportReviewPage'
 import SkillSearchPage from './SkillSearchPage'
 import {Button} from 'react-bootstrap'
 import localforage from 'localforage'
-import {LoginSystem,LoginSystemContext}  from 'react-express-oauth-login-system-components'
+import {ExternalLogin}  from 'react-express-oauth-login-system-components'
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -324,17 +324,19 @@ function App() {
                 
   return (
     <div className="OpenNluDataApp">
-         <LoginSystemContext  
+         <ExternalLogin  
                 authServer={process.env.REACT_APP_authServer} 
                 authServerHostname={process.env.REACT_APP_authServerHostname} 
-            >{(user,setUser,getAxiosClient,getMediaQueryString,getCsrfQueryString, isLoggedIn, loadUser, useRefreshToken, logout, saveUser) => {  
+                 authWeb="" 
+            >{(user,setUser,getAxiosClient,getMediaQueryString,getCsrfQueryString, isLoggedIn, loadUser, doLogout, doLogin, doProfile,  authServer, authServerHostname) => {  
                 
-                return <div  ><Router>
+                return <div  >
+                <Router>
                       
                 
                         <Route exact path='*' render={
                             (props) => {
-                                return <NavbarComponent waiting={waiting} user={user} isLoggedIn={isLoggedIn} history={props.history} message={pageMessage} setPageMessage={setPageMessage}  getAxiosClient={getAxiosClient}  />
+                                return <NavbarComponent waiting={waiting} user={user} doLogin={doLogin} doLogout={doLogout} doProfile={doProfile} isLoggedIn={isLoggedIn} history={props.history} message={pageMessage} setPageMessage={setPageMessage}  getAxiosClient={getAxiosClient}  />
                             }}
                         />
                         <div style={{marginLeft:'0.5em'}} >
@@ -397,19 +399,19 @@ function App() {
                             <Route exact path='/examples/skill/:skillId/intent/:intentId/tag/:tag' render={(props) => <NluExampleEditor {...props}     lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}    />} 
                             />
                             
-                            <Route exact path='/skills/:skillId' render={(props) => <NluSkillsEditor {...props}    user={user}   lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}   getAxiosClient={getAxiosClient}  />} 
+                            <Route exact path='/skills/:skillId' render={(props) => <NluSkillsEditor {...props}  doLogin={doLogin}  user={user}   lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}   getAxiosClient={getAxiosClient}  />} 
                             />
                             
-                            <Route exact path='/skills/skill/:skillId' render={(props) => <NluSkillsEditor {...props}    user={user}   lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}   getAxiosClient={getAxiosClient}  />} 
+                            <Route exact path='/skills/skill/:skillId' render={(props) => <NluSkillsEditor {...props}  doLogin={doLogin}  user={user}   lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}   getAxiosClient={getAxiosClient}  />} 
                             />
                             
-                            <Route exact path='/skills/:skillId/publish' render={(props) => <NluSkillsEditor {...props}   user={user}    lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}  publish={true}   getAxiosClient={getAxiosClient} />} 
+                            <Route exact path='/skills/:skillId/publish' render={(props) => <NluSkillsEditor {...props} doLogin={doLogin}  user={user}    lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}  publish={true}   getAxiosClient={getAxiosClient} />} 
                             />
                             
-                            <Route exact path='/skills/skill/:skillId/publish' render={(props) => <NluSkillsEditor {...props}    user={user}   lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}   publish={true}  getAxiosClient={getAxiosClient} />} 
+                            <Route exact path='/skills/skill/:skillId/publish' render={(props) => <NluSkillsEditor {...props} doLogin={doLogin}   user={user}   lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}   publish={true}  getAxiosClient={getAxiosClient} />} 
                             />
 
-                             <Route exact path='/skills' render={(props) => <NluSkillsEditor {...props}  user={user}      lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage} getAxiosClient={getAxiosClient}   />} 
+                             <Route exact path='/skills' render={(props) => <NluSkillsEditor {...props} doLogin={doLogin} user={user}      lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage} getAxiosClient={getAxiosClient}   />} 
                             />
                             
                            
@@ -449,27 +451,13 @@ function App() {
                            
                             <Route exact path='/' component={HelpText} />
 
-                            <Route path='/login'  render={
-                            (props) => <div style={{width:'90%', marginLeft:'1em', align:'center', marginTop:'1em'}}  ><LoginSystem  
-                               match={props.match}
-                               location={props.location}
-                               history={props.history}
-                               authServer={process.env.REACT_APP_authServer} 
-                                // also need external link to auth server (combind authServerHostname + authServer) for google, github, .. login buttons
-                                authServerHostname={process.env.REACT_APP_authServerHostname} 
-                                // update for login api location, use package.json proxy config to map other host/port to local link
-                               loginButtons={process.env.REACT_APP_loginButtons?process.env.REACT_APP_loginButtons.split(","):[]}
-                                // optional callbacks
-                                logoutRedirect={'/'}
-                               user={user} setUser={setUser} isLoggedIn={isLoggedIn} logout={logout} saveUser={saveUser} startWaiting={startWaiting} stopWaiting={stopWaiting} 
-                             /></div>}
-                             />
+                            
                         </div>
                 </Router>
               </div>
                   }}
 
-        </LoginSystemContext>
+        </ExternalLogin>
    
                  <br/>
                 <br/>
@@ -479,3 +467,18 @@ function App() {
 }
                 
 export default App;
+//<Route path='/login'  render={
+                            //(props) => <div style={{width:'90%', marginLeft:'1em', align:'center', marginTop:'1em'}}  ><LoginSystem  
+                               //match={props.match}
+                               //location={props.location}
+                               //history={props.history}
+                               //authServer={process.env.REACT_APP_authServer} 
+                                //// also need external link to auth server (combind authServerHostname + authServer) for google, github, .. login buttons
+                                //authServerHostname={process.env.REACT_APP_authServerHostname} 
+                                //// update for login api location, use package.json proxy config to map other host/port to local link
+                               //loginButtons={process.env.REACT_APP_loginButtons?process.env.REACT_APP_loginButtons.split(","):[]}
+                                //// optional callbacks
+                                //logoutRedirect={'/'}
+                               //user={user} setUser={setUser} isLoggedIn={isLoggedIn} logout={logout} saveUser={saveUser} startWaiting={startWaiting} stopWaiting={stopWaiting} 
+                             ///></div>}
+                             ///>

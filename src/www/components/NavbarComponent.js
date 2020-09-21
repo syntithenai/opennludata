@@ -69,13 +69,13 @@ export default function NavbarComponent(props) {
         
          <div style={{float:'right', vAlign:'top', minWidth:'10em', marginRight:'0em'}}>
         {props.isLoggedIn() && 
-            <div>
-                <a style={{display:'inline'}}  href="/login/profile" ><Button variant="primary" >{'Profile'}</Button></a>
-                <a style={{display:'inline'}}  href="/login/logout" ><Button variant="danger" >Logout</Button></a>
-            </div>
+            <>
+                <Button variant="primary" onClick={props.doProfile} >{'Profile'}</Button>
+                <Button variant="danger" onClick={props.doLogout}  >{'Logout'}</Button>
+            </>
         }
         { !props.isLoggedIn() && 
-            <a href="/login/login" ><Button variant="success" >Login</Button></a>
+            <Button variant="success" onClick={props.doLogin} >{'Login'}</Button>
         }
         
         </div>
@@ -83,7 +83,8 @@ export default function NavbarComponent(props) {
          <img src={waitingImage} alt='waiting' style={{position:'fixed', top:5, right:5, zIndex:99, display: props.waiting ? 'block' : 'none' }} />
     </Navbar>
 }
-
+//<a style={{display:'inline'}}  href="/login/profile" ><Button variant="primary" >{'Profile'}</Button></a>
+                //<a style={{display:'inline'}}  href="/login/logout" ><Button variant="danger" >Logout</Button></a>
 
         //<Navbar.Text><Link to="/organise" ><Button>Organise</Button></Link></Navbar.Text>
         //<Navbar.Text><Link to="/skills" ><Button>My Skills</Button></Link></Navbar.Text>
