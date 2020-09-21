@@ -16,11 +16,53 @@ const methodOverride = require('method-override')
 const mongoose = require('mongoose')
 const restify = require('express-restify-mongoose')
 var cors = require('cors')
-
+var proxy = require('express-http-proxy');
+    
 mongoose.connect(config.databaseConnection+config.database, {useNewUrlParser: true})
 
 const {skillsSchema, skillTagsSchema, entitiesSchema, utterancesSchema, regexpsSchema} = require('./schemas')
 
+
+function startMainWebServer() {
+    if (!config.skipWWW) {
+        var staticPath = __dirname.split("/")
+        staticPath.pop()
+        staticPath.pop()
+        console.log(staticPath)
+        const app2 = express();
+        
+         if (fs.existsSync(path.join(staticPath.join("/"), 'build', 'index.html'))) {
+            console.log('serve www')
+             app2.use(express.static(path.join(staticPath.join("/"), 'build')));
+             app2.get('/*', function (req, res) {
+               res.sendFile(path.join(staticPath.join("/"), 'build', 'index.html'));
+             });
+          } else {
+            console.log('PROXY www DEV')
+            //// proxy to 3000 in dev mode
+            app2.use('/', proxy('http://localhost:3000'));
+         }
+
+         if (config.sslKeyFile && config.sslKeyFile.trim() && config.sslCertFile && config.sslCertFile.trim()) {
+            var port=443
+            https.createServer({
+                key: fs.readFileSync(config.sslKeyFile),
+                cert: fs.readFileSync(config.sslCertFile),
+            }, app2).listen(port, () => {
+                console.log(`OpenNLU WWW listening securely at http://localhost:${port}`)
+                
+            })
+         } else {
+            var port=80
+            app.listen(port, () => {
+              console.log(`OpenNLU WWW listening at http://localhost:${port}`)
+            })
+         }
+    } else {
+        console.log('main www disabled')
+    }
+
+}
 
 var loginSystem = require('express-oauth-login-system-server')
 
@@ -194,19 +236,80 @@ loginSystem(config).then(function(login) {
     app.use(cookieParser());
     // session required for twitter login
     app.use(session({ secret: config.sessionSalt ? config.sessionSalt : 'board GOAT boring do boat'}));
+    //app.use('/static', express.static(path.join(__dirname, 'loginpages','build','static')))
+
+    //app.use('/login/*', express.static(path.join(__dirname, 'loginpages','build')))
+    var loginWWW = path.dirname(require.resolve('react-express-oauth-login-system'))
+    console.log(['NPATH',loginWWW])
+    let staticPath = loginWWW.split("/")
+    staticPath.pop()
+    staticPath.pop()
+    if (fs.existsSync(path.join(staticPath.join('/'),  'build', "index.html") )) {
+        console.log('SERVE BUILD')
+        // serve build folder
+        app.use('/static', express.static(path.join(staticPath.join('/'),  'build', 'static')))
+        app.use('/login/*', express.static(path.join(staticPath.join('/'),  'build' )))
+        
+        app.get('/*', express.static(path.join(staticPath.join('/'),  'build' )))
+        app.get('/',cors(), (req, res) => {
+            console.log(["TEMPL",path.join(staticPath.join('/'),  'build', "index.html"),__dirname])
+            res.sendFile(path.join(staticPath.join('/'),  'build', "index.html"));
+        })
+        app.get('/login',cors(), (req, res) => {
+            console.log(["TEMPL",path.join(staticPath.join('/'),  'build', "index.html"),__dirname])
+            res.sendFile(path.join(staticPath.join('/'),  'build', "index.html"));
+        })
+        app.get('/profile',cors(), (req, res) => {
+            console.log(["TEMPL",path.join(staticPath.join('/'),  'build', "index.html"),__dirname])
+            res.sendFile(path.join(staticPath.join('/'),  'build', "index.html"));
+        })
+        app.get('/logout',cors(), (req, res) => {
+            console.log(["TEMPL",path.join(staticPath.join('/'),  'build', "index.html"),__dirname])
+            res.sendFile(path.join(staticPath.join('/'),  'build', "index.html"));
+        })
+        app.get('/blank',cors(), (req, res) => {
+            console.log(["TEMPL",path.join(staticPath.join('/'),  'build', "index.html"),__dirname])
+            res.sendFile(path.join(staticPath.join('/'),  'build', "index.html"));
+        })
+    } else {
+        console.log("MISSING WWW FILES")
+    }
+    
     app.use('/api/login',loginRouter);
     app.use(router);
     app.use('/public',cors(),restifyRouter);
     app.use("/",authenticate, cors(), restifyRouter);
     router.use('/',function(req,res,next) {
-        ////console.log(['URL',req.url]); //,req.cookies,req.headers
+        console.log(['URL',req.url]); //,req.cookies,req.headers
         next()
     });
+    
+    //router.get('/',cors(), (req, res) => {
+      //res.sendFile(path.join(__dirname,  'loginpages','build', "index.html"));
+    //})
 
-    router.get('/',cors(), (req, res) => {
-      res.send('Hello World!')
+    //router.get('/login', (req,res,next) => {
+        //res.sendFile(path.join(__dirname,  'loginpages','build', "index.html"));
+    //})
+
+    //app.get("/login*", (req, res) => {
+      ////res.sendFile(path.join(__dirname, "loginapp"));
+        //console.log(['lF',req.url,req])
+        //res.send('AAA')
+    //});
+    
+    //router.get('/login', (req,res,next) => {
+        //res.sendFile(path.join(__dirname, "loginapp", "index.html"));
+    //})
+    
+    
+    router.get('/loginsuccess', (req,res,next) => {
+        res.send("loginpage succ")
     })
-
+    
+    router.get('/loginfail', (req,res,next) => {
+        res.send("loginpage fail")
+    })
 
     //router.use('/api',function (req,res) {
         //////console.log('API')
@@ -218,9 +321,26 @@ loginSystem(config).then(function(login) {
         //console.log(err);
         res.sendStatus("500")
     });
+    //console.log(['LPROUTE',path.join(__dirname, 'loginapp')])
+    //app.use('/loginpage', express.static(path.join(__dirname, 'loginapp')))
     var options = {}
     let port=config.authServerPort ? String(parseInt(config.authServerPort))  : '5000'
-    app.listen(port, () => {
-      //console.log(`opennludata listening at http://localhost:${port}`)
-    })
+    //app.listen(port, () => {
+      ////console.log(`opennludata listening at http://localhost:${port}`)
+    //})
+    //sudo certbot certonly --standalone -d auth.opennludata.org -d api.opennludata.org
+    if (config.sslKeyFile && config.sslKeyFile.trim() && config.sslCertFile && config.sslCertFile.trim()) {
+        https.createServer({
+            key: fs.readFileSync(config.sslKeyFile),
+            cert: fs.readFileSync(config.sslCertFile),
+        }, app).listen(port, () => {
+          console.log(`OpenNLU listening securely at http://localhost:${port}`)
+          startMainWebServer()
+        })
+    } else {
+        app.listen(port, () => {
+          console.log(`OpenNLU listening at http://localhost:${port}`)
+          startMainWebServer()
+        })
+    }
 })
