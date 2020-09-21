@@ -45,9 +45,13 @@ function startMainWebServer() {
         console.log(['ssl',config.sslKeyFile,config.sslCertFile])
          if (config.sslKeyFile && config.sslKeyFile.trim() && config.sslCertFile && config.sslCertFile.trim() && fs.existsSync(config.sslCertFile) && fs.existsSync(config.sslKeyFile)) {
             var port=443
+            console.log(['PORT',port])
+            var key = fs.readFileSync(config.sslKeyFile)
+            var cert = fs.readFileSync(config.sslCertFile)
+            console.log([key,cert])
             https.createServer({
-                key: fs.readFileSync(config.sslKeyFile),
-                cert: fs.readFileSync(config.sslCertFile),
+                key: key,
+                cert: cert,
             }, app2).listen(port, () => {
                 console.log(`OpenNLU WWW listening securely at http://localhost:${port}`)
                 
