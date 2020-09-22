@@ -28,6 +28,7 @@ try {
 console.log("POSTCONNECT")    
 const {skillsSchema, skillTagsSchema, entitiesSchema, utterancesSchema, regexpsSchema} = require('./schemas')
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 function startMainWebServer() {
     if (!config.skipWWW) {
@@ -37,7 +38,7 @@ function startMainWebServer() {
         console.log(staticPath)
         const app2 = express();
         
-         if (fs.existsSync(path.join(staticPath.join("/"), 'docs', 'index.html'))) {
+         if (fs.existsSync(path.join(staticPath.join("/"), 'build', 'index.html'))) {
             console.log('serve www')
              app2.use(express.static(path.join(staticPath.join("/"), 'docs')));
              app2.get('/*', function (req, res) {
@@ -251,6 +252,7 @@ loginSystem(config).then(function(login) {
     //app.use('/login/*', express.static(path.join(__dirname, 'loginpages','build')))
     var loginWWW = path.dirname(require.resolve('react-express-oauth-login-system'))
     var staticPath = __dirname.split("/")
+    staticPath.pop()
     staticPath.pop()
     staticPath.pop()
     staticPath.push('react-express-oauth-login-system')
