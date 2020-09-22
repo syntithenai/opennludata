@@ -37,8 +37,8 @@ function startMainWebServer() {
         staticPath.pop()
         console.log(staticPath)
         const app2 = express();
-        
-         if (fs.existsSync(path.join(staticPath.join("/"), 'build', 'index.html'))) {
+       // console.log(JSON.stringify(process.env))
+         if (process.env.proxyDev !== "TRUE" && fs.existsSync(path.join(staticPath.join("/"), 'docs', 'index.html'))) {
             console.log('serve www')
              app2.use(express.static(path.join(staticPath.join("/"), 'docs')));
              app2.get('/*', function (req, res) {
@@ -60,7 +60,7 @@ function startMainWebServer() {
                 key: key,
                 cert: cert,
             }, app2).listen(port, () => {
-                console.log(`OpenNLU WWW listening securely at http://localhost:${port}`)
+                console.log(`OpenNLU WWW listening securely at https://localhost:${port}`)
                 
             })
          } else {
@@ -357,7 +357,7 @@ loginSystem(config).then(function(login) {
             key: fs.readFileSync(config.sslKeyFile),
             cert: fs.readFileSync(config.sslCertFile),
         }, app).listen(port, () => {
-          console.log(`OpenNLU listening securely at http://localhost:${port}`)
+          console.log(`OpenNLU listening securely at https://localhost:${port}`)
           startMainWebServer()
         })
     } else {

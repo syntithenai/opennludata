@@ -11,7 +11,7 @@ import localforage from 'localforage'
 
 
 export default function useSkillsEditor(props) {
-    ////console.log(props)
+    console.log(['USE SKILLS ED',props.user])
 
     //const {loadAll, skillFilterValue, setSkillFilterValue, filteredItems} = useNluEditor('nlutool','examples','alldata', props.updateFunctions.updateLookups)
     const [skillKeys, setSkillKeys] = useState([])
