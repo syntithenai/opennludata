@@ -18,8 +18,14 @@ const restify = require('express-restify-mongoose')
 var cors = require('cors')
 var proxy = require('express-http-proxy');
     
-mongoose.connect(config.databaseConnection+config.database, {useNewUrlParser: true})
-
+console.log("PRECONNECT")    
+try {
+    //mongoose.connect(config.databaseConnection+config.database, {useNewUrlParser: true})
+} catch (e) {
+    console.log(e)
+    throw e
+}
+console.log("POSTCONNECT")    
 const {skillsSchema, skillTagsSchema, entitiesSchema, utterancesSchema, regexpsSchema} = require('./schemas')
 
 
@@ -48,7 +54,7 @@ function startMainWebServer() {
             console.log(['PORT',port])
             var key = fs.readFileSync(config.sslKeyFile)
             var cert = fs.readFileSync(config.sslCertFile)
-            console.log([key,cert])
+           // console.log([key,cert])
             https.createServer({
                 key: key,
                 cert: cert,
@@ -244,10 +250,21 @@ loginSystem(config).then(function(login) {
 
     //app.use('/login/*', express.static(path.join(__dirname, 'loginpages','build')))
     var loginWWW = path.dirname(require.resolve('react-express-oauth-login-system'))
-    console.log(['NPATH',loginWWW])
-    let staticPath = loginWWW.split("/")
+    var staticPath = __dirname.split("/")
     staticPath.pop()
     staticPath.pop()
+    staticPath.push('react-express-oauth-login-system')
+    console.log(staticPath)
+    if (fs.existsSync(path.join(staticPath.join('/'),  'build', "index.html"))) {
+        console.log(['NPATH custom',path.join(staticPath.join('/'),  'build', "index.html")])
+        
+    } else {
+        // fallback to build from installed package
+        console.log(['NPATH',loginWWW])
+        staticPath = loginWWW.split("/")
+        staticPath.pop()
+        staticPath.pop()
+    }
     if (fs.existsSync(path.join(staticPath.join('/'),  'build', "index.html") )) {
         console.log('SERVE BUILD')
         // serve build folder
