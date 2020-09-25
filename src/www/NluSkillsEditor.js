@@ -83,10 +83,14 @@ export default  function NluSkillsEditor(props) {
                     //var skill = currentSkill
                     //skill.intents = 
                     //skill.entities = 
+                    console.log(['EXPORT FUNCTION',exportFormat.exportFunction,exportFormat.name])
                     exportFormat.exportFunction(currentSkill).then(function(zipBody) {
                         //console.log(['TRIGGER DL',title,zipBody])
                         if (exportFormat.name==='JSON') {
                             saveAs(zipBody, title+'.json')
+                        } else if (exportFormat.name==='RASA YML') {
+                            console.log(zipBody,title)
+                            saveAs(zipBody, title+'.zip')
                         } else {
                             saveAs(zipBody, title+'.zip')
                         }

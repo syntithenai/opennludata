@@ -2,12 +2,14 @@ import JSZip from 'jszip'
 import parenthesis from 'parenthesis'
 import {generateObjectId, uniquifyArray, multiplyArrays, expandOptions, splitSentences} from './utils'
 
+const yaml = require('js-yaml');
+                    
 var balanced = require('balanced-match');
 
 
     function detectFileType(item) {
         return new Promise(function(resolve,reject) {
-            //console.log(['DETECT FILE TYPE',item])
+            console.log(['DETECT FILE TYPE',item])
             try {
                 var json = JSON.parse(item.data)
                 // RASA JSON FORMAT
@@ -61,12 +63,29 @@ var balanced = require('balanced-match');
                 }, function (e) {
                     ////console.log('NOT ZIP')
                     ////console.log(e)
-                    
-                    if (item.data && item.data.indexOf('## intent:') !== -1) {
-                        resolve({type: 'rasa.markdown'})
-                    } else {
-                        resolve({type: 'text'})
+                     
+                    // Get document, or throw exception on error
+                    try {
+                      const doc = yaml.safeLoad(item.data);
+                      console.log(['yaml rasa',doc,parseFloat(doc.version)]);
+                      if (doc.version && parseFloat(doc.version) >=  2) {
+                          console.log('v2');
+                          if (doc.nlu || doc.stories || doc.rules) {
+                              console.log('has element');
+                              resolve({type:'rasa.yml'})
+                          }
+                      } 
+                    } catch (e) {
+                      console.log(e);
+                        // plain text markdown ??
+                        if (item.data && item.data.indexOf('## intent:') !== -1) {
+                            resolve({type: 'rasa.markdown'})
+                        } else {
+                            resolve({type: 'text'})
+                        }
+                      
                     }
+                    
                 });
                 
             }  
@@ -376,11 +395,13 @@ function sortExampleSplits(a,b) {
                             var remainder = example
                             var cleanString = example
                             var parts = balanced('[', ']', remainder)
-                            ////console.log(['PAREN',parts])
-                            var limit=10
+                            console.log(['PAREN',parts])
+                            var limit=15
+                            // loop while there are squre bracket markers in the example sentence
+                            // each iteration extracts entities and updates the example sentence
                             while (limit > 0 && parts && parts !== undefined && typeof parts === "object") {
                                 var entity = {}
-                            
+                                
                                 limit --
                                 remainder = parts.post
                                 entity.value = parts.body
@@ -388,22 +409,36 @@ function sortExampleSplits(a,b) {
                                 entity.end = parts.end
                                 //cleanString = cleanString.slice(0,entity.start) + entity.value + cleanString.slice(entity.end+1)
                                 
+                                // now look for the meta data in either () or {}
                                 var remainderParts = balanced('(',')',parts.post)
                                 var remainderJSONParts = balanced('{','}',parts.post)
-                                ////console.log(['PARENEND',entity, cleanString, remainderParts])
+                                console.log(['PARENEND',entity, cleanString, remainderParts,remainderJSONParts])
+                                
+                                // if there is a metadata section in the remainder both json or () decide which to use first 
                                 if ((remainderParts && remainderParts.body) && (remainderJSONParts && remainderJSONParts.body)) {
-                                    // both in remainder so use earliest start
+                                   
+                                    // use the json if it starts first use first (there may be many more from other entities in remainder)
                                     if (remainderJSONParts.start < remainderParts.start) {
                                         try {
                                             var entityTypeParts = JSON.parse("{"+remainderJSONParts.body+"}")
-                                            entity.type = entityTypeParts.entityTypes
-                                            if (entityTypeParts.synonym && entityTypeParts.synonym.length > 0) {
-                                                allSynonyms[entityTypeParts.synonym] = allSynonyms[entityTypeParts.synonym] ? allSynonyms[entityTypeParts.synonym] : []
-                                                allSynonyms[entityTypeParts.synonym].push(entity.value)
-                                                entity.synonym = entityTypeParts.synonym
+                                            console.log(['etp',entityTypeParts])
+                                            entity.type = entityTypeParts.entity
+                                            if (entityTypeParts.value && entityTypeParts.value.length > 0) {
+                                                allSynonyms[entityTypeParts.value] = allSynonyms[entityTypeParts.value] ? allSynonyms[entityTypeParts.value] : []
+                                                allSynonyms[entityTypeParts.value].push(entity.value)
+                                                entity.synonym = entityTypeParts.value
                                             }
+                                            //entity.type = entityTypeParts.entityTypes
+                                            //if (entityTypeParts.synonym && entityTypeParts.synonym.length > 0) {
+                                                //allSynonyms[entityTypeParts.synonym] = allSynonyms[entityTypeParts.synonym] ? allSynonyms[entityTypeParts.synonym] : []
+                                                //allSynonyms[entityTypeParts.synonym].push(entity.value)
+                                                //entity.synonym = entityTypeParts.synonym
+                                            //}
                                         } catch (e) {}
+                                        cleanString = parts.pre + entity.value + parts.post.slice(0,remainderJSONParts.start) + parts.post.slice(remainderJSONParts.end+1)
                                         //cleanString = cleanString.slice(0,remainderJSONParts.start) + cleanString.slice(remainderJSONParts.end+1)
+                                   
+                                    // otherwise the () starts first
                                     } else {
                                         var entityTypeParts = remainderParts.body.split(":")
                                         entity.type = entityTypeParts[0]
@@ -412,20 +447,25 @@ function sortExampleSplits(a,b) {
                                             allSynonyms[entityTypeParts[1]].push(entity.value)
                                             entity.synonym = entityTypeParts[1]
                                         }
+                                       cleanString = parts.pre + entity.value + parts.post.slice(0,remainderParts.start) + parts.post.slice(remainderParts.end+1)
                                         //cleanString = cleanString.slice(0,remainderParts.start) + cleanString.slice(remainderParts.end+1)
                                     } 
+                                
+                                // if there is a json meta data section
                                 } else if (remainderJSONParts && remainderJSONParts.body) {
                                     try {
-                                            var entityTypeParts = JSON.parse("{"+remainderJSONParts.body+"}")
-                                            //console.log(['JS ent parts',entityTypeParts])
-                                            entity.type = entityTypeParts.entityTypes
-                                            if (entityTypeParts.synonym && entityTypeParts.synonym.length > 0) {
-                                                allSynonyms[entityTypeParts.synonym] = allSynonyms[entityTypeParts.synonym] ? allSynonyms[entityTypeParts.synonym] : []
-                                                allSynonyms[entityTypeParts.synonym].push(entity.value)
-                                                entity.synonym = entityTypeParts.synonym
-                                            }
-                                        } catch (e) {}
-                                        //cleanString = cleanString.slice(0,remainderJSONParts.start) + cleanString.slice(remainderJSONParts.end+1)
+                                        var entityTypeParts = JSON.parse("{"+remainderJSONParts.body+"}")
+                                        console.log(['JS ent parts',entityTypeParts])
+                                        entity.type = entityTypeParts.entity
+                                        if (entityTypeParts.value && entityTypeParts.value.length > 0) {
+                                            allSynonyms[entityTypeParts.value] = allSynonyms[entityTypeParts.value] ? allSynonyms[entityTypeParts.value] : []
+                                            allSynonyms[entityTypeParts.value].push(entity.value)
+                                            entity.synonym = entityTypeParts.value
+                                        }
+                                    } catch (e) {}
+                                    //cleanString = cleanString.slice(0,remainderJSONParts.start) + cleanString.slice(remainderJSONParts.end+1)
+                                    cleanString = parts.pre + entity.value + parts.post.slice(0,remainderJSONParts.start) + parts.post.slice(remainderJSONParts.end+1)
+                                // otherwise use the body as () meta data
                                 } else if (remainderParts && remainderParts.body) {
                                     var entityTypeParts = remainderParts.body.split(":")
                                     //console.log(['OT ent parts',entityTypeParts])
@@ -436,6 +476,7 @@ function sortExampleSplits(a,b) {
                                         entity.synonym = entityTypeParts[1]
                                     }
                                     cleanString = parts.pre + entity.value + parts.post.slice(0,remainderParts.start) + parts.post.slice(remainderParts.end+1)
+                                    //console.log(['UPDATE CLEANSTRING IN ()  ',cleanString,parts.pre , entity.value , parts.post.slice(0,remainderParts.start),parts.post.slice(remainderParts.end+1)])
                                 } else {
                                     throw new Error('Invalid bracket structure at line '+intentKey)
                                 }
@@ -445,11 +486,12 @@ function sortExampleSplits(a,b) {
                                 intentData.entities = Array.isArray(intentData.entities) ? intentData.entities : []
                                 intentData.entities.push(entity)
                                 if (entity.value) allEntities[entity.value] = {id: generateObjectId(), value: entity.value, synonym: entity.synonym, start: entity.start, end: entity.end, tags: [entity.type]}
-                                parts = balanced('[', ']', remainder)
+                                parts = balanced('[', ']', cleanString)
+                                console.log(['PARENEND',parts])
                             }
                             intentData.example = cleanString
                             allIntents.push(intentData)
-                            //console.log(['INTENT',intentData])
+                            console.log(['INTENT',intentData])
                             
                             
                         }
@@ -628,5 +670,200 @@ function sortExampleSplits(a,b) {
         } catch(e) {}
         return {intents: items}
     }   
+    
+    
+    
+    
+    function generateSplitsFromRasaYml(item, files) {
+        console.log('FROM YML');
+        var allIntents=[]
+        var allEntities={}
+        var allRegexps={}
+        var allSynonyms={}
+        var entitiesFromLookup={}
+        
+        try {
+          const doc = yaml.safeLoad(item.data);
+          console.log(['yaml rasa',doc,parseFloat(doc.version)]);
+          if (doc.version && parseFloat(doc.version) >=  2) {
+              console.log('v2');
+              if (doc.nlu || doc.stories || doc.rules) {
+                  console.log('has element');
+                  //resolve({type:'rasa.yml'})
+                  if (doc.nlu) {
+                      doc.nlu.map(function(nluData) {
+                          
+                          console.log(['has nlu',nluData.examples]);
+                        if (nluData.intent && nluData.examples) {
+                            console.log('has nlu ex');
+                            var intent = nluData.intent
+                            var examples = nluData.examples.split("\n")
+                            for (var i in examples) {
+                                var entities = {}
+                                var example = examples[i].trim() // remove leading -.slice(1)
+                                if (example.indexOf('-') === 0) example = example.slice(1).trim()
+                                var intentData = {intent: intent, example: example}
+                                if (example.length > 0) {
+                                    //console.log(example)// extract entities
+                                    var remainder = example
+                                    var cleanString = example
+                                    var parts = balanced('[', ']', remainder)
+                                    console.log(['PAREN',parts])
+                                    var limit=15
+                                    // loop while there are squre bracket markers in the example sentence
+                                    // each iteration extracts entities and updates the example sentence
+                                    while (limit > 0 && parts && parts !== undefined && typeof parts === "object") {
+                                        var entity = {}
+                                        
+                                        limit --
+                                        remainder = parts.post
+                                        entity.value = parts.body
+                                        entity.start = parts.start
+                                        entity.end = parts.end
+                                        //cleanString = cleanString.slice(0,entity.start) + entity.value + cleanString.slice(entity.end+1)
+                                        
+                                        // now look for the meta data in either () or {}
+                                        var remainderParts = balanced('(',')',parts.post)
+                                        var remainderJSONParts = balanced('{','}',parts.post)
+                                        console.log(['PARENEND',entity, cleanString, remainderParts,remainderJSONParts])
+                                        
+                                        // if there is a metadata section in the remainder both json or () decide which to use first 
+                                        if ((remainderParts && remainderParts.body) && (remainderJSONParts && remainderJSONParts.body)) {
+                                           
+                                            // use the json if it starts first use first (there may be many more from other entities in remainder)
+                                            if (remainderJSONParts.start < remainderParts.start) {
+                                                try {
+                                                    var entityTypeParts = JSON.parse("{"+remainderJSONParts.body+"}")
+                                                    console.log(['etp',entityTypeParts])
+                                                    entity.type = entityTypeParts.entity
+                                                    if (entityTypeParts.value && entityTypeParts.value.length > 0) {
+                                                        allSynonyms[entityTypeParts.value] = allSynonyms[entityTypeParts.value] ? allSynonyms[entityTypeParts.value] : []
+                                                        allSynonyms[entityTypeParts.value].push(entity.value)
+                                                        entity.synonym = entityTypeParts.value
+                                                    }
+                                                    //entity.type = entityTypeParts.entityTypes
+                                                    //if (entityTypeParts.synonym && entityTypeParts.synonym.length > 0) {
+                                                        //allSynonyms[entityTypeParts.synonym] = allSynonyms[entityTypeParts.synonym] ? allSynonyms[entityTypeParts.synonym] : []
+                                                        //allSynonyms[entityTypeParts.synonym].push(entity.value)
+                                                        //entity.synonym = entityTypeParts.synonym
+                                                    //}
+                                                } catch (e) {}
+                                                cleanString = parts.pre + entity.value + parts.post.slice(0,remainderJSONParts.start) + parts.post.slice(remainderJSONParts.end+1)
+                                                //cleanString = cleanString.slice(0,remainderJSONParts.start) + cleanString.slice(remainderJSONParts.end+1)
+                                           
+                                            // otherwise the () starts first
+                                            } else {
+                                                var entityTypeParts = remainderParts.body.split(":")
+                                                entity.type = entityTypeParts[0]
+                                                if (entityTypeParts.length > 1 && entityTypeParts[1].length > 0) {
+                                                    allSynonyms[entityTypeParts[1]] = allSynonyms[entityTypeParts[1]] ? allSynonyms[entityTypeParts[1]] : []
+                                                    allSynonyms[entityTypeParts[1]].push(entity.value)
+                                                    entity.synonym = entityTypeParts[1]
+                                                }
+                                               cleanString = parts.pre + entity.value + parts.post.slice(0,remainderParts.start) + parts.post.slice(remainderParts.end+1)
+                                                //cleanString = cleanString.slice(0,remainderParts.start) + cleanString.slice(remainderParts.end+1)
+                                            } 
+                                        
+                                        // if there is a json meta data section
+                                        } else if (remainderJSONParts && remainderJSONParts.body) {
+                                            try {
+                                                var entityTypeParts = JSON.parse("{"+remainderJSONParts.body+"}")
+                                                console.log(['JS ent parts',entityTypeParts])
+                                                entity.type = entityTypeParts.entity
+                                                if (entityTypeParts.value && entityTypeParts.value.length > 0) {
+                                                    allSynonyms[entityTypeParts.value] = allSynonyms[entityTypeParts.value] ? allSynonyms[entityTypeParts.value] : []
+                                                    allSynonyms[entityTypeParts.value].push(entity.value)
+                                                    entity.synonym = entityTypeParts.value
+                                                }
+                                            } catch (e) {}
+                                            //cleanString = cleanString.slice(0,remainderJSONParts.start) + cleanString.slice(remainderJSONParts.end+1)
+                                            cleanString = parts.pre + entity.value + parts.post.slice(0,remainderJSONParts.start) + parts.post.slice(remainderJSONParts.end+1)
+                                        // otherwise use the body as () meta data
+                                        } else if (remainderParts && remainderParts.body) {
+                                            var entityTypeParts = remainderParts.body.split(":")
+                                            //console.log(['OT ent parts',entityTypeParts])
+                                            entity.type = entityTypeParts[0]
+                                            if (entityTypeParts.length > 1 && entityTypeParts[1].length > 0) {
+                                                allSynonyms[entityTypeParts[1]] = allSynonyms[entityTypeParts[1]] ? allSynonyms[entityTypeParts[1]] : []
+                                                allSynonyms[entityTypeParts[1]].push(entity.value)
+                                                entity.synonym = entityTypeParts[1]
+                                            }
+                                            cleanString = parts.pre + entity.value + parts.post.slice(0,remainderParts.start) + parts.post.slice(remainderParts.end+1)
+                                            //console.log(['UPDATE CLEANSTRING IN ()  ',cleanString,parts.pre , entity.value , parts.post.slice(0,remainderParts.start),parts.post.slice(remainderParts.end+1)])
+                                        } else {
+                                            throw new Error('Invalid bracket structure at intent '+doc.nlu.intent)
+                                        }
+                                        if (entity.value && entity.type) console.log(['ENTITY',entity, cleanString])
+                                        else console.log(['NOENTITY',entity, cleanString])
+                                        //allEntities[entity.type] = entity
+                                        intentData.entities = Array.isArray(intentData.entities) ? intentData.entities : []
+                                        intentData.entities.push(entity)
+                                        if (entity.value) allEntities[entity.value] = {id: generateObjectId(), value: entity.value, synonym: entity.synonym, start: entity.start, end: entity.end, tags: [entity.type]}
+                                        parts = balanced('[', ']', cleanString)
+                                        console.log(['PARENEND',parts])
+                                    }
+                                    intentData.example = cleanString
+                                    allIntents.push(intentData)
+                                    console.log(['INTENT',intentData])
+                                    
+                                    
+                                }
+                            }
+                        }
+                        if (nluData.regex && nluData.examples) {
+                            var regexTitle = nluData.regex
+                            var examples = nluData.examples.split("\n")
+                            for (var i in examples) {
+                                var value = examples[i].trim()
+                                if (value.indexOf('-') === 0) value = value.slice(1).trim()
+                                if (regexTitle && value) {
+                                    allRegexps[regexTitle] = Array.isArray(allRegexps[regexTitle]) ? allRegexps[regexTitle]  : []
+                                    allRegexps[regexTitle].push(value)
+                                }
+                            }
+                        }
+                        if (nluData.synonym && nluData.examples) {
+                            var synonym = nluData.synonym
+                            var examples = nluData.examples.split("\n")
+                            for (var i in examples) {
+                                var value = examples[i].trim()
+                                if (value.indexOf('-') === 0) value = value.slice(1).trim()
+                                if (synonym && value) {
+                                    allSynonyms[synonym] = Array.isArray(allSynonyms[synonym]) ? allSynonyms[synonym]  : []
+                                    allSynonyms[synonym].push(value)
+                                }
+                            }
+                        }
+                        if (nluData.lookup && nluData.examples) {
+                            var entityType = nluData.lookup
+                            var examples = nluData.examples.split("\n")
+                            examples.map(function(value) {
+                                if (value && value.trim()) {
+                                    if (value.indexOf('-') === 0) value = value.slice(1).trim()
+                                    if (entitiesFromLookup[value]) {
+                                        entitiesFromLookup[value].tags = entitiesFromLookup[value].tags ? uniquifyArray(entitiesFromLookup[value].tags.push(entityType)) : []
+                                    } else {
+                                        entitiesFromLookup[value] = {tags:  [entityType]}
+                                    }
+                                }
+                            })    
+                        }
+                     })
+                  }
+              }
+          } 
+        } catch (e) {
+          console.log(e);
+           
+        }
+        
+        
+        var final = {intents: Object.values(allIntents), regexps: Object.keys(allRegexps).map(function(regexTitle) {
+                var allValues = Array.isArray(allRegexps[regexTitle]) ? allRegexps[regexTitle].join("\n") : ''
+                return {id: generateObjectId(), value: regexTitle, synonym: allValues}
+            }), entities : Object.values(allEntities)}
+        console.log(['rasa MD IMPORT',final])
+        return final
+    }
 
-export default function useImportUtils() { return  {unzip, splitSentences, generateIntentSplits, generateEntitySplits, generateUtteranceSplits, generateMycroftUtteranceSplits,  cleanListItem, extractSynonym, sortListSplits, sortExampleSplits, detectFileType, generateSplitsFromJovoJson, generateSplitsFromRasaJson, generateSplitsFromRasaMd, generateIntentSplitsForMycroft}}
+export default function useImportUtils() { return  {unzip, splitSentences, generateIntentSplits, generateEntitySplits, generateUtteranceSplits, generateMycroftUtteranceSplits,  cleanListItem, extractSynonym, sortListSplits, sortExampleSplits, detectFileType, generateSplitsFromJovoJson, generateSplitsFromRasaJson, generateSplitsFromRasaMd, generateIntentSplitsForMycroft, generateSplitsFromRasaYml}}

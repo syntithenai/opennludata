@@ -7,7 +7,7 @@ const yaml = require('js-yaml');
 export default function useImportFunctions(sendPageMessage) {
     
     const {mergeEntities, mergeIntents, mergeUtterances, mergeRegexps, mergeSkill} = useImportMergeFunctions()
-    const {unzip, splitSentences, generateIntentSplits, generateEntitySplits, generateUtteranceSplits, generateMycroftUtteranceSplits, generateIntentSplitsForMycroft, cleanListItem, extractSynonym, sortListSplits, sortExampleSplits, detectFileType, generateSplitsFromJovoJson, generateSplitsFromRasaJson, generateSplitsFromRasaMd} = useImportUtils()
+    const {unzip, splitSentences, generateIntentSplits, generateEntitySplits, generateUtteranceSplits, generateMycroftUtteranceSplits, generateIntentSplitsForMycroft, cleanListItem, extractSynonym, sortListSplits, sortExampleSplits, detectFileType, generateSplitsFromJovoJson, generateSplitsFromRasaJson, generateSplitsFromRasaMd, generateSplitsFromRasaYml} = useImportUtils()
     const history = useHistory()
     /* ONCLICK FUNCTIONS */   
     
@@ -113,10 +113,13 @@ export default function useImportFunctions(sendPageMessage) {
                         const askill2 = generateSplitsFromRasaMd(item)
                         resolve(askill2)
                         break;
-                    
-                    case 'jovo.json':
-                        const askill3 = generateSplitsFromJovoJson(item)
+                    case 'rasa.yml':
+                        const askill3 = generateSplitsFromRasaYml(item)
                         resolve(askill3)
+                        break;
+                    case 'jovo.json':
+                        const askill4 = generateSplitsFromJovoJson(item)
+                        resolve(askill4)
                         break;
                     case 'jovo.zip':
                         importJovo(item).then(function(skill) {
@@ -233,7 +236,7 @@ export default function useImportFunctions(sendPageMessage) {
     
     function importRASA(item) {
         return new Promise(function( resolve, reject) {
-            unzip(item.data,['*/config.yaml','*/credentials.yaml','*/endpoints.yaml','*/domain.yaml','*/config.yml','*/credentials.yml','*/endpoints.yml','*/domain.yml','*.md','*.json']).then(function(files) {
+            unzip(item.data,['*/config.yaml','*/credentials.yaml','*/endpoints.yaml','*/domain.yaml','*/config.yml','*/credentials.yml','*/endpoints.yml','*/domain.yml','*.md','*.json',"*.yml","*.yaml"]).then(function(files) {
                 ////console.log(['rasa',files])
                 var skill = {rasa: {}, entities:[], regexps: [], intents: []}
                 if (files) files.map(function(file) {
@@ -254,6 +257,12 @@ export default function useImportFunctions(sendPageMessage) {
                     } else if (file.path && file.path.endsWith('.md')) {
                         var intentSkill = generateSplitsFromRasaMd(file, files)
                         console.log(['IMPORTED RASA MD',intentSkill,file]) 
+                        skill.intents = [].concat(skill.intents,intentSkill.intents)
+                        skill.regexps = [].concat(skill.regexps,intentSkill.regexps)
+                        skill.entities = [].concat(skill.entities,intentSkill.entities)
+                    } else if (file.path && (file.path.endsWith('.yml') || file.path.endsWith('.yaml'))) {
+                        var intentSkill = generateSplitsFromRasaYml(file, files)
+                        console.log(['IMPORTED RASA yml',intentSkill,file]) 
                         skill.intents = [].concat(skill.intents,intentSkill.intents)
                         skill.regexps = [].concat(skill.regexps,intentSkill.regexps)
                         skill.entities = [].concat(skill.entities,intentSkill.entities)
@@ -375,10 +384,7 @@ export default function useImportFunctions(sendPageMessage) {
         })
     }
         
-    
- 
-    
-    
+
     return {importIntents, importUtterances, importEntities, importAll, detectFileType}
 }
 
