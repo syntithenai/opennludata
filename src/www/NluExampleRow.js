@@ -1,6 +1,6 @@
 /* global window */
 import {Button,   Dropdown, ButtonGroup } from 'react-bootstrap'
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import ReactTags from 'react-tag-autocomplete'
@@ -16,6 +16,11 @@ export default function NluExampleRow(props) {
             onTagDelete, onTagAddition, onSkillDelete,onSkillAddition, updateExampleContent, entityClicked, entityTypeChanged, intentChanged, entityDelete, selectItem,  deselectItem
         } = useNluRow(props.item, props.saveItem, props.splitNumber, props.style, props.setPageMessage, props.lastSelected, props.setLastSelected, props.selectBetween)
         const [textInput, setTextInput] = useState(props.item && props.item.example ? props.item.example  : '')
+        
+        useEffect(() => {
+            setTextInput(props.item && props.item.example ? props.item.example  : '')
+        },[props.item])
+        
          
        var intentOptions = props.lookups.intentLookups && props.lookups.intentLookups.sort().map(function(intentKey,i) {
           return <Dropdown.Item key={i} value={intentKey} onClick={function(e) {intentChanged(intentKey)}}  >{intentKey}</Dropdown.Item>
