@@ -53,7 +53,7 @@ const EditorSearchBar = function(props) {
                   </Dropdown.Menu>
                 </Dropdown>}
              <Button  style={{marginLeft:'1em'}} variant="success" onClick={function(e) {props.createEmptyItem(props.skillFilterValue, props.intentFilterValue, props.tagFilterValue)}} >New Intent</Button>
-             <Button  style={{marginLeft:'1em'}} variant="primary" onClick={function(e) {props.sort(function(a,b) { if (a.value < b.value) return -1; else return 1;})}} >Sort</Button>
+             <Button  style={{marginLeft:'1em'}} variant="primary" onClick={function(e) {props.sort(function(a,b) { if (a.example < b.example) return -1; else return 1;})}} >Sort</Button>
         <hr/>
         </div>
 }
