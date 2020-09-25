@@ -17,16 +17,47 @@ export default function SkillSearchPage(props) {
     var history = useHistory() 
     var [skills, setSkills] = useState({})
     var [tags, setTags] = useState({})
+    var [tagLookups, setTagLookups] = useState([])
     const sourcesDB = useDB('nlutool','sources');
 
     //useEffect((props) => {
         //loadSkills()
         ////doSearch()
     //},[])
+    //console.log(['UE out',props])
+    useEffect(() => {
+        console.log(['UE init',props])
+        searchShowAll()
+        // tag lookups
+       collateTags()
+    },[])
     
-    useEffect((props) => {
-        doSearch()
+    
+    useEffect(() => {
+        //console.log(['UE',props])
+        searchShowAll()
+        // tag lookups
+       collateTags()
     },[props.lookups.skills])
+    
+    function collateTags() {
+        console.log(['collate tags',props.lookups.skills])  
+         if (props.lookups && props.lookups.skills && Object.keys(props.lookups.skills).length > 0) {
+            console.log(['gen tags'])  
+            var hash = {}
+             Object.values(props.lookups.skills).map(function(result, key) {
+                 console.log(['gen tags a',result.tags,result,key])  
+                if (Array.isArray(result.tags)) {
+                    console.log(['gen tags tag',result.tags])  
+                    result.tags.map(function(tag) {
+                       hash[tag] = true  
+                    })
+                }
+            })
+            console.log(['gen tags'])  
+            setTagLookups(Object.keys(hash))
+        }
+    }
     
     function loadSkill(skill) {
         //console.log(['LOaD SKIL',skill])  
@@ -88,6 +119,10 @@ export default function SkillSearchPage(props) {
            //console.log(e)   
         })
     }
+    
+    function searchShowAll() {
+        setSearchResults(Object.values(props.lookups.skills))
+    }
 
     function doSearch(queryIn='') {
         const text = queryIn && queryIn.trim && queryIn.trim() ? queryIn : (searchFilter && searchFilter.trim() ? searchFilter : '')
@@ -132,12 +167,19 @@ export default function SkillSearchPage(props) {
         </div>
     );
     // Autosuggest will call this function every time you need to update suggestions.
-    // You already implemented this logic above, so just use it.
     function onSuggestionsFetchRequested ({ value }) {
-         if (props.lookups.tags) setSuggestions(props.lookups.tags.sort().map(function(tag) {
+         var suggestions = []
+         if (tagLookups) suggestions = tagLookups.filter(
+            function(item) {
+                if (searchFilter && searchFilter.trim().length === 0) return true
+                if (item && item.indexOf(searchFilter) !== -1) return true
+                return false
+            }
+         ).sort().map(function(tag) {
              return {tag: tag} 
-          }))
-        
+          })
+          console.log(['SUGG',searchFilter,suggestions,tagLookups])
+        setSuggestions(suggestions)
         //searchItems('SkillTags',{tag:{"$regex":value}},20,0,'',{tag:1}).then(function(res) {
             //setSuggestions(res.data && res.data.length > 0 ? res.data : [])
         //})
@@ -150,6 +192,18 @@ export default function SkillSearchPage(props) {
 
     function setSearchFilterWrap(text) {
         setSearchFilter(text)
+        //var suggestions = []
+         //if (tagLookups) suggestions = tagLookups.filter(
+            //function(item) {
+                //if (searchFilter && searchFilter.trim().length === 0) return true
+                //if (item && item.indexOf(searchFilter) !== -1) return true
+                //return false
+            //}
+         //).sort().map(function(tag) {
+             //return {tag: tag} 
+          //})
+          //console.log(['SUGG',suggestions,tagLookups])
+        //setSuggestions(suggestions)
         //loadSuggestions(text)
     } 
     
@@ -175,14 +229,14 @@ export default function SkillSearchPage(props) {
                 />
                 </Col><Col>
                 <Button variant="success" onClick={doSearch}>Search</Button>
-                <Button variant="danger" onClick={function() {setSearchFilter(''); doSearch('')}}>Reset</Button>
+                <Button variant="danger" onClick={function() {setSearchFilter(''); searchShowAll('')}}>Reset</Button>
             </Col></Row>
         </Form> 
         
         {!searchFilter.trim() && <h3>Recent Skills</h3>}
         {searchFilter.trim() && <h3>Search Results</h3>}
         <Container fluid ><Row>
-        {searchResults.map(function(result, key) {
+        {(searchResults && searchResults.length > 0) && searchResults.map(function(result, key) {
             const bStyle = {marginLeft:'0.5em', marginBottom:'0.2em'}
              return <Col sm={12} md={6} lg={4} xl={4} key={key} style={{border: '2px solid black', padding: '0.5em', margin: '0.5em'}}>
                 <Button variant="success" style={{float:'right'}} onClick={function(e) {importItem(result)}}>Grab</Button>
@@ -198,6 +252,7 @@ export default function SkillSearchPage(props) {
                 </div>
              </Col>
         })}
+        {(searchResults && searchResults.length === 0) && <b>No matching skills</b>}
         </Row></Container>       
     </div>
     
