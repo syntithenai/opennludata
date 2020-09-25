@@ -76,6 +76,9 @@ function HelpTextImport(props) {
                 This tool can import files a variety of file formats and allows you to cherry pick intents, entities and utterances.
                 <br/>
                 You can use zip files to to upload and import many files that make up a skill for Mycroft, RASA or JOVO.
+                <br/>
+                This tool focuses on language training data and largely ignores other elements of the import formats including actions and routing stories or rules.
+                
                 <br/><br/>
                 <br/>
                 <h3>Supported File Types</h3>
@@ -96,7 +99,7 @@ function HelpTextImport(props) {
                 <br/><br/>
                 
                 <h4>RASA</h4>
-                The tool can import rasa intent training data files in MD and JSON format.<br/>
+                The tool can import rasa intent training data files in MD, JSON and YML(v2) format.<br/>
                 Intents, entities, regular expressions (but not lookups) are imported.<br/><br/>
                 A zip file containing a root level domain.yml and some .md or .json files can also be imported.<br/>
                 Where the training data references lookup files, and those files are available in the zip, the lookup files will be used to import entities.
@@ -123,9 +126,11 @@ function HelpTextAbout(props) {
     <HelpMenu/>
             <h1>About</h1>
 <br/>
-            <div><h3>Bugs/Feedback</h3>Please share any feedback on the <a target="_new" href="https://github.com/syntithenai/opennludata/issues" >Github Issues Page</a></div>
             <br/>
+            <div>This application was written by Steve Ryan.</div>
              <div>The <a target="_new" href="https://github.com/syntithenai/opennludata" >source code</a> for this tool is available under an MIT Open Source Licence. </div>
+            <div>Please share any feedback on the <a target="_new" href="https://github.com/syntithenai/opennludata/issues" >Github Issues Page</a></div>
+            <br/>
             <hr/>
             
              <div>Icons from  The Noun Project and others.</div>
@@ -156,11 +161,12 @@ function HelpTextExport(props) {
             <ul>
                 <li>Native JSON format</li>
                 <li>Mycroft intents and entities for Padatious NLU</li>
-                <li>RASA training data</li>
+                <li>RASA training data including MD, JSON and YML(v2) formats</li>
                 <li>JOVO model files</li>
             </ul>
             </div>
-
+            <div>The tool focuses on language training data and largely ignores other elements of the export formats including actions and routing stories or rules.
+            For now, it is necessary to copy the downloaded language training data files into your skill folder.</div>
         </div>
 }
 
