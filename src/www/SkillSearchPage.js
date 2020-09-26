@@ -26,7 +26,7 @@ export default function SkillSearchPage(props) {
     //},[])
     //console.log(['UE out',props])
     useEffect(() => {
-        console.log(['UE init',props])
+        //console.log(['UE init',props])
         searchShowAll()
         // tag lookups
        collateTags()
@@ -41,20 +41,20 @@ export default function SkillSearchPage(props) {
     },[props.lookups.skills])
     
     function collateTags() {
-        console.log(['collate tags',props.lookups.skills])  
+        //console.log(['collate tags',props.lookups.skills])  
          if (props.lookups && props.lookups.skills && Object.keys(props.lookups.skills).length > 0) {
-            console.log(['gen tags'])  
+            //console.log(['gen tags'])  
             var hash = {}
              Object.values(props.lookups.skills).map(function(result, key) {
-                 console.log(['gen tags a',result.tags,result,key])  
+                 //console.log(['gen tags a',result.tags,result,key])  
                 if (Array.isArray(result.tags)) {
-                    console.log(['gen tags tag',result.tags])  
+                    //console.log(['gen tags tag',result.tags])  
                     result.tags.map(function(tag) {
                        hash[tag] = true  
                     })
                 }
             })
-            console.log(['gen tags'])  
+            //console.log(['gen tags'])  
             setTagLookups(Object.keys(hash))
         }
     }
@@ -178,7 +178,7 @@ export default function SkillSearchPage(props) {
          ).sort().map(function(tag) {
              return {tag: tag} 
           })
-          console.log(['SUGG',searchFilter,suggestions,tagLookups])
+          //console.log(['SUGG',searchFilter,suggestions,tagLookups])
         setSuggestions(suggestions)
         //searchItems('SkillTags',{tag:{"$regex":value}},20,0,'',{tag:1}).then(function(res) {
             //setSuggestions(res.data && res.data.length > 0 ? res.data : [])

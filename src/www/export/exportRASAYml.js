@@ -20,7 +20,7 @@ const yaml = require('js-yaml');
             }
         ]
     }
-    console.log(['TREE GEN',folderTree])
+    //console.log(['TREE GEN',folderTree])
     return folderTree
 }
 
@@ -143,7 +143,7 @@ function exportRASAYml(skill) {
                 }
                 return null
             })
-            console.log(['synonyms',synonymsIndex])
+            //console.log(['synonyms',synonymsIndex])
             var synonymsOut = []
             Object.keys(synonymsIndex).map(function(synonym) {
                 //synonymsOut.push('## synonym:'+synonym)
@@ -151,7 +151,7 @@ function exportRASAYml(skill) {
                 nlu.push({synonym: synonym, examples: uniqueSynonyms.join("\n")})
                 return null
             })
-            console.log(['synonyms OUT NLU',nlu])
+            //console.log(['synonyms OUT NLU',nlu])
             
 
             var nluContent=yaml.safeDump({
@@ -238,7 +238,7 @@ function exportRASAYml(skill) {
                 domainContentParts.push(line)
                 return null
             })
-            console.log(['preutt',nluContent, fileLookups, actionsContent, configContent, domainContentParts.join("\n"), credentialsContent, endpointsContent, actionFiles, skill.rasaStories])
+            //console.log(['preutt',nluContent, fileLookups, actionsContent, configContent, domainContentParts.join("\n"), credentialsContent, endpointsContent, actionFiles, skill.rasaStories])
             // UTTERANCES
             var utterances = {}
             if (skill.utterancesLists || skill.utterances) { 
@@ -299,7 +299,7 @@ function exportRASAYml(skill) {
 function exportRASAYmlZip(skill) {
     return new Promise(function(resolve,reject) {
         exportRASAYml(skill).then(function(data) {
-            console.log(['crate zip',data])
+            //console.log(['crate zip',data])
             createZip(data).then(function(res) {
                 //var binaryData = [];
                 //binaryData.push(res);

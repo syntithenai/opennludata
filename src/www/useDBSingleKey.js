@@ -49,10 +49,10 @@ function reducer(state, action) {
             return action.items
         } else return state
     case "sort":
-        console.log(['DISP SORT',action.sort])
+        //console.log(['DISP SORT',action.sort])
         if (typeof action.sort === "function") {
             var ret = state.sort(action.sort)
-            console.log(['DISP SORT ret',ret, ret[0],ret[1]])
+            //console.log(['DISP SORT ret',ret, ret[0],ret[1]])
             return [...ret]
         } else return state
     default:
