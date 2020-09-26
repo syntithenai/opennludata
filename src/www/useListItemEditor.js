@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import useDBSingleKey from './useDBSingleKey'
 import {useParams, useHistory} from 'react-router-dom'
+import scrabbleWords from './scrabbleWords'
 
 function useListItemEditor(database, databaseTable, databaseKey, updateLists, initialData) {
     const {loadAll, saveItem, deleteItem , items, setItems, findKeyBy, filter, sort} = useDBSingleKey(database, databaseTable, databaseKey, initialData)
@@ -214,8 +215,18 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists, in
     function saveItemWrap(item,index) {
         //console.log(['SAVE ITEM WRAP LI',listRef, JSON.parse(JSON.stringify(item)),index])
         if (item) {
+            var sWords = scrabbleWords()
+            if (sWords.indexOf(item.value.toUpperCase()) !== -1) {
+                if (item.tags.indexOf('scrabbleword') === -1) {
+                    console.log('scrabbleword on save')
+                    item.tags.push('scrabbleword')
+                }
+            } else {
+                item.tags = item.tags.filter(function(item) {
+                    return item !== 'scrabbleword'
+                })
+            }
             saveItem(item,index)
-            
             listRef.current.resetAfterIndex(index);
             updateLists(items)
         }

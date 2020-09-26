@@ -1,8 +1,9 @@
 import localforage from 'localforage'
 import {uniquifyArray, generateObjectId} from './utils'
+import scrabbleWords from './scrabbleWords'
 
 export default function useImportMergeFunctions() {
-
+    
      var localforageStorageIntents = localforage.createInstance({
        name: 'nlutool',
        storeName   :'examples',
@@ -30,7 +31,7 @@ export default function useImportMergeFunctions() {
      */
     function mergeIntents(examples,skill) {
         return new Promise(function(resolve, reject) {
-            //console.log(['import examples',examples, typeof examples,skill])
+            console.log(['import examples',examples, typeof examples,skill])
             if (examples) {
                 localforageStorageIntents.getItem('alldata').then(function(allItems) {
                     var allItemsIndex = {}
@@ -51,9 +52,9 @@ export default function useImportMergeFunctions() {
                     
                     examples.map(function(listItem) {
                         if (listItem && listItem.example && listItem.example.trim())  {
-                            // intent example already exists
                             const key = JSON.stringify({entities:listItem.entities ? listItem.entities : [], intent: listItem.intent ? listItem.intent : '', example: listItem.example ? listItem.example : ''})
                             listItem.id = listItem.id ? listItem.id : generateObjectId()
+                            // intent example already exists
                             if (allItemsIndex[key]) {
                                 replacements.push(listItem)
                             } else {
@@ -88,12 +89,53 @@ export default function useImportMergeFunctions() {
             }
         })
     }
+    
+    
+     function updateIntents(examples) {
+        return new Promise(function(resolve, reject) {
+            console.log(['update examples',examples, typeof examples])
+            if (examples) {
+                localforageStorageIntents.getItem('alldata').then(function(allItems) {
+                    // index incoming examples by id
+                    var examplesHash = {}
+                    examples.map(function(listItem) {
+                        if (listItem && listItem.example && listItem.example.trim() && listItem.id )  {
+                            examplesHash[listItem.id] = listItem
+                           
+                        } 
+                        return null
+                    })
+                    // iterate all items returning replacement or existing
+                    var newItems = allItems.map(function(listItem) {
+                        const key = listItem.id //JSON.stringify({entities:listItem.entities ? listItem.entities : [], intent: listItem.intent ? listItem.intent : '', example: listItem.example ? listItem.example : ''})
+                        if (listItem && listItem.example && listItem.example.trim() && listItem.id && examplesHash[listItem.id])  {
+                            return examplesHash[listItem.id]
+                        } else {
+                            return listItem
+                        }
+                    })
+                   
+                    console.log('IMPORT updated',newItems)
+                    localforageStorageIntents.setItem('alldata',newItems).then(function(err,data) {
+                        console.log(["DONE SAVE IMPORT",err,data])
+                        //throw new Error('eee')
+                        resolve()  
+                    })
+                    //props.history.push('/import') 
+                
+                })
+              } else {
+                reject({error:"Missing import data"})
+            }
+        })
+    }
 
 
     function mergeEntities(entities, list) {
         //console.log(['merge entities',entities, list])
         return new Promise(function(resolve, reject) {
             if (entities) {
+                var sWords = scrabbleWords()
                 localforageStorageEntities.getItem('alldata').then(function(allLists) {
                     ////console.log(['got list ',allLists])
                     var allListsIndex = {}
@@ -117,6 +159,9 @@ export default function useImportMergeFunctions() {
                             updated += 1
                             newListItem.tags = newListItem.tags ? newListItem.tags : []
                             if (list && list.trim().length > 0) newListItem.tags.push(list.trim())
+                            if (sWords.indexOf(listItem.value.toUpperCase()) !== -1) {
+                                newListItem.tags.push('scrabbleword')
+                            }
                             // merge alternatives
                             var existingAlternatives = allListsIndex[listItem.value].synonym ? allListsIndex[listItem.value].synonym.split("\n") : []
                             var newAlternatives = newListItem.synonym ? newListItem.synonym.split("\n") : []
@@ -130,6 +175,9 @@ export default function useImportMergeFunctions() {
                             created += 1
                             newListItem = {id: generateObjectId() , value: newListItem.value, synonym: newListItem.synonym ? newListItem.synonym : '', tags:newListItem.tags ? newListItem.tags : []}
                             if (list && list.trim().length > 0) newListItem.tags.push(list.trim())
+                            if (sWords.indexOf(listItem.value.toUpperCase()) !== -1) {
+                                newListItem.tags.push('scrabbleword')
+                            }
                             // uniquify and sort tags
                             newListItem.tags = uniquifyArray(newListItem.tags).sort()
                             allListsIndex[newListItem.value] = newListItem
@@ -305,6 +353,6 @@ export default function useImportMergeFunctions() {
     }
     
 
-    return  {mergeIntents, mergeEntities, mergeUtterances, mergeRegexps, mergeSkill}
+    return  {mergeIntents, mergeEntities, mergeUtterances, mergeRegexps, mergeSkill, updateIntents}
 
 }

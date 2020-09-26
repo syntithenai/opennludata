@@ -3,6 +3,7 @@ import useImportUtils from './useImportUtils'
 import {useHistory} from 'react-router-dom'
 import {generateObjectId} from './utils'
 const yaml = require('js-yaml');
+const path = require('path');
 
 export default function useImportFunctions(sendPageMessage) {
     
@@ -182,13 +183,15 @@ export default function useImportFunctions(sendPageMessage) {
     
     
     function importJovo(item) {
-        console.log(['imp jovo',item])
+        //console.log(['imp jovo',item])
         return new Promise(function( resolve, reject) {
             unzip(item.data,['*/en-US.json']).then(function(files) {
-                console.log(['jovo fil',files])
+                //console.log(['jovo fil',files])
                 if (files) files.map(function(file) {
+                    var pathParts = path.basename(item.title).split(".")
+                    file.name = pathParts[0]
                     var splits = generateSplitsFromJovoJson(file)
-                    console.log(['jovo spl',splits])
+                    //console.log(['jovo spl',splits])
                     resolve(splits)
                 
                 })
@@ -240,36 +243,40 @@ export default function useImportFunctions(sendPageMessage) {
                 ////console.log(['rasa',files])
                 var skill = {rasa: {}, entities:[], regexps: [], intents: []}
                 if (files) files.map(function(file) {
-                    if (file.path && (file.path.endsWith('config.yml') || file.path.endsWith('config.yaml'))) {
-                        skill.rasa.config = file.data
-                    } else if (file.path && (file.path.endsWith('credentials.yml')||file.path.endsWith('credentials.yml'))) {
-                        skill.rasa.credentials = file.data
-                    } else if (file.path && (file.path.endsWith('endpoints.yml') || file.path.endsWith('endpoints.yaml'))) {
-                        skill.rasa.endpoints = file.data
-                    } else if (file.path && (file.path.endsWith('domain.yml') || file.path.endsWith('domain.yaml'))) {
-                        skill = importRASADomainFile(file.data,skill)
-                    } else if (file.path && file.path.endsWith('.json')) {
-                        var intentSkill = generateSplitsFromRasaJson(file, files)
-                        console.log(['IMPORTED RASA JSON',intentSkill,file]) 
-                        skill.intents = [].concat(skill.intents,intentSkill.intents)
-                        skill.regexps = [].concat(skill.regexps,intentSkill.regexps)
-                        skill.entities = [].concat(skill.entities,intentSkill.entities)
-                    } else if (file.path && file.path.endsWith('.md')) {
-                        var intentSkill = generateSplitsFromRasaMd(file, files)
-                        console.log(['IMPORTED RASA MD',intentSkill,file]) 
-                        skill.intents = [].concat(skill.intents,intentSkill.intents)
-                        skill.regexps = [].concat(skill.regexps,intentSkill.regexps)
-                        skill.entities = [].concat(skill.entities,intentSkill.entities)
-                    } else if (file.path && (file.path.endsWith('.yml') || file.path.endsWith('.yaml'))) {
-                        var intentSkill = generateSplitsFromRasaYml(file, files)
-                        console.log(['IMPORTED RASA yml',intentSkill,file]) 
-                        skill.intents = [].concat(skill.intents,intentSkill.intents)
-                        skill.regexps = [].concat(skill.regexps,intentSkill.regexps)
-                        skill.entities = [].concat(skill.entities,intentSkill.entities)
+                    if (file.path) {
+                        var pathParts = path.basename(item.title).split(".")
+                        file.name = pathParts[0]
+                        if ((file.path.endsWith('config.yml') || file.path.endsWith('config.yaml'))) {
+                            skill.rasa.config = file.data
+                        } else if ((file.path.endsWith('credentials.yml')||file.path.endsWith('credentials.yml'))) {
+                            skill.rasa.credentials = file.data
+                        } else if ((file.path.endsWith('endpoints.yml') || file.path.endsWith('endpoints.yaml'))) {
+                            skill.rasa.endpoints = file.data
+                        } else if (file.path && (file.path.endsWith('domain.yml') || file.path.endsWith('domain.yaml'))) {
+                            skill = importRASADomainFile(file.data,skill)
+                        } else if (file.path.endsWith('.json')) {
+                            var intentSkill = generateSplitsFromRasaJson(file, files)
+                            //console.log(['IMPORTED RASA JSON',intentSkill,file]) 
+                            skill.intents = [].concat(skill.intents,intentSkill.intents)
+                            skill.regexps = [].concat(skill.regexps,intentSkill.regexps)
+                            skill.entities = [].concat(skill.entities,intentSkill.entities)
+                        } else if (file.path.endsWith('.md')) {
+                            var intentSkill = generateSplitsFromRasaMd(file, files)
+                            //console.log(['IMPORTED RASA MD',intentSkill,file]) 
+                            skill.intents = [].concat(skill.intents,intentSkill.intents)
+                            skill.regexps = [].concat(skill.regexps,intentSkill.regexps)
+                            skill.entities = [].concat(skill.entities,intentSkill.entities)
+                        } else if ((file.path.endsWith('.yml') || file.path.endsWith('.yaml'))) {
+                            var intentSkill = generateSplitsFromRasaYml(file, files)
+                            //console.log(['IMPORTED RASA yml',intentSkill,file]) 
+                            skill.intents = [].concat(skill.intents,intentSkill.intents)
+                            skill.regexps = [].concat(skill.regexps,intentSkill.regexps)
+                            skill.entities = [].concat(skill.entities,intentSkill.entities)
+                        }
                     }
                     //console.log(file) 
                 })
-                console.log(['IMPORTED RASA',skill]) 
+                //console.log(['IMPORTED RASA',skill]) 
                 resolve(skill)
             })
         })
@@ -296,6 +303,8 @@ export default function useImportFunctions(sendPageMessage) {
                 
                 if (files) {
                     files.map(function(file) {
+                        var pathParts = path.basename(item.title).split(".")
+                        var skillName = pathParts[0]
                         
                         // for now no internationalisation
                        if (file && file.path && file.path.toLowerCase().indexOf('/en-us/') !== -1)  {
@@ -304,7 +313,7 @@ export default function useImportFunctions(sendPageMessage) {
                            if (file.path.endsWith('.intent') && file.data) {
                                //console.log(file.path, file.data, generateIntentSplits(file.data, name))
                                var intent = fileParts.length > 1 ? fileParts[fileParts.length -1].replace('.intent','') : ''
-                               intents = [].concat(generateIntentSplitsForMycroft(file.data, intent), intents)
+                               intents = [].concat(generateIntentSplitsForMycroft(file.data, intent,skillName), intents)
                            } else if (file.path.endsWith('.dialog')) {
                                var parts = file.path.split("/")
                                var fileName = parts[parts.length -1]

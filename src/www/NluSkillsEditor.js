@@ -7,21 +7,38 @@ import exportFormats from './export/index'
 import PublishPage from './PublishPage'
 import { saveAs } from 'file-saver';
 import NluSkillEditorComponent from './components/NluSkillEditorComponent'
-
+import {uniquifyArray} from './utils'
 import useSkillsEditor from './useSkillsEditor'
+import useImportMergeFunctions from './useImportMergeFunctions'
 
 export default  function NluSkillsEditor(props) {
 
+    const {mergeIntents} = useImportMergeFunctions()
+    
     const skillsEditor = useSkillsEditor(Object.assign({},props,{user:props.user, lookups: props.lookups}))
     
     const {
     currentSkill, setCurrentSkill, skillFilterValue, setSkillFilterValue,
       skillKeys,
-     setMongoId, saveItem, deleteItem, 
+     setMongoId, saveItem, deleteItem, duplicates,
        listsForEntity, skillMatches, skillUpdatedMatches, setSkillMatches, setSkillUpdatedMatches, setSkill, forceReload
      } = skillsEditor
    
-    
+      
+     function tagDuplicates() {
+         var newDups = duplicates.map(function(item) {
+             //console.log(['tagdup',item])
+             if (item) {
+                item.tags.push(skillFilterValue + ' duplicate')
+                item.tags = uniquifyArray(item.tags)
+                //saveItem(item)
+             }
+             return item
+         })
+         console.log(['newdups',newDups])
+         mergeIntents(newDups)
+     } 
+      
      var skillOptions = skillKeys && skillKeys.sort().map(function(skillKey,i) {
           return <Dropdown.Item key={i} value={skillKey} onClick={function(e) {setSkillFilterValue(skillKey)}}  >{skillKey}</Dropdown.Item>
        })
@@ -70,7 +87,13 @@ export default  function NluSkillsEditor(props) {
                 {skillUpdatedMatches.map(function(match) {
                     return <span>saved {new Date(match.updated_date).toUTCString()} <Button variant="warning"  onClick={function(e) {loadSkill(match); setSkillUpdatedMatches([]); forceReload()}} >Merge</Button></span>
                 })}
-        </span>}         
+        </span>}    
+        
+        {(duplicates && duplicates.length > 0) &&  <Button variant="danger" style={{float:'right',marginLeft:'0.5em'}}  onClick={function(e) {
+           tagDuplicates()
+           props.history.push("/examples/tag/"+skillFilterValue+" duplicate")  
+        }}>Duplicates !</Button>}
+             
          {currentSkill && !props.publish && skillFilterValue && skillFilterValue.length > 0 && <><Dropdown style={{float:'right',marginLeft:'0.5em'}}  as={ButtonGroup}>
           <Dropdown.Toggle split variant="primary"  id="dropdown-split-basic" ></Dropdown.Toggle>
           <Button  variant="primary">Export</Button>
@@ -83,13 +106,13 @@ export default  function NluSkillsEditor(props) {
                     //var skill = currentSkill
                     //skill.intents = 
                     //skill.entities = 
-                    console.log(['EXPORT FUNCTION',exportFormat.exportFunction,exportFormat.name])
+                    //console.log(['EXPORT FUNCTION',exportFormat.exportFunction,exportFormat.name])
                     exportFormat.exportFunction(currentSkill).then(function(zipBody) {
                         //console.log(['TRIGGER DL',title,zipBody])
                         if (exportFormat.name==='JSON') {
                             saveAs(zipBody, title+'.json')
                         } else if (exportFormat.name==='RASA YML') {
-                            console.log(zipBody,title)
+                            //console.log(zipBody,title)
                             saveAs(zipBody, title+'.zip')
                         } else {
                             saveAs(zipBody, title+'.zip')

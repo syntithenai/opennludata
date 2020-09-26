@@ -126,35 +126,40 @@ export default function LocalStorageUploadManager(props) {
         if (results) {
             results.forEach(result => {
               const [e, file] = result;
-              //console.log(['upl result',e, file,e.target.result])
-               var item = {id:null, data:e.target.result, title:file.name}
-               importFunctions.detectFileType(item).then(function(fileData) {
-                    if (fileData && fileData.type) {
-                        item.fileType = fileData.type
-                        item.created_date = new Date().getTime()
-                        //if (item.fileType.endsWith('.zip')) {
-                            //item.data = new File([item.data],'application/zip')
-                        //}
-                        //console.log(['SET ITEM TYPE', item.fileType])
-                        saveItem(item,0)
-                    } else {
-                        props.setPageMessage('Invalid file type')
-                        setTimeout(function() {
-                            props.setPageMessage('')
-                        },2000)
-                    }
-                })
+               var item = {id:null, title:file.name}
+               if (file.name.endsWith('.zip')) {
+                   item.data = e.target.result
+                   doSave(item)
+               } else {
+                    const reader = new FileReader();
+                    reader.onload = (function(item) { return function(e) { item.data = e.target.result; doSave(item)}; })(item);
+                    reader.readAsText(file)
+                }
+                function doSave(item) {    
+                   importFunctions.detectFileType(item).then(function(fileData) {
+                        if (fileData && fileData.type) {
+                            item.fileType = fileData.type
+                            item.created_date = new Date().getTime()
+                            saveItem(item,0)
+                        } else {
+                            props.setPageMessage('Invalid file type')
+                            setTimeout(function() {
+                                props.setPageMessage('')
+                            },2000)
+                        }
+                    })
+                 }
             });
             
         }
     }    
   
     function saveItemWrap(item,index) {
+        var newIndex = parseInt(index) !== NaN ? index : 0
         importFunctions.detectFileType(item).then(function(fileData) {
             item.fileType = fileData.type
             item.created_date = new Date().getTime()
-            //console.log(['SET ITEM TYPE', item.fileType])
-            saveItem(item,index)
+            saveItem(item,0)
         })
     }
     

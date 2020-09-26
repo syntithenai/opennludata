@@ -11,7 +11,7 @@ import localforage from 'localforage'
 
 
 export default function useSkillsEditor(props) {
-    console.log(['USE SKILLS ED',props.user])
+    //console.log(['USE SKILLS ED',props.user])
 
     //const {loadAll, skillFilterValue, setSkillFilterValue, filteredItems} = useNluEditor('nlutool','examples','alldata', props.updateFunctions.updateLookups)
     const [skillKeys, setSkillKeys] = useState([])
@@ -44,6 +44,7 @@ export default function useSkillsEditor(props) {
 
     const [invocation, setInvocation] = useState('')
     const [mongoId, setMongoId] = useState('')
+    const [duplicates, setDuplicates] = useState([])
     
     const params = useParams()
     const history = useHistory()
@@ -155,7 +156,9 @@ export default function useSkillsEditor(props) {
   //}
 
     function loadSkill() {
+        console.log(['load skill'])
         examplesStorage.getItem('alldata').then(function(allItems) {
+            console.log(['load skill items',allItems])
             if (allItems && Array.isArray(allItems)) {
                 var filteredItems = []
                 var skillKeys = {}
@@ -168,6 +171,7 @@ export default function useSkillsEditor(props) {
                         })
                     }
                     // filter 
+                    console.log(['load skill filter',skillFilterValue,item.skills])
                     if (skillFilterValue && item.skills && item.skills.indexOf(skillFilterValue) !== -1) {
                         filteredItems.push(item)
                     }
@@ -175,18 +179,21 @@ export default function useSkillsEditor(props) {
                 })
                 setSkillKeys(Object.keys(skillKeys))
                 setFilteredItems(filteredItems)
+                console.log(['load skill set skill keys and filtered',skillKeys, filteredItems])
                 ////console.log('loaded skill items for init',filteredItems, Object.keys(skillKeys),allItems)
                 if (skillFilterValue) {
-                    ////console.log(['LOAD SKILL',skillFilterValue])
+                    //console.log(['LOAD SKILL',skillFilterValue])
                     skillsStorage.getItem(skillFilterValue, function (err, skill) {
+                        console.log(['loaded ',skill, err])
                         if (err) throw new Error(err)
-                        var newSkill = skill && skill.id ? skill : {}
+                        var newSkill = skill  ? skill : {}
                         newSkill.id = newSkill.id ? newSkill.id : generateObjectId()
                         newSkill.title = skillFilterValue
                         newSkill.invocation = newSkill.invocation ? newSkill.invocation : ''
                         newSkill.entities = indexEntities(newSkill,filteredItems)
                         if (newSkill.title) findOnlineSkill(props.user,newSkill) 
                         var [intents, tags] = indexIntentsAndTags(skill,filteredItems)
+                        console.log(['indexed intents ',intents,tags])
                         newSkill.intents = intents
                        // newSkill.tags = tags    
                         setCurrentSkill(newSkill)
@@ -196,7 +203,7 @@ export default function useSkillsEditor(props) {
                         props.updateFunctions.updateUtterances()
                         props.updateFunctions.updateRegexps()
                         props.updateFunctions.updateLookups()
-                        ////console.log(['LOADED LOCAL SKILL ',JSON.parse(JSON.stringify(newSkill))])
+                        console.log(['LOADED LOCAL SKILL ',JSON.parse(JSON.stringify(newSkill))])
                         forceReload(newSkill)
                     })
                 }
@@ -302,15 +309,22 @@ export default function useSkillsEditor(props) {
             setEntitiesForSkill(entities)
             return entities;
     }
+    
     function indexIntentsAndTags(currentSkill, filteredItems) {
-        ////console.log(['INDEX INTENTS',currentSkill])
-        if (currentSkill) {
+        //console.log(['INDEX INTENTS',currentSkill,filteredItems])
+        //if (currentSkill) {
             // collate intents and tags from items
              var newCollatedItems = collatedItems
              var newCollatedCounts = collatedCounts
+             var duplicates = {}
+             var duplicateRecords = []
              var newCollatedTags = {}
              if (filteredItems) {
                  filteredItems.map(function(item) {
+                    if (item.example) {
+                       duplicates[item.example] = Array.isArray(duplicates[item.example]) ? duplicates[item.example] : []
+                       duplicates[item.example].push(item)
+                    }
                     if (item.intent) {
                         if (!newCollatedItems[item.intent]) newCollatedItems[item.intent]=[]
                         newCollatedCounts[item.intent] =   (newCollatedCounts[item.intent] > 0) ? newCollatedCounts[item.intent] + 1 : 1;
@@ -326,12 +340,23 @@ export default function useSkillsEditor(props) {
                     } 
                    return null;  
                  })
+                 //console.log(['DUPS',duplicates,duplicateRecords])
+                 Object.values(duplicates).map(function(items) {
+                     //console.log(['DUPS items',items.length,items])
+                     if (items.length > 1) {
+                         //console.log(['DUPS items',items.length,items])
+                         duplicateRecords = [].concat(duplicateRecords,items)
+                     }
+                     return null 
+                 })
+                 //console.log(['DUPS',duplicates,duplicateRecords])
+                 setDuplicates(duplicateRecords)
                  setCollatedItems(newCollatedItems)
                  setCollatedCounts(newCollatedCounts)
                  setCollatedTags(newCollatedTags)
-                return [collatedItems, Object.keys(newCollatedTags)]
+                return [newCollatedItems, Object.keys(newCollatedTags)]
              } 
-        }
+        //}
         return [[],[]]
     }
        
@@ -706,7 +731,7 @@ export default function useSkillsEditor(props) {
      addRegexp, removeRegexp, setRegexpIntent, setRegexpEntity, setMongoId, saveItem, deleteItem, searchItems,
      removeUtterance, addUtterance,  addUtteranceList, removeUtteranceList, skillKeys, addSkillTag, removeSkillTag,
      newSlot, newSlotValue,    setNewSlotValue,  slots: props.slots, setRASASlotAutofill, setRASASlotType, deleteSlot ,
-     setRASAActions, setRASASession , setRASAEndpoint , setRASACredentials  ,setRASAStories ,setRASAConfig, 
+     setRASAActions, setRASASession , setRASAEndpoint , setRASACredentials  ,setRASAStories ,setRASAConfig, duplicates,
      filteredItems, currentIntent, listsForEntity, listsManager, collatedTags, skillMatches, skillUpdatedMatches,setSkillMatches, setSkillUpdatedMatches, setSkill, forceReload
      }
     

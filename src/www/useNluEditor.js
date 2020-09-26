@@ -391,7 +391,7 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
         saveItem({id:null, example:'', intent:newIntent, skills:skills,tags:tags})
         setTimeout(function() {
             if (listRef && listRef.current) {
-                console.log(['HAVE CURRENT',listRef.current.resetAfterIndex])
+                //console.log(['HAVE CURRENT',listRef.current.resetAfterIndex])
                 listRef.current.resetAfterIndex(0);
                 listRef.current.scrollToItem(20);
                 listRef.current.scrollToItem(0);
@@ -416,11 +416,11 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
     function getItemSize(index) {
         ////console.log(window.innerWidth,window.innerHeight)
         // set parameters for full size > 1024
-        var baseSize = 100
+        var baseSize = 110
         var heightPerLine = 70
-        var tagsPerLine = 10
-        var entitiesPerLine = 8
-        var skillsPerLine = 6
+        var tagsPerLine = 3
+        var entitiesPerLine = 3
+        var skillsPerLine = 3
         // tiny screen mobile 
         if (window.innerWidth < 430) {
             baseSize = 140

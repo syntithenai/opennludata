@@ -19,6 +19,8 @@ const RenderRow = function(props) {
          lookups={props.data.lookups} setPageMessage={props.data.setPageMessage} lastSelected={props.data.lastSelected} setLastSelected={props.data.setLastSelected} selectBetween={props.data.selectBetween} />
 }
 
+
+
 export default function NluExampleEditor(props) {
     const {loadAll, deleteItem , items, findKeyBy, searchFilter, setSearchFilter, skillFilterValue, setSkillFilterValue, intentFilterValue, setIntentFilterValue, tagAllValue, setTagAllValue, skillAllValue, setSkillAllValue,  intentAllValue, setIntentAllValue, listRef, tagAll,untagAll, unskillAll, intentAll, resetSelection, selectAll,  skillSetAll, saveItemWrap, getItemSize, deleteAll, filteredItems, createEmptyItem, sort, lastSelected, setLastSelected, selectBetween,  tagFilterValue, setTagFilterValue} = useNluEditor('nlutool','examples','alldata', props.updateFunctions.updateLookups)
  
@@ -27,6 +29,7 @@ export default function NluExampleEditor(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     },[])
 
+    const [showEntityMixer, setShowEntityMixer] = useState(false)
     
     function createEmptyItemWrap(skill, intent, tag) {
         createEmptyItem(skill, intent, tag)
@@ -60,7 +63,7 @@ export default function NluExampleEditor(props) {
                  <WithSelectedDropDowns
                   skillSetAll={skillSetAll} skillAllValue={skillAllValue}  setSkillAllValue={setSkillAllValue}  untagAll={untagAll} unskillAll={unskillAll} 
                      intentAll={intentAll} intentAllValue={intentAllValue} setIntentAllValue={setIntentAllValue}  
-                     tagAll={tagAll} tagAllValue={tagAllValue} setTagAllValue={setTagAllValue}  lookups={props.lookups}
+                     tagAll={tagAll} tagAllValue={tagAllValue} setTagAllValue={setTagAllValue}  lookups={props.lookups}  updateFunctions={props.updateFunctions}  filteredItems={filteredItems} history={props.history}
                  />
                  <Button style={{marginLeft:'1em'}} onClick={deleteAll} variant="danger"  >Delete Selected</Button> 
                

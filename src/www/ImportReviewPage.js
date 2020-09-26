@@ -49,8 +49,8 @@ function ImportReviewPage(props) {
     });
     useEffect(() => {
         localforageStorageImport.getItem('alldata').then(function(importData) {
-             console.log('importData')  
-             console.log(importData)  
+             //console.log('importData')  
+             //console.log(importData)  
              setImportData(importData)
              if (importData.title) setSkillTitle(importData.title)
              if (importData.intents) {
@@ -230,8 +230,8 @@ function ImportReviewPage(props) {
                                 }}>Import</Button>
                             </Card.Header>
                            <div>
-                                {utterance.synonym && utterance.synonym.split("\n").map(function(alt) {
-                                   return <div>{alt}</div>
+                                {utterance.synonym && utterance.synonym.split("\n").map(function(alt,p) {
+                                   return <div key={p}>{alt}</div>
                                 })}
                            </div>
                     </Card>
@@ -249,6 +249,7 @@ function ImportReviewPage(props) {
               
 
            {/* REGULAR EXPRESSIONS */}
+           {JSON.stringify(importData.regexps)}
               {importData.regexps && <Card>
                 <Card.Header>
                   <ContextAwareToggle as={Button} variant="link" eventKey="root-3"  >
@@ -277,8 +278,8 @@ function ImportReviewPage(props) {
                                 }}>Import</Button>
                             </Card.Header>
                            <div>
-                                {regexp.synonym && regexp.synonym.split("\n").map(function(alt) {
-                                   return <div>{alt}</div>
+                                {regexp.synonym && regexp.synonym.split("\n").map(function(alt,p) {
+                                   return <div key={p}>{alt}</div>
                                 })}
                            </div>
                     </Card>
