@@ -18,14 +18,14 @@ const restify = require('express-restify-mongoose')
 var cors = require('cors')
 var proxy = require('express-http-proxy');
     
-console.log("PRECONNECT")    
+//console.log("PRECONNECT")    
 try {
     //mongoose.connect(config.databaseConnection+config.database, {useNewUrlParser: true})
 } catch (e) {
     console.log(e)
     throw e
 }
-console.log("POSTCONNECT")    
+//console.log("POSTCONNECT")    
 const {skillsSchema, skillTagsSchema, entitiesSchema, utterancesSchema, regexpsSchema} = require('./schemas')
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
@@ -35,7 +35,7 @@ function startMainWebServer() {
         var staticPath = __dirname.split("/")
         staticPath.pop()
         staticPath.pop()
-        console.log(staticPath)
+        //console.log(staticPath)
         const app2 = express();
        // console.log(JSON.stringify(process.env))
          if (process.env.proxyDev !== "TRUE" && fs.existsSync(path.join(staticPath.join("/"), 'docs', 'index.html'))) {
@@ -275,23 +275,23 @@ loginSystem(config).then(function(login) {
         
         app.get('/*', express.static(path.join(staticPath.join('/'),  'build' )))
         app.get('/',cors(), (req, res) => {
-            console.log(["TEMPL",path.join(staticPath.join('/'),  'build', "index.html"),__dirname])
+            //console.log(["TEMPL",path.join(staticPath.join('/'),  'build', "index.html"),__dirname])
             res.sendFile(path.join(staticPath.join('/'),  'build', "index.html"));
         })
         app.get('/login',cors(), (req, res) => {
-            console.log(["TEMPL",path.join(staticPath.join('/'),  'build', "index.html"),__dirname])
+            //console.log(["TEMPL",path.join(staticPath.join('/'),  'build', "index.html"),__dirname])
             res.sendFile(path.join(staticPath.join('/'),  'build', "index.html"));
         })
         app.get('/profile',cors(), (req, res) => {
-            console.log(["TEMPL",path.join(staticPath.join('/'),  'build', "index.html"),__dirname])
+            //console.log(["TEMPL",path.join(staticPath.join('/'),  'build', "index.html"),__dirname])
             res.sendFile(path.join(staticPath.join('/'),  'build', "index.html"));
         })
         app.get('/logout',cors(), (req, res) => {
-            console.log(["TEMPL",path.join(staticPath.join('/'),  'build', "index.html"),__dirname])
+            //console.log(["TEMPL",path.join(staticPath.join('/'),  'build', "index.html"),__dirname])
             res.sendFile(path.join(staticPath.join('/'),  'build', "index.html"));
         })
         app.get('/blank',cors(), (req, res) => {
-            console.log(["TEMPL",path.join(staticPath.join('/'),  'build', "index.html"),__dirname])
+            //console.log(["TEMPL",path.join(staticPath.join('/'),  'build', "index.html"),__dirname])
             res.sendFile(path.join(staticPath.join('/'),  'build', "index.html"));
         })
     } else {
