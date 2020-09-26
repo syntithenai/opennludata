@@ -22,6 +22,7 @@ function mix(intents,entityType,entityList) {
                 if (entitiesInList.length > 0) {
                     console.log(['mix',intents,entityList])
                     var newIntents = intents.map(function(intent) {
+                        intent.tags = Array.isArray(intent.tags) ? intent.tags : []
                         intent.tags.push('mix '+entityType+' '+entityList)
                         intent.tags = uniquifyArray(intent.tags)  
                         if (intent.entities) {
