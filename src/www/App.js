@@ -8,7 +8,7 @@ import RegexpsManager from './RegexpsManager'
 import NluExampleEditor from './NluExampleEditor'
 import NavbarComponent from './components/NavbarComponent'
 //import TestComponent from './components/TestComponent'
-import {HelpText, HelpTextImport, HelpTextExport, HelpTextAbout} from './components/Components'
+import {HelpText, HelpTextImport, HelpTextExport, HelpTextAbout, HelpTextTips} from './components/Components'
 import NluImportEditor from './NluImportEditor'
 import NluSkillsEditor from './NluSkillsEditor'
 //import SearchPage from './SearchPage'
@@ -446,6 +446,7 @@ function App() {
                             <Route exact path='/helpimport' component={HelpTextImport}     />
                             <Route exact path='/helpexport' component={HelpTextExport}     />
                             <Route exact path='/helpabout' component={HelpTextAbout}     />
+                            <Route exact path='/helptips' component={HelpTextTips}     />
                             
                             <Route exact path='/search' render={(props) => <SkillSearchPage user={user} getAxiosClient={getAxiosClient} lookups={lookups} updateFunctions={updateFunctions}  />} />
                            
