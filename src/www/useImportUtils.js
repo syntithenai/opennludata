@@ -1,6 +1,6 @@
 import JSZip from 'jszip'
 import parenthesis from 'parenthesis'
-import {generateObjectId, uniquifyArray, multiplyArrays, expandOptions, splitSentences} from './utils'
+import {generateObjectId, uniquifyArray, multiplyArrays, expandOptions, splitSentences, cleanEntity, cleanIntent, cleanRegexp, cleanUtterance} from './utils'
 
 const yaml = require('js-yaml');
                     
@@ -178,7 +178,7 @@ function generateIntentSplits(text, intent) {
         var b = balanced('{','}',latestText)
         var limit = 20
         while (b && limit) {
-            var entity = { value:b.body, start: b.start, end: b.end, type:b.body }
+            var entity = { value:b.body, start: b.start, end: b.end, type:cleanEntity(b.body) }
             entities.push(entity)
             latestText = b.pre + b.body + b.post
             b = balanced('{','}',latestText)
@@ -192,7 +192,7 @@ function generateIntentSplits(text, intent) {
         if (text && text.trim().length > 0) {
            expandOptions(text).map(function(line) {
                 var intentGen = extractEntities(line)
-                intentGen.intent = intent;
+                intentGen.intent = cleanIntent(intent);
                 newSplits.push(intentGen)
            }) 
            //newSplits.push({'id':generateObjectId(), 'example':text,'intent':intent ? intent : '',"entities":[], "tags":[]})
@@ -232,7 +232,7 @@ function generateUtteranceSplits(text, tag) {
     var newSplits=[]
     splits.map(function(text,i) {
         if (text && text.trim().length > 0) {
-            newSplits.push({'id':generateObjectId(), 'value':text.trim().replaceAll(' ','_'), synonym:text, "tags":tag ? [tag] : []})
+            newSplits.push({'id':generateObjectId(), 'value':cleanUtterance(text), synonym:text, "tags":tag ? [tag] : []})
         }
         return null
     })
@@ -249,7 +249,7 @@ function generateMycroftUtteranceSplits(text, utterance) {
         const splits = splitSentences(text)
         //splits.map(function(text,i) {
             if (text && text.trim().length > 0) {
-                newSplits.push({'id':generateObjectId(), 'value':utterance.trim().replaceAll(' ','_'), synonym:splits.join("\n"), "tags":[]})
+                newSplits.push({'id':generateObjectId(), 'value':cleanUtterance(utterance), synonym:splits.join("\n"), "tags":[]})
             }
             //return null
         //})
@@ -323,7 +323,7 @@ function sortExampleSplits(a,b) {
             item.split("\n").map(function(intentExample,intentKey) {
                 expandOptions(intentExample).map(function(line) {
                     var intent = extractEntities(line)
-                    intent.intent = intentLabel;
+                    intent.intent = cleanIntent(intentLabel);
                     intent.skills = (skillName && skillName.trim().length > 0) ? [skillName] : []
                     intents.push(intent)
                 })
@@ -337,7 +337,7 @@ function sortExampleSplits(a,b) {
             var b = balanced('{','}',latestText)
             var limit = 20
             while (b && limit) {
-                var entity = { value:b.body, start: b.start, end: b.end, type:b.body }
+                var entity = { value:b.body, start: b.start, end: b.end, type:cleanEntity(b.body) }
                 entities.push(entity)
                 latestText = b.pre + b.body + b.post
                 b = balanced('{','}',latestText)
@@ -369,7 +369,7 @@ function sortExampleSplits(a,b) {
                 var dataLines = (lines.length > 1) ? lines.slice(1) : []
                 
                 if (section === "regex") {
-                    var regexTitle = headerLine.slice(6).trim()
+                    var regexTitle = cleanRegexp(headerLine.slice(6).trim())
                     var synonyms=[]
                     for (var i in dataLines) {
                         var value = dataLines[i].slice(1).trim() // remove leading -
@@ -458,7 +458,7 @@ function sortExampleSplits(a,b) {
                                             try {
                                                 var entityTypeParts = JSON.parse("{"+remainderJSONParts.body+"}")
                                                 //console.log(['etp',entityTypeParts])
-                                                entity.type = entityTypeParts.entity
+                                                entity.type = cleanEntity(entityTypeParts.entity)
                                                 if (entityTypeParts.value && entityTypeParts.value.length > 0) {
                                                     allSynonyms[entityTypeParts.value] = allSynonyms[entityTypeParts.value] ? allSynonyms[entityTypeParts.value] : []
                                                     allSynonyms[entityTypeParts.value].push(entity.value)
@@ -477,7 +477,7 @@ function sortExampleSplits(a,b) {
                                         // otherwise the () starts first
                                         } else {
                                             var entityTypeParts = remainderParts.body.split(":")
-                                            entity.type = entityTypeParts[0]
+                                            entity.type = cleanEntity(entityTypeParts[0])
                                             if (entityTypeParts.length > 1 && entityTypeParts[1].length > 0) {
                                                 allSynonyms[entityTypeParts[1]] = allSynonyms[entityTypeParts[1]] ? allSynonyms[entityTypeParts[1]] : []
                                                 allSynonyms[entityTypeParts[1]].push(entity.value)
@@ -492,7 +492,7 @@ function sortExampleSplits(a,b) {
                                         try {
                                             var entityTypeParts = JSON.parse("{"+remainderJSONParts.body+"}")
                                             //console.log(['JS ent parts',entityTypeParts])
-                                            entity.type = entityTypeParts.entity
+                                            entity.type = cleanEntity(entityTypeParts.entity)
                                             if (entityTypeParts.value && entityTypeParts.value.length > 0) {
                                                 allSynonyms[entityTypeParts.value] = allSynonyms[entityTypeParts.value] ? allSynonyms[entityTypeParts.value] : []
                                                 allSynonyms[entityTypeParts.value].push(entity.value)
@@ -505,7 +505,7 @@ function sortExampleSplits(a,b) {
                                     } else if (remainderParts && remainderParts.body) {
                                         var entityTypeParts = remainderParts.body.split(":")
                                         //console.log(['OT ent parts',entityTypeParts])
-                                        entity.type = entityTypeParts[0]
+                                        entity.type = cleanEntity(entityTypeParts[0])
                                         if (entityTypeParts.length > 1 && entityTypeParts[1].length > 0) {
                                             allSynonyms[entityTypeParts[1]] = allSynonyms[entityTypeParts[1]] ? allSynonyms[entityTypeParts[1]] : []
                                             allSynonyms[entityTypeParts[1]].push(entity.value)
@@ -582,6 +582,7 @@ function sortExampleSplits(a,b) {
             if (json && json.rasa_nlu_data && json.rasa_nlu_data.regex_features) {
                 for (var i in json.rasa_nlu_data.regex_features) {
                     var regex = json.rasa_nlu_data.regex_features[i]
+                    regex.name = cleanRegexp(regex.name)
                     console.log(['rasa JSON impORT reg',regex])
                     if (regex && regex.name && regex.name.trim().length > 0 && regex.pattern && regex.pattern.trim().length > 0) {
                         allRegexps[regex.name]={'id':generateObjectId(), 'value':regex.name,'synonym': regex.pattern}
@@ -600,7 +601,7 @@ function sortExampleSplits(a,b) {
             if (files && json && json.rasa_nlu_data && json.rasa_nlu_data.lookup_tables) {
                 for (var i in json.rasa_nlu_data.lookup_tables) {
                     var lookup = json.rasa_nlu_data.lookup_tables[i]
-                    var entityType = lookup.name
+                    var entityType = cleanEntity(lookup.name)
                     var path = lookup.elements.trim()
                     if (path.indexOf("-") === 0) {
                         var value = path.slice(1).trim()
@@ -632,7 +633,7 @@ function sortExampleSplits(a,b) {
                 for (var i in json.rasa_nlu_data.common_examples) {
                     var entity = json.rasa_nlu_data.common_examples[i]
                     //console.log(entity)
-                    var cleanEntities = entity.entities ? entity.entities.map(function(el,j) { return {type:el.entity, value:el.value, start:el.start, end:el.end} }) : []
+                    var cleanEntities = entity.entities ? entity.entities.map(function(el,j) { return {type:cleanEntity(el.entity), value:el.value, start:el.start, end:el.end} }) : []
                     // entities
                     cleanEntities.map(function(entity) {
                         if (allEntities[entity.value]) {
@@ -696,19 +697,20 @@ function sortExampleSplits(a,b) {
                                 if (intent.inputs) {
                                     for (var inputKey in intent.inputs) {
                                        var input = intent.inputs[inputKey]
+                                       var inputName = cleanEntity(input.name)
                                        ////console.log([phrase,input.name])
-                                       const markerStart = phrase.indexOf("{"+input.name+"}")
+                                       const markerStart = phrase.indexOf("{"+inputName+"}")
                                        if (markerStart !== -1)  {
-                                           phrase = phrase.replace("{"+input.name+"}",input.name)
+                                           phrase = phrase.replace("{"+inputName+"}",inputName)
                                        }
-                                       var entityi = {type:input.name, value:input.name , start: markerStart , end: markerStart + input.name.length  }
+                                       var entityi = {type:input.name, value:inputName , start: markerStart , end: markerStart + input.name.length  }
                                        entities.push(entityi)
                                        return null
                                     }
                                 }
                                 //console.log(['JOVO IMPORT pushg item',intent.name])
                                 
-                                items.push({'id':generateObjectId(), 'example':phrase.trim(),'intent':intent.name,"entities": entities, tags: [], skills: (item.name && item.name.trim().length > 0) ? [item.name.trim()] : []})
+                                items.push({'id':generateObjectId(), 'example':phrase.trim(),'intent':cleanIntent(intent.name),"entities": entities, tags: [], skills: (item.name && item.name.trim().length > 0) ? [item.name.trim()] : []})
                                 //console.log(['JOVO IMPORT pushed item',JSON.parse(JSON.stringify(items))])
                                 
                             }
@@ -748,7 +750,7 @@ function sortExampleSplits(a,b) {
                           //console.log(['has nlu',nluData.examples]);
                         if (nluData.intent && nluData.examples) {
                             //console.log('has nlu ex');
-                            var intent = nluData.intent
+                            var intent = cleanIntent(nluData.intent)
                             var examples = nluData.examples.split("\n")
                             for (var i in examples) {
                                 var entities = {}
@@ -787,7 +789,7 @@ function sortExampleSplits(a,b) {
                                                 try {
                                                     var entityTypeParts = JSON.parse("{"+remainderJSONParts.body+"}")
                                                     //console.log(['etp',entityTypeParts])
-                                                    entity.type = entityTypeParts.entity
+                                                    entity.type = cleanEntity(entityTypeParts.entity)
                                                     if (entityTypeParts.value && entityTypeParts.value.length > 0) {
                                                         allSynonyms[entityTypeParts.value] = allSynonyms[entityTypeParts.value] ? allSynonyms[entityTypeParts.value] : []
                                                         allSynonyms[entityTypeParts.value].push(entity.value)
@@ -806,7 +808,7 @@ function sortExampleSplits(a,b) {
                                             // otherwise the () starts first
                                             } else {
                                                 var entityTypeParts = remainderParts.body.split(":")
-                                                entity.type = entityTypeParts[0]
+                                                entity.type = cleanEntity(entityTypeParts[0])
                                                 if (entityTypeParts.length > 1 && entityTypeParts[1].length > 0) {
                                                     allSynonyms[entityTypeParts[1]] = allSynonyms[entityTypeParts[1]] ? allSynonyms[entityTypeParts[1]] : []
                                                     allSynonyms[entityTypeParts[1]].push(entity.value)
@@ -821,7 +823,7 @@ function sortExampleSplits(a,b) {
                                             try {
                                                 var entityTypeParts = JSON.parse("{"+remainderJSONParts.body+"}")
                                                 //console.log(['JS ent parts',entityTypeParts])
-                                                entity.type = entityTypeParts.entity
+                                                entity.type = cleanEntity(entityTypeParts.entity)
                                                 if (entityTypeParts.value && entityTypeParts.value.length > 0) {
                                                     allSynonyms[entityTypeParts.value] = allSynonyms[entityTypeParts.value] ? allSynonyms[entityTypeParts.value] : []
                                                     allSynonyms[entityTypeParts.value].push(entity.value)
@@ -834,7 +836,7 @@ function sortExampleSplits(a,b) {
                                         } else if (remainderParts && remainderParts.body) {
                                             var entityTypeParts = remainderParts.body.split(":")
                                             //console.log(['OT ent parts',entityTypeParts])
-                                            entity.type = entityTypeParts[0]
+                                            entity.type = cleanEntity(entityTypeParts[0])
                                             if (entityTypeParts.length > 1 && entityTypeParts[1].length > 0) {
                                                 allSynonyms[entityTypeParts[1]] = allSynonyms[entityTypeParts[1]] ? allSynonyms[entityTypeParts[1]] : []
                                                 allSynonyms[entityTypeParts[1]].push(entity.value)
@@ -864,7 +866,7 @@ function sortExampleSplits(a,b) {
                             }
                         }
                         if (nluData.regex && nluData.examples) {
-                            var regexTitle = nluData.regex
+                            var regexTitle = cleanRegexp(nluData.regex)
                             var examples = nluData.examples.split("\n")
                             for (var i in examples) {
                                 var value = examples[i].trim()
@@ -892,7 +894,7 @@ function sortExampleSplits(a,b) {
                             var examples = nluData.examples.split("\n")
                             examples.map(function(value) {
                                 if (value && value.trim()) {
-                                    if (value.indexOf('-') === 0) value = value.slice(1).trim()
+                                    if (value.indexOf('-') === 0) value = cleanEntity(value.slice(1).trim())
                                     if (entitiesFromLookup[value]) {
                                         entitiesFromLookup[value].tags = entitiesFromLookup[value].tags ? uniquifyArray(entitiesFromLookup[value].tags.push(entityType)) : []
                                     } else {

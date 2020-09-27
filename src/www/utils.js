@@ -190,4 +190,25 @@ function concatText(text,words) {
      return final;
     }
     
-export {generateObjectId, parentUrl, concatText , findFirstDiffPos,uniquifyArray, multiplyArrays, expandOptions, splitSentences, uniquifyArrayOfObjects, replaceEntities,replaceEntitiesWithValues,  RASA, GoogleAssistant, Alexa, snakeToCamelCase, camelToSnakeCase, toSnakeCase }
+    
+    function cleanText(intent) {
+        return intent.replaceAll('.','_').replaceAll(',','_').replaceAll(' ','_').trim()
+    }
+    
+    function cleanIntent(intent) {
+        return cleanText(intent)
+    }
+    
+    function cleanEntity(entity) {
+        return cleanText(entity)
+    }
+    
+    function cleanUtterance(utterance) {
+        return cleanText(utterance)
+    }
+
+    function cleanRegexp(regexp) {
+        return cleanText(regexp)
+    }
+
+export {cleanUtterance, cleanIntent, cleanEntity, cleanRegexp,  generateObjectId, parentUrl, concatText , findFirstDiffPos,uniquifyArray, multiplyArrays, expandOptions, splitSentences, uniquifyArrayOfObjects, replaceEntities,replaceEntitiesWithValues,  RASA, GoogleAssistant, Alexa, snakeToCamelCase, camelToSnakeCase, toSnakeCase }

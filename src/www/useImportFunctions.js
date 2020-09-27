@@ -1,7 +1,7 @@
 import useImportMergeFunctions from './useImportMergeFunctions'
 import useImportUtils from './useImportUtils'
 import {useHistory} from 'react-router-dom'
-import {generateObjectId} from './utils'
+import {generateObjectId, cleanEntity, cleanIntent, cleanUtterance, cleanRegexp} from './utils'
 const yaml = require('js-yaml');
 const path = require('path');
 
@@ -312,17 +312,17 @@ export default function useImportFunctions(sendPageMessage) {
                            var name = nameFromFilename(file.path)
                            if (file.path.endsWith('.intent') && file.data) {
                                //console.log(file.path, file.data, generateIntentSplits(file.data, name))
-                               var intent = fileParts.length > 1 ? fileParts[fileParts.length -1].replace('.intent','') : ''
+                               var intent = cleanIntent(fileParts.length > 1 ? fileParts[fileParts.length -1].replace('.intent','') : '')
                                intents = [].concat(generateIntentSplitsForMycroft(file.data, intent,skillName), intents)
                            } else if (file.path.endsWith('.dialog')) {
                                var parts = file.path.split("/")
                                var fileName = parts[parts.length -1]
                                //console.log(file.path, file.data, generateUtteranceSplits(file.data, name))   
-                               var utterance = fileParts.length > 1 ? fileParts[fileParts.length -1].replace('.dialog','')  : ''
+                               var utterance = cleanUtterance(fileParts.length > 1 ? fileParts[fileParts.length -1].replace('.dialog','')  : '')
                                utterances = [].concat(generateMycroftUtteranceSplits(file.data, fileName.replace('.dialog','')), utterances)
                            } else if (file.path.endsWith('.entity')) {
                                //console.log(file.path, file.data, generateEntitySplits(file.data, name)) 
-                               var entity = fileParts.length > 1 ? fileParts[fileParts.length -1].replace('.entity','')  : ''
+                               var entity = cleanEntity(fileParts.length > 1 ? fileParts[fileParts.length -1].replace('.entity','')  : '')
                                entities = [].concat(generateEntitySplits(file.data, entity), entities)
                            }
                        }
