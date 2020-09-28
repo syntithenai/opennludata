@@ -29,6 +29,7 @@ export default  function NluSkillsEditor(props) {
          var newDups = duplicates.map(function(item) {
              //console.log(['tagdup',item])
              if (item) {
+                item.tags = Array.isArray(item.tags) ? item.tags : []
                 item.tags.push(skillFilterValue + ' duplicate')
                 item.tags = uniquifyArray(item.tags)
                 //saveItem(item)
