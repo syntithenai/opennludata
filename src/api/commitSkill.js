@@ -93,6 +93,7 @@ async function commitSkill(skill, deleteSkill) {
             commit: 'Published skill '+skill.title+(' (' + skill.id+')')+(skill.userAvatar ? ' by ' + skill.userAvatar : '')
           }
           if (deleteSkill) changes.commit = 'Unpublished skill ' + skill.id
+          
           fs.readFile(indexPath, 'utf8', function(err, contents) {
               var skillIndex = {}
               if (contents) {
@@ -112,7 +113,7 @@ async function commitSkill(skill, deleteSkill) {
               
               var notDeleted = {}
               Object.values(skillIndex).filter(function(skill) {if (!skill.deleted) return true; else return false }).map(function(iskill) {
-                  notDeleted[skill.id] = iskill
+                  notDeleted[iskill.id] = iskill
                   return null
               });
               changes.files[indexPath] = JSON.stringify(notDeleted)       

@@ -242,7 +242,13 @@ export default function SkillSearchPage(props) {
                 <Button variant="success" style={{float:'right'}} onClick={function(e) {importItem(result)}}>Grab</Button>
                 <h4 style={{marginBottom:'0.3em'}} >{result.title} {result.userAvatar && <span>by {result.userAvatar}</span>} </h4>
                 
-                {result.tags && result.tags.length > 0 && <Button style={bStyle} variant="outline-warning" >{result.tags.join(", ")}</Button>}
+                {(result.tags && result.tags.length > 0) && <span>
+                    
+                    {result.tags.map(function(tag) { 
+                        return <Button style={bStyle} variant="outline-warning" >{tag}</Button>
+                    })}
+                    
+                    </span>}
                 <div>
                     {(result.intents > 0) && <Button variant="outline-primary"style={bStyle}>{result.intents} intents </Button>}
                     {(result.entities > 0) && <Button variant="outline-primary"style={bStyle}>{result.entities} entities</Button>}
