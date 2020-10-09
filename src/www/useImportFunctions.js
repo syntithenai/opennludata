@@ -54,9 +54,9 @@ export default function useImportFunctions(sendPageMessage) {
                         mergeEntities(entities)
                     }
                     // create utterances
-                    if (data.utterances) {
+                    if (data.utterancesData) {
                         var utterances = []
-                        Object.values(data.utterances).map(function(utterance) {
+                        Object.values(data.utterancesData).map(function(utterance) {
                             utterances.push(utterance)
                         })
                         mergeUtterances(utterances)

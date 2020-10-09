@@ -87,7 +87,7 @@ function exportJSON(skill) {
             //console.log(['LOIADED LOOKUPS',data])
             var newSkill = skill
             newSkill.entitiesData = data[0]
-            newSkill.utterances = data[1]
+            newSkill.utterancesData = data[1]
             //console.log(['resolve JSON',newSkill])
             oresolve(newSkill)
         })
