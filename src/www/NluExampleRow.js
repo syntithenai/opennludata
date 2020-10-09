@@ -42,7 +42,7 @@ export default function NluExampleRow(props) {
               </Button>
               <Button variant="info" size="sm" onClick={function(e) {entityDelete(i,'')}} >X</Button>
               <Dropdown.Menu>
-                  <form  style={{display:'inline'}}>
+                  <form  style={{display:'inline'}} onSubmit={function(e) {e.preventDefault(); console.log(['ETT',i,entity.type]); entityTypeChanged(i,entity.type);   return false}} >
                     <div className="form-group">
                       <input type="text" className="form-control" onChange={function(e) {entityTypeChanged(i,e.target.value)}}
                     value={entity.type} />
@@ -63,9 +63,9 @@ export default function NluExampleRow(props) {
           <Button  variant='success' size="sm" >New Entity</Button>
 
           <Dropdown.Menu>
-           <form style={{display:'inline'}} onSubmit={function(e) {e.preventDefault(); entityTypeChanged(-1,newEntity)}}>
+           <form style={{display:'inline'}} onSubmit={function(e) {e.preventDefault(); entityTypeChanged(-1,newEntity); console.log('ETT'); return false}}>
                 <div className="form-group">
-                  <input type="text" className="form-control" onChange={function(e) {setNewEntity(e.target.value)}}
+                  ss<input type="text" className="form-control" onChange={function(e) {setNewEntity(e.target.value)}}
                 value={newEntity} />
                 </div>
               </form>
@@ -134,7 +134,9 @@ export default function NluExampleRow(props) {
                        setSelectionState(null)
                     }}
                    onSelect={ function(e) {
-                     var textSelection = window.getSelection().toString(); 
+                       var selection = window.getSelection()
+                     var textSelection = e.target.value.slice(e.target.selectionStart, e.target.selectionEnd)  //window.getSelection().toString(); 
+                 
                      setSelectionState({textSelection:textSelection, textSelectionFrom: splitNumber, startTextSelection: e.target.selectionStart, endTextSelection: e.target.selectionEnd})
                   }}  
                    type='text' style={{width:'80%'}} value={textInput} id={"example_input_"+splitNumber} onChange={function(e) { setTextInput(e.target.value); updateExampleContent(e.target.value)}} />
