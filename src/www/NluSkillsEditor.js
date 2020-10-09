@@ -13,7 +13,7 @@ import useImportMergeFunctions from './useImportMergeFunctions'
 
 export default  function NluSkillsEditor(props) {
 
-    const {mergeIntents} = useImportMergeFunctions()
+    const {mergeIntents, updateIntents} = useImportMergeFunctions()
     
     const skillsEditor = useSkillsEditor(Object.assign({},props,{user:props.user, lookups: props.lookups}))
     
@@ -37,7 +37,7 @@ export default  function NluSkillsEditor(props) {
              return item
          })
          console.log(['newdups',newDups])
-         mergeIntents(newDups)
+         return updateIntents(newDups)
      } 
       
      var skillOptions = skillKeys && skillKeys.sort().map(function(skillKey,i) {
@@ -91,8 +91,9 @@ export default  function NluSkillsEditor(props) {
         </span>}    
         
         {(duplicates && duplicates.length > 0) &&  <Button variant="danger" style={{float:'right',marginLeft:'0.5em'}}  onClick={function(e) {
-           tagDuplicates()
-           props.history.push("/examples/tag/"+skillFilterValue+" duplicate")  
+           tagDuplicates().then(function() {
+            props.history.push("/examples/tag/"+skillFilterValue+" duplicate")  
+           })
         }}>Duplicates !</Button>}
              
          {currentSkill && !props.publish && skillFilterValue && skillFilterValue.length > 0 && <><Dropdown style={{float:'right',marginLeft:'0.5em'}}  as={ButtonGroup}>
