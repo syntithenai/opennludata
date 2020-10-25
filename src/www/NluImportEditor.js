@@ -29,7 +29,7 @@ const RenderRow = function(props) {
 export default function NluImportEditor(props) {
     
     //const examplesDB = useDBSingleKey('nlutool','examples','alldata')
-    const {loadAll, deleteItem ,items,  findKeyBy, searchFilter, setSearchFilter, tagAllValue, setTagAllValue, skillAllValue, setSkillAllValue, skillFilterValue, setSkillFilterValue, intentFilterValue, setIntentFilterValue, intentAllValue, setIntentAllValue, listRef, tagAll, untagAll, unskillAll, intentAll, resetSelection, selectAll,  skillSetAll, saveItemWrap, getItemSize, deleteAll, saveAll, saveNlu, filteredItems, createEmptyItem, sort} = useNluEditor('nlutool','import','alldata', props.updateFunctions.updateLookups)
+    const {loadAll, deleteItem ,items,  findKeyBy, searchFilter, setSearchFilter, tagAllValue, setTagAllValue, skillAllValue, setSkillAllValue, skillFilterValue, setSkillFilterValue, intentFilterValue, setIntentFilterValue, intentAllValue, setIntentAllValue, listRef, tagAll, untagAll, unskillAll, intentAll, resetSelection, selectAll,  skillSetAll, saveItemWrap, getItemSize, deleteAll, saveAll, saveNlu, filteredItems, createEmptyItem, sort} = useNluEditor('nlutool','import','alldata', props.updateFunctions.updateLookups, props.updateFunctions.setIsChanged)
     useEffect(() => {
         loadAll()
         //examplesDB.loadAll()

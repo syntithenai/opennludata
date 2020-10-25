@@ -21,7 +21,7 @@ const RenderRow = function(props) {
 }
 
 export default  function ListsManager(props) {
-    const {listFilterValue, setListFilterValue, loadAll, deleteItem ,items, findKeyBy, searchFilter, setSearchFilter, tagAllValue, setTagAllValue, listRef, tagAll,untagAll, resetSelection, selectAll, saveItemWrap, getItemSize,  filteredItems, deleteAll, createEmptyItem, sort, lastSelected, setLastSelected, selectBetween} = useListItemEditor('nlutool','lists','alldata', props.updateFunctions.updateLists)
+    const {listFilterValue, setListFilterValue, fromSkill, loadAll, deleteItem ,items, findKeyBy, searchFilter, setSearchFilter, tagAllValue, setTagAllValue, listRef, tagAll,untagAll, resetSelection, selectAll, saveItemWrap, getItemSize,  filteredItems, deleteAll, createEmptyItem, sort, lastSelected, setLastSelected, selectBetween} = useListItemEditor('nlutool','lists','alldata', props.updateFunctions.updateLists,[], props.updateFunctions.setIsChanged)
     //const [currentList, setCurrentList] = useState('')
 
     useEffect(() => {
@@ -76,7 +76,7 @@ export default  function ListsManager(props) {
     
    return <div>
    
-        {<ListsManagerSearchBar {...props} searchFilter={searchFilter} setSearchFilter={setSearchFilter} listFilterValue={listFilterValue} setListFilterValue={setListFilterValue} resetSelection={resetSelection} selectAll={selectAll} createEmptyItem={createEmptyItem} sort={sort} />}
+        {<ListsManagerSearchBar {...props} fromSkill={fromSkill}  searchFilter={searchFilter} setSearchFilter={setSearchFilter} listFilterValue={listFilterValue} setListFilterValue={setListFilterValue} resetSelection={resetSelection} selectAll={selectAll} createEmptyItem={createEmptyItem} sort={sort} />}
          
          {renderEditor(props)}
     </div>

@@ -65,7 +65,7 @@ const RenderRow = function(props) {
 }
 
 export default  function RegexpsManager(props) {
-    const {listFilterValue, setListFilterValue, loadAll, deleteItem , findKeyBy, searchFilter, setSearchFilter, tagAllValue, setTagAllValue, listRef, tagAll,untagAll, resetSelection, selectAll, saveItemWrap,  filteredItems, deleteAll, createEmptyItem, sort, lastSelected, setLastSelected, selectBetween} = useListItemEditor('nlutool','regexps','alldata', props.updateFunctions.updateRegexps, initData)
+    const {listFilterValue, setListFilterValue, loadAll, deleteItem , findKeyBy, searchFilter,fromSkill,  setSearchFilter, tagAllValue, setTagAllValue, listRef, tagAll,untagAll, resetSelection, selectAll, saveItemWrap,  filteredItems, deleteAll, createEmptyItem, sort, lastSelected, setLastSelected, selectBetween} = useListItemEditor('nlutool','regexps','alldata', props.updateFunctions.updateRegexps, initData, props.updateFunctions.setIsChanged)
     //const [currentList, setCurrentList] = useState('')
 
     function getItemSize() {
@@ -123,7 +123,7 @@ export default  function RegexpsManager(props) {
     return <div>
         
                    
-        {<RegexpsManagerSearchBar {...props} searchFilter={searchFilter} setSearchFilter={setSearchFilter} listFilterValue={listFilterValue} setListFilterValue={setListFilterValue} resetSelection={resetSelection} selectAll={selectAll} createEmptyItem={createEmptyItem} sort={sort} />}
+        {<RegexpsManagerSearchBar {...props} searchFilter={searchFilter} setSearchFilter={setSearchFilter} listFilterValue={listFilterValue} setListFilterValue={setListFilterValue} resetSelection={resetSelection} selectAll={selectAll} createEmptyItem={createEmptyItem} sort={sort} fromSkill={fromSkill} />}
          
          
          {renderEditor(props)}

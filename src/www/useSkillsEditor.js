@@ -19,7 +19,7 @@ export default function useSkillsEditor(props) {
     const [currentIntent, setCurrentIntent] = useState('')
     const [entitiesForSkill, setEntitiesForSkill] = useState({})
     const [listsForEntity, setListsForEntity] = useState({})
-    const [currentSkill, setCurrentSkill] = useState(null)
+    const [currentSkill, setCurrentSkillInner] = useState(null)
     //const skillsManager = useDB('nlutool','skills')
     const listsManager = useDB('nlutool','lists')
     //const [showExportDialog, setShowExportDialog] = useState(false)
@@ -48,6 +48,11 @@ export default function useSkillsEditor(props) {
     
     const params = useParams()
     const history = useHistory()
+    
+    function setCurrentSkill(skill) {
+        setCurrentSkillInner(skill)
+        //props.updateFunctions.setIsChanged(true)
+    } 
     
     var skillFilterValue = params.skillId ? params.skillId : '';
     function setSkillFilterValue(value) {
@@ -132,12 +137,13 @@ export default function useSkillsEditor(props) {
             }
             // merge in intents
             skill.intents = collatedItems
-            //console.log('SAVE NOW - change cs or inv',JSON.parse(JSON.stringify(skill)))
+            console.log('SAVE NOW - change cs or inv',JSON.parse(JSON.stringify(skill)))
             skillsStorage.setItem(skillFilterValue, currentSkill, function (err) {
                 if (err)  {
                     //console.log(err)
                     throw new Error(err)
                 }
+                props.updateFunctions.setIsChanged(true)
             })
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -156,9 +162,9 @@ export default function useSkillsEditor(props) {
   //}
 
     function loadSkill() {
-        console.log(['load skill'])
+        //console.log(['load skill'])
         examplesStorage.getItem('alldata').then(function(allItems) {
-            console.log(['load skill items',allItems])
+            //console.log(['load skill items',allItems])
             if (allItems && Array.isArray(allItems)) {
                 var filteredItems = []
                 var skillKeys = {}
@@ -171,7 +177,7 @@ export default function useSkillsEditor(props) {
                         })
                     }
                     // filter 
-                    console.log(['load skill filter',skillFilterValue,item.skills])
+                    //console.log(['load skill filter',skillFilterValue,item.skills])
                     if (skillFilterValue && item.skills && item.skills.indexOf(skillFilterValue) !== -1) {
                         filteredItems.push(item)
                     }
@@ -179,12 +185,12 @@ export default function useSkillsEditor(props) {
                 })
                 setSkillKeys(Object.keys(skillKeys))
                 setFilteredItems(filteredItems)
-                console.log(['load skill set skill keys and filtered',skillKeys, filteredItems])
+                //console.log(['load skill set skill keys and filtered',skillKeys, filteredItems])
                 ////console.log('loaded skill items for init',filteredItems, Object.keys(skillKeys),allItems)
                 if (skillFilterValue) {
                     //console.log(['LOAD SKILL',skillFilterValue])
                     skillsStorage.getItem(skillFilterValue, function (err, skill) {
-                        console.log(['loaded ',skill, err])
+                        //console.log(['loaded ',skill, err])
                         if (err) throw new Error(err)
                         var newSkill = skill  ? skill : {}
                         newSkill.id = newSkill.id ? newSkill.id : generateObjectId()
@@ -193,17 +199,15 @@ export default function useSkillsEditor(props) {
                         newSkill.entities = indexEntities(newSkill,filteredItems)
                         if (newSkill.title) findOnlineSkill(props.user,newSkill) 
                         var [intents, tags] = indexIntentsAndTags(skill,filteredItems)
-                        console.log(['indexed intents ',intents,tags])
+                        //console.log(['indexed intents ',intents,tags])
                         newSkill.intents = intents
                        // newSkill.tags = tags    
                         setCurrentSkill(newSkill)
                         setInvocation(newSkill.invocation)
                         setMongoId(newSkill._id)
                         listsManager.loadAll()
-                        props.updateFunctions.updateUtterances()
-                        props.updateFunctions.updateRegexps()
-                        props.updateFunctions.updateLookups()
-                        console.log(['LOADED LOCAL SKILL ',JSON.parse(JSON.stringify(newSkill))])
+                        
+                        //console.log(['LOADED LOCAL SKILL ',JSON.parse(JSON.stringify(newSkill))])
                         forceReload(newSkill)
                     })
                 }
@@ -561,29 +565,31 @@ export default function useSkillsEditor(props) {
             forceReload()  
        }
     }  
+      
+    
         
-    function addRegexp(regexp) {
+    function addRegexp(regexp,entity) {
         //console.log(['ADDREGEX',regexp])
         if (currentSkill && regexp) {
             var skill = currentSkill;
             if (!Array.isArray(skill.regexps)) skill.regexps=[]
-            skill.regexps.push({name: regexp.name, synonym: regexp.synonym })
+            skill.regexps.push({name: regexp.name, synonym: regexp.synonym ,entity:entity})
             //skill.regexps = uniquifyArray(skill.regexps)
             setCurrentSkill(skill)  
             //// if this is a new regexp, add it to the main database
-            //if (!props.lookups.regexpListsLookups[regexp.name] && !props.lookups.regexpsLookups[regexps.name]) {
-                //var regexpStorage = localforage.createInstance({
-                   //name: "nlutool",
-                   //storeName   : "regexps",
-                 //});
-                 //regexpStorage.getItem('alldata', function (err,regexps) {
-                     //if (err) throw new Error(err)
-                     //if (Array.isArray(regexps)) {
-                         //regexps.unshift({id:generateObjectId(), value:regexp.name, synonyms:'', tags:[]})
-                         //regexpStorage.setItem('alldata',utterances)
-                     //}
-                 //})
-            //}
+            if (!props.lookups.regexpListsLookups[regexp.name] && !props.lookups.regexpsLookups[regexp.name]) {
+                 var regexpStorage = localforage.createInstance({
+                   name: "nlutool",
+                   storeName   : "regexps",
+                 });
+                 regexpStorage.getItem('alldata', function (err,regexps) {
+                     if (err) throw new Error(err)
+                     if (Array.isArray(regexps)) {
+                         regexps.unshift({id:generateObjectId(), value:regexp.name, synonyms:'', tags:[]})
+                         regexpStorage.setItem('alldata',regexps)
+                     }
+                 })
+            }
             forceReload()
        } 
     }
@@ -632,31 +638,98 @@ export default function useSkillsEditor(props) {
         }
     }
     
+    function addAction(action) {
+        console.log(['ADD action',action])
+        return new Promise(function(resolve,reject) {
+            if (action) {
+                //var skill = currentSkill;
+                //if (!Array.isArray(skill.regexps)) skill.regexps=[]
+                //skill.regexps.push({name: regexp.name, synonym: regexp.synonym ,entity:entity})
+                ////skill.regexps = uniquifyArray(skill.regexps)
+                //setCurrentSkill(skill)  
+                //// if this is a new regexp, add it to the main database
+                    var actionStorage = localforage.createInstance({
+                       name: "nlutool",
+                       storeName   : "actions",
+                     });
+                     actionStorage.getItem('alldata', function (err,actions) {
+                         if (err) throw new Error(err)
+                         if (Array.isArray(actions)) {
+                             actions.unshift({id:generateObjectId(), value:action, synonyms:'', tags:[]})
+                             actionStorage.setItem('alldata',actions)
+                         }
+                     })
+                forceReload()
+                props.updateFunctions.setIsChanged(true)
+                resolve()
+           } else {
+               resolve()
+           }
+        })
+    }  
+
+    function addForm(action) {
+        console.log(['ADD action',action])
+        return new Promise(function(resolve,reject) {
+            if (action) {
+                //var skill = currentSkill;
+                //if (!Array.isArray(skill.regexps)) skill.regexps=[]
+                //skill.regexps.push({name: regexp.name, synonym: regexp.synonym ,entity:entity})
+                ////skill.regexps = uniquifyArray(skill.regexps)
+                //setCurrentSkill(skill)  
+                //// if this is a new regexp, add it to the main database
+                    var actionStorage = localforage.createInstance({
+                       name: "nlutool",
+                       storeName   : "forms",
+                     });
+                     actionStorage.getItem('alldata', function (err,actions) {
+                         if (err) throw new Error(err)
+                         if (Array.isArray(actions)) {
+                             actions.unshift({id:generateObjectId(), value:action, synonyms:'', tags:[]})
+                             actionStorage.setItem('alldata',actions)
+                         }
+                     })
+                forceReload()
+                props.updateFunctions.setIsChanged(true)
+                resolve()
+           } else {
+               resolve()
+           }
+        })
+    } 
+    
     function addUtterance(utterance) {
-        if (currentSkill && utterance && utterance.name) {
-            var skill = currentSkill;
-            if (!Array.isArray(skill.utterances)) skill.utterances=[]
-            skill.utterances.push(utterance.name)
-            skill.utterances = uniquifyArray(skill.utterances)
-            setCurrentSkill(skill)  
-            //console.log('RASA')
-            //console.log(skill)
-            // if this is a new utterance, add it to the main database
-            if (!props.lookups.utteranceListsLookups[utterance.name] && !props.lookups.utterancesLookups[utterance.name]) {
-                var utteranceStorage = localforage.createInstance({
-                   name: "nlutool",
-                   storeName   : "utterances",
-                 });
-                 utteranceStorage.getItem('alldata', function (err,utterances) {
-                     if (err) throw new Error(err)
-                     if (Array.isArray(utterances)) {
-                         utterances.unshift({id:generateObjectId(), value:utterance && utterance.name ? utterance.name.trim().replaceAll(' ','_') : '', synonym:utterance.name, tags:[]})
-                         utteranceStorage.setItem('alldata',utterances)
-                     }
-                 })
-            }
-            forceReload()
-       } 
+         console.log(['ADD utterance',utterance])
+         return new Promise(function(resolve,reject) {
+             if (currentSkill && utterance && utterance.name) {
+                var skill = currentSkill;
+                if (!Array.isArray(skill.utterances)) skill.utterances=[]
+                skill.utterances.push(utterance.name)
+                skill.utterances = uniquifyArray(skill.utterances)
+                setCurrentSkill(skill)  
+                //console.log('RASA')
+                //console.log(skill)
+                // if this is a new utterance, add it to the main database
+                if (!props.lookups.utteranceListsLookups[utterance.name] && !props.lookups.utterancesLookups[utterance.name]) {
+                     var utteranceStorage = localforage.createInstance({
+                       name: "nlutool",
+                       storeName   : "utterances",
+                     });
+                     utteranceStorage.getItem('alldata', function (err,utterances) {
+                         if (err) throw new Error(err)
+                         if (Array.isArray(utterances)) {
+                             utterances.unshift({id:generateObjectId(), value:utterance && utterance.name ? utterance.name.trim() : '', synonym:utterance.name, tags:[]})
+                             utteranceStorage.setItem('alldata',utterances)
+                         }
+                     })
+                }
+                forceReload()
+                props.updateFunctions.setIsChanged(true)
+                resolve()
+           } else {
+               resolve()
+           }
+        })
     }
     
     function removeUtterance(index) {
@@ -717,22 +790,38 @@ export default function useSkillsEditor(props) {
         }
     }  
     
-
+    function setRules(rules) {
+        console.log(['SET RULES',rules])
+        var skill = currentSkill
+        skill.rules = rules
+        setCurrentSkill(skill)  
+        forceReload()
+        console.log(['SET RULES skill',currentSkill])
+    }
+   
+    function setStories(stories) {
+        console.log(['SET STORIES',stories])
+        var skill = currentSkill
+        skill.stories = stories
+        setCurrentSkill(skill)  
+        forceReload()
+        console.log(['SET STORIES skill',currentSkill])
+    }
    
     function forceReload(skill) {
         var thisSkill = skill && skill.id ? skill : (currentSkill && currentSkill.id ? currentSkill : {})
         setListsForEntity(JSON.stringify([thisSkill._id,thisSkill.entitiesListsData,thisSkill.utterancesListsData,thisSkill.rasa,
-        thisSkill.jovo,thisSkill.mycroft,thisSkill.entities,thisSkill.utterances,thisSkill.utterancesLists, thisSkill.regexps, thisSkill.tags]))  
+        thisSkill.jovo,thisSkill.mycroft,thisSkill.entities,thisSkill.utterances,thisSkill.utterancesLists, thisSkill.regexps, thisSkill.tags,thisSkill.rules,thisSkill.stories]))  
     }
         
     //addRegexpUtteranceTags,
     return {setAlexaEntityType,setGoogleAssistantEntityType,  removeListFromSkillEntity, addListToSkillEntity,
-    currentSkill,setCurrentSkill,  skillFilterValue, invocation, setInvocation, entitiesForSkill, collatedItems, collatedCounts, setCurrentIntent, setSkillFilterValue,
+    currentSkill,setCurrentSkill,  skillFilterValue, invocation, setInvocation, entitiesForSkill, collatedItems, collatedCounts, setCurrentIntent, setSkillFilterValue,setRules,addAction, addForm, 
      addRegexp, removeRegexp, setRegexpIntent, setRegexpEntity, setMongoId, saveItem, deleteItem, searchItems,
      removeUtterance, addUtterance,  addUtteranceList, removeUtteranceList, skillKeys, addSkillTag, removeSkillTag,
      newSlot, newSlotValue,    setNewSlotValue,  slots: props.slots, setRASASlotAutofill, setRASASlotType, deleteSlot ,
      setRASAActions, setRASASession , setRASAEndpoint , setRASACredentials  ,setRASAStories ,setRASAConfig, duplicates,
-     filteredItems, currentIntent, listsForEntity, listsManager, collatedTags, skillMatches, skillUpdatedMatches,setSkillMatches, setSkillUpdatedMatches, setSkill, forceReload
+     filteredItems, currentIntent, listsForEntity, listsManager, collatedTags, skillMatches, skillUpdatedMatches,setSkillMatches, setSkillUpdatedMatches, setSkill, setStories, forceReload
      }
     
 }

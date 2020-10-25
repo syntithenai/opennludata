@@ -28,6 +28,9 @@
   display: none !important;
 }
 
+.fileselector .video-react  video{
+   height: '200px'
+}
 
 .react-tags {
   position: relative;

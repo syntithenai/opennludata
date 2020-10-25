@@ -22,18 +22,40 @@ const RenderRow = function(props) {
 }
 
 export default  function UtterancesManager(props) {
-    const {listFilterValue, setListFilterValue, loadAll, deleteItem , findKeyBy, searchFilter, setSearchFilter, tagAllValue, setTagAllValue, listRef, tagAll,untagAll, resetSelection, selectAll, saveItemWrap,  filteredItems, deleteAll, createEmptyItem, sort, lastSelected, setLastSelected, selectBetween} = useListItemEditor('nlutool','utterances','alldata', props.updateFunctions.updateUtterances)
+    const {items, listFilterValue, setListFilterValue, loadAll, deleteItem , findKeyBy, searchFilter, setSearchFilter, tagAllValue, setTagAllValue, listRef, tagAll,untagAll, resetSelection, selectAll, saveItemWrap,  filteredItems, deleteAll, createEmptyItem, sort, lastSelected, setLastSelected, selectBetween, fromSkill, fromAction} = useListItemEditor('nlutool','utterances','alldata', props.updateFunctions.updateUtterances,[], props.updateFunctions.setIsChanged)
     //const [currentList, setCurrentList] = useState('')
 
-    function getItemSize() {
+    function getItemSize(index) {
+        var buttonOffset = 0;
+        var size=0;
+        var item = items[index]
+        if (item && item.buttons) {
+            buttonOffset = item.buttons.length * 100;
+        }
+        if (item && item.images) {
+            buttonOffset = buttonOffset + item.images.length * 110;
+        }
+        if (item && item.texts) {
+            buttonOffset = buttonOffset + item.texts.length * 110;
+        }
+        if (item && item.audio) {
+            buttonOffset = buttonOffset + item.audio.length * 120;
+        }
+        if (item && item.video) {
+            buttonOffset = buttonOffset + item.video.length * 160;
+        }
+        if (item && item.frames) {
+            buttonOffset = buttonOffset + item.frames.length * 160;
+        }
         if (window.innerWidth < 430) {
-               return 380
+               size = 450
         // medium screen tablet
         } else if (window.innerWidth <= 768) {
-               return 230
+               size = 400
         } else {
-            return 180
+            size = 390
         }
+        return size + buttonOffset
     }
 
     useEffect(() => {
@@ -82,7 +104,7 @@ export default  function UtterancesManager(props) {
     return <div>
        
                    
-        {<UtterancesManagerSearchBar {...props} searchFilter={searchFilter} setSearchFilter={setSearchFilter} listFilterValue={listFilterValue} setListFilterValue={setListFilterValue} resetSelection={resetSelection} selectAll={selectAll} createEmptyItem={createEmptyItem} sort={sort} />}
+        {<UtterancesManagerSearchBar {...props} fromSkill={fromSkill} fromAction={fromAction} searchFilter={searchFilter} setSearchFilter={setSearchFilter} listFilterValue={listFilterValue} setListFilterValue={setListFilterValue} resetSelection={resetSelection} selectAll={selectAll} createEmptyItem={createEmptyItem} sort={sort}  />}
          
          
          {renderEditor(props)}

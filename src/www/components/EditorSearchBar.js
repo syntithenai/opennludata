@@ -1,5 +1,5 @@
 import React from 'react';
-//import {Link} from 'react-router-dom'
+import {Link} from 'react-router-dom'
 import {Button, Dropdown, ButtonGroup} from 'react-bootstrap'
 import SearchInput from './SearchInput'
 import checkImage from '../images/check.svg'
@@ -54,6 +54,7 @@ const EditorSearchBar = function(props) {
                 </Dropdown>}
              <Button  style={{marginLeft:'1em'}} variant="success" onClick={function(e) {props.createEmptyItem(props.skillFilterValue, props.intentFilterValue, props.tagFilterValue)}} >New Intent</Button>
              <Button  style={{marginLeft:'1em'}} variant="primary" onClick={function(e) {props.sort(function(a,b) { if (a.example < b.example) return -1; else return 1;})}} >Sort</Button>
+             {(props.skillFilterValue) && <Link to={"/skills/skill/"+props.skillFilterValue}><Button variant="warning" style={{float:'right'}}  >{'Back to Skill'}</Button></Link>}
         <hr/>
         </div>
 }

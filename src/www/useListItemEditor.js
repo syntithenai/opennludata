@@ -3,25 +3,59 @@ import useDBSingleKey from './useDBSingleKey'
 import {useParams, useHistory} from 'react-router-dom'
 import scrabbleWords from './scrabbleWords'
 
-function useListItemEditor(database, databaseTable, databaseKey, updateLists, initialData) {
-    const {loadAll, saveItem, deleteItem , items, setItems, findKeyBy, filter, sort} = useDBSingleKey(database, databaseTable, databaseKey, initialData)
+function useListItemEditor(database, databaseTable, databaseKey, updateLists, initialData, setChanged) {
+    const {loadAll, saveItem, deleteItem , items, setItems, findKeyBy, filter, sort} = useDBSingleKey(database, databaseTable, databaseKey, initialData, setChanged)
     const [filteredItems, setFilteredItems] = useState([])
     const [filteredItemsKeys, setFilteredItemsKeys] = useState([])
-    const [searchFilter, setSearchFilter] = useState('')
+    //const [searchFilter, setSearchFilter] = useState('')
     const [tagAllValue, setTagAllValue] = useState('')
     const listRef = React.createRef()
     //const [listFilterValue, setListFilterValue] = useState('')
     const [lastSelected, setLastSelected] = useState(-1)
     
     var params = useParams()
-    var listFilterValue = params.listId ? params.listId : '';
     var history = useHistory()
+    
+    var listFilterValue = params.listId ? params.listId : '';
     function setListFilterValue(value) {
         var root = history.location.pathname.split("/")
         var parts=['/'+root[1]]
-        parts.push('/'+value)
+        if (value) parts.push('/list/'+value)
+        if (searchFilter) parts.push('/filter/'+searchFilter)
+        if (fromSkill) parts.push('/fromskill/'+fromSkill)
         history.push(parts.join(''))
     }
+    
+    var searchFilter = params.filter ? params.filter : '';
+    function setSearchFilter(value) {
+        var root = history.location.pathname.split("/")
+        var parts=['/'+root[1]]
+        if (listFilterValue) parts.push('/list/'+listFilterValue)
+        if (value) parts.push('/filter/'+value)
+        if (fromSkill) parts.push('/fromskill/'+fromSkill)
+        history.push(parts.join(''))
+    }
+    
+    var fromSkill = params.fromskill ? params.fromskill : '';
+    function setFromSkill(value) {
+        var root = history.location.pathname.split("/")
+        var parts=['/'+root[1]]
+        if (listFilterValue) parts.push('/list/'+listFilterValue)
+        if (searchFilter) parts.push('/filter/'+searchFilter)
+        if (value) parts.push('/fromskill/'+value)
+        history.push(parts.join(''))
+    }
+    
+    var fromAction = params.fromaction ? params.fromaction : '';
+    //function setFromAction(value) {
+        //var root = history.location.pathname.split("/")
+        //var parts=['/'+root[1]]
+        //if (listFilterValue) parts.push('/list/'+listFilterValue)
+        //if (searchFilter) parts.push('/filter/'+searchFilter)
+        //if (value) parts.push('/fromskill/'+value)
+        //history.push(parts.join(''))
+    //}
+   
    
       
     useEffect(() => {
@@ -29,7 +63,7 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists, in
             //return true;
             var matchText = true
             if (searchFilter && searchFilter.trim().length >0) {
-                if (item.value && item.value.toLowerCase().indexOf(searchFilter.toLowerCase()) !== -1 ) {
+                if ((item.value && item.value.toLowerCase().indexOf(searchFilter.toLowerCase()) !== -1) || (item.synonym && item.synonym.toLowerCase().indexOf(searchFilter.toLowerCase()) !== -1 ) ) {
                     matchText = true
                 } else {
                     matchText = false
@@ -215,19 +249,21 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists, in
     function saveItemWrap(item,index) {
         //console.log(['SAVE ITEM WRAP LI',listRef, JSON.parse(JSON.stringify(item)),index])
         if (item) {
-            var sWords = scrabbleWords()
-            if (sWords.indexOf(item.value.toUpperCase()) !== -1) {
-                if (item.tags.indexOf('scrabbleword') === -1) {
-                    console.log('scrabbleword on save')
-                    item.tags.push('scrabbleword')
+            if (item.database === "lists") {
+                var sWords = scrabbleWords()
+                if (sWords.indexOf(item.value.toUpperCase()) !== -1) {
+                    if (item.tags && item.tags.indexOf('scrabbleword') === -1) {
+                        console.log('scrabbleword on save')
+                        item.tags.push('scrabbleword')
+                    }
+                } else {
+                    item.tags = item.tags ? item.tags.filter(function(item) {
+                        return item !== 'scrabbleword'
+                    }) : []
                 }
-            } else {
-                item.tags = item.tags.filter(function(item) {
-                    return item !== 'scrabbleword'
-                })
             }
             saveItem(item,index)
-            listRef.current.resetAfterIndex(index);
+            if (listRef && listRef.current) listRef.current.resetAfterIndex(index);
             updateLists(items)
         }
     }
@@ -245,8 +281,9 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists, in
         }
         var tallyExtras = 0;
         var item = items[index]
-        if (item && item.tags) tallyExtras += 1;
-        return baseSize + parseInt(tallyExtras+1/3) * 40
+        //console.log(item.tags.length)
+        if (item && item.tags) tallyExtras += item.tags.length;
+        return baseSize + parseInt(((tallyExtras+2)/2)) * 20
     }
     
    function createEmptyItem(list) {
@@ -258,8 +295,8 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists, in
     
     return {
         loadAll, saveItem, deleteItem , items, setItems, findKeyBy, filter, filteredItems, setFilteredItems, sort, 
-        searchFilter, setSearchFilter, tagAllValue, setTagAllValue,listRef, listFilterValue, setListFilterValue,
-        tagAll,untagAll, resetSelection, selectAll, saveItemWrap, getItemSize, deleteAll, createEmptyItem, lastSelected, setLastSelected, selectBetween
+        searchFilter, setSearchFilter, fromSkill, setFromSkill, tagAllValue, setTagAllValue,listRef, listFilterValue, setListFilterValue,
+        tagAll,untagAll, resetSelection, selectAll, saveItemWrap, getItemSize, deleteAll, createEmptyItem, lastSelected, setLastSelected, selectBetween, fromAction
     }
 }
 export default useListItemEditor

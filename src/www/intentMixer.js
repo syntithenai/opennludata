@@ -33,7 +33,7 @@ function mix(intents,entityType,entityList) {
                                     var randomEntityValue = entitiesInList[randomEntityValueKey].value
                                     var calcoffset = entity.value.length - randomEntityValue.length
                                     entity.value = randomEntityValue
-                                    intent.example = intent.example.slice(0,entity.start + offset) + randomEntityValue + intent.example.slice(entity.end  + offset -1)
+                                    intent.example = intent.example.slice(0,entity.start + offset) + randomEntityValue + intent.example.slice(entity.end + offset )
                                     entity.start = entity.start + offset
                                     entity.end = entity.start + randomEntityValue.length + 1
                                     offset = calcoffset

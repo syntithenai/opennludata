@@ -9,7 +9,7 @@ import SuggestionComponent from './components/SuggestionComponent'
 import TagComponent from './components/TagComponent'
 import checkImage from './images/check.svg'
 
-export default function UtterancesManagerRow(props) {
+export default function RegexpsManagerRow(props) {
         const  {item, splitNumber , style} = props;
        const {    
             tags, reactTags, 

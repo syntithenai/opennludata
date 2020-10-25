@@ -22,7 +22,7 @@ const RenderRow = function(props) {
 
 
 export default function NluExampleEditor(props) {
-    const {loadAll, deleteItem , items, findKeyBy, searchFilter, setSearchFilter, skillFilterValue, setSkillFilterValue, intentFilterValue, setIntentFilterValue, tagAllValue, setTagAllValue, skillAllValue, setSkillAllValue,  intentAllValue, setIntentAllValue, listRef, tagAll,untagAll, unskillAll, intentAll, resetSelection, selectAll,  skillSetAll, saveItemWrap, getItemSize, deleteAll, filteredItems, createEmptyItem, sort, lastSelected, setLastSelected, selectBetween,  tagFilterValue, setTagFilterValue} = useNluEditor('nlutool','examples','alldata', props.updateFunctions.updateLookups)
+    const {loadAll, deleteItem , items, findKeyBy, searchFilter, setSearchFilter, skillFilterValue, setSkillFilterValue, intentFilterValue, setIntentFilterValue, tagAllValue, setTagAllValue, skillAllValue, setSkillAllValue,  intentAllValue, setIntentAllValue, listRef, tagAll,untagAll, unskillAll, intentAll, resetSelection, selectAll,  skillSetAll, saveItemWrap, getItemSize, deleteAll, filteredItems, createEmptyItem, sort, lastSelected, setLastSelected, selectBetween,  tagFilterValue, setTagFilterValue} = useNluEditor('nlutool','examples','alldata', props.updateFunctions.updateLookups, props.updateFunctions.setIsChanged)
  
     useEffect(() => {
         loadAll()

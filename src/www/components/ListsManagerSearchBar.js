@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-//import {Link} from 'react-router-dom'
+import {Link} from 'react-router-dom'
 import {Button, Dropdown, ButtonGroup} from 'react-bootstrap'
 import SearchInput from './SearchInput'
 import checkImage from '../images/check.svg'
@@ -37,6 +37,8 @@ const ListsManagerSearchBar = function(props) {
               
               <Button  style={{marginLeft:'1em'}} variant="success" onClick={function(e) {props.createEmptyItem(props.listFilterValue)}} >New Entity</Button>
               <Button  style={{marginLeft:'1em'}} variant="primary" onClick={function(e) {props.sort(function(a,b) { if (a.value < b.value) return -1; else return 1;})}} >Sort</Button>
+              
+              {props.fromSkill && <Link to={'/skills/skill/'+props.fromSkill}><Button  style={{marginLeft:'1em', float:'right'}} variant="warning"  >Back to Skill</Button></Link>}
         </div>
 }
 export default ListsManagerSearchBar

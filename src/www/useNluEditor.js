@@ -4,9 +4,9 @@ import useDBSingleKey from './useDBSingleKey'
 import {uniquifyArray, generateObjectId} from './utils'
 import {useParams, useHistory} from 'react-router-dom'
 
-function useNluEditor(database, databaseTable, databaseKey, updateLookups) {
+function useNluEditor(database, databaseTable, databaseKey, updateLookups, setChanged) {
     ////console.log(["USENLUEDITOR",database, databaseTable, databaseKey])
-    const {loadAll, saveItem, deleteItem , items, setItems, findKeyBy, filter, sort} = useDBSingleKey(database, databaseTable, databaseKey)
+    const {loadAll, saveItem, deleteItem , items, setItems, findKeyBy, filter, sort} = useDBSingleKey(database, databaseTable, databaseKey, setChanged)
     ////console.log(["USENLUEDITOR items",items])
     const [filteredItems, setFilteredItems] = useState([])
     const [filteredItemsKeys, setFilteredItemsKeys] = useState([])

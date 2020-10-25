@@ -62,7 +62,7 @@ function reducer(state, action) {
 }
 
 // state manager with local storage backing
-export default function useDB(database, databaseTable,singleKey, initialData=[]) {
+export default function useDB(database, databaseTable,singleKey, initialData=[],setChanged) {
     ////console.log(['use db single key', database, databaseTable,singleKey])
     if (!singleKey) singleKey = 'data'
      const [items, dispatch] = useReducer(reducer,initialData);
@@ -142,7 +142,7 @@ export default function useDB(database, databaseTable,singleKey, initialData=[])
               
                 } 
             }  
-            
+            if (setChanged) setChanged(true)
         }
     }
     
@@ -160,16 +160,18 @@ export default function useDB(database, databaseTable,singleKey, initialData=[])
     function setItemsWrap(items) {
         localforageStorage.clear().then(function() {
             dispatch({ type: "replaceall", items: items})
+            if (setChanged) setChanged(true)
         })
     }
     
     function sort(sortFunction) {
         dispatch({ type: "sort", sort: sortFunction})
+        if (setChanged) setChanged(true)
     }
     
     function filter(matchFunction) {
         var filtered = []
-        if (matchFunction) {
+        if (matchFunction && Array.isArray(items)) {
             items.map(function(item,i) {
               if (item && matchFunction(item)) {
                   filtered.push(item)
@@ -183,6 +185,7 @@ export default function useDB(database, databaseTable,singleKey, initialData=[])
     
     function deleteItem(index) {
         dispatch({ type: "remove", index: index})
+        if (setChanged) setChanged(true)
     }
     return {getId:getId, loadAll:loadAll, saveItem:saveItem, deleteItem:deleteItem , items:items, setItems:setItemsWrap, findKeyBy:findKeyBy, findBy:findBy, filter: filter, sort: sort}
     
