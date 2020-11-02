@@ -10,28 +10,40 @@ import { ChatUIComponent } from './components/ChatUIComponent'
 import {exportJSON} from './export/exportJSON'
 import DialogManager from 'voicedialogjs'
 //import localforage from 'localforage'
+import YouTube from 'react-youtube';
 
 //var config={}
     
 var meSpeak = window.meSpeak
+
+function YouTubeGetID(url){
+    url = url.split(/(vi\/|v%3D|v=|\/v\/|youtu\.be\/|\/embed\/)/);
+    return undefined !== url[2]?url[2].split(/[^0-9a-z_\-]/i)[0]:url[0];
+}
+
             
 function ChatPage(props) {
     var videoref = useRef(null)
+    var youtuberef = useRef(null)
     var [ready,setReady] = useState(false)
     var [chat,setChat] = useState(false)
     var [dm,setDm] = useState(null)
     var [mute,setMuteInner]  = useState(false)
-    var [history, setHistory] = useState([])
+    var [history, setHistoryInner] = useState([])
     var [fullScreenVideo, setFullScreenVideo] = useState(null)
+    var [fullScreenYoutube, setFullScreenYoutube] = useState(null)
+    var [userMessage,setUserMessage] = useState('')
+    
     //const {currentSkill} = useSkillsEditor(Object.assign({},props,{user:props.user, lookups: props.lookups, updateFunctions: props.updateFunctions}))
     var skillsEditor = useSkillsEditor(Object.assign({},props,{user:props.user, lookups: props.lookups, updateFunctions: props.updateFunctions}))
+    // share skills editor from props if using inside skills page otherwise independant db connect via skillsEditor
     var currentSkill = props.currentSkill 
     if (!currentSkill) {
         currentSkill = skillsEditor.currentSkill
     }
-    var d = null
+    //var d = null
     var audio  = null
-    
+    var [historyHash,setHistoryHash] = useState(null)
     function setMute(val) {
         if (val) {
             meSpeak.stop();
@@ -46,10 +58,24 @@ function ChatPage(props) {
         setMuteInner(val)  
     }
     
+    function setHistory(history) {
+        setHistoryInner(history)
+        setHistoryHash(JSON.stringify(history))
+        localStorage.setItem('chat history',JSON.stringify(history))
+    }
+    
     useEffect( () => {
         var lsMute = localStorage.getItem('mute_chat')
         setMuteInner(lsMute === 'true' ? true : false)
+        //setHistoryHash(JSON.stringify(history))
     },[])
+       
+    useEffect( () => {
+        //console.log('UP HIST')
+        //setHistoryHash(JSON.stringify(history))
+    },[history])
+       
+       
        
     function speakBotResponse(response) {
         return new Promise(function(resolve,reject) {
@@ -62,54 +88,32 @@ function ChatPage(props) {
                 if (Array.isArray(response)) response.map(function(utterance) {
                    if (utterance && utterance.utterance)  speechParts.push({text:utterance.utterance})
                    if (utterance && Array.isArray(utterance.audio ))  utterance.audio.map(function(audioFile) {
-                       if (audioFile.href && audioFile.autoplay === 'true') speechParts.push({audio:audioFile.href})
+                       if (audioFile.href && audioFile.autoplay === 'true') speechParts.push({audio:audioFile.href, start: audioFile.start, end: audioFile.end})
                     })
                    if (utterance && Array.isArray(utterance.video ))  utterance.video.map(function(videoFile) {
-                       if (videoFile.href && videoFile.autoplay === 'true') speechParts.push({video:videoFile.href})
+                       if (videoFile.href && videoFile.autoplay === 'true') speechParts.push({video:videoFile.href,  start: videoFile.start, end: videoFile.end})
                     })
                     //
                 })
                 //console.log(['SPEECH parts',speechParts])
                 
-                speakSpeechParts(speechParts).then(function() {resolve()})
+                speakSpeechParts(speechParts).then(function() {console.log('HAN spoken');resolve()})
             }
             
-            //function runRuleSteps(steps,utterances) {
-                        //console.log(['RUN RULE STEPS',steps,utterances])
-                        //return new Promise(function(iresolve,ireject) {
-                            //if (Array.isArray(steps) && steps.length > 0) {
-                                //var step = steps[0]
-                                //runRuleStep(step,utterances).then(function(utterances) {
-                                    ////utterances = newUtterances
-                                    //console.log(['done  RUN RULEStep',utterances])
-                                    //if (step && (step.indexOf('action ') === 0 || step.indexOf('utter ' === 0))) {
-                                        //runRuleSteps(steps.slice(1),utterances).then(function(utterances) {iresolve(utterances)})
-                                    //} else {
-                                        //// invalid step (must be utter or action)
-                                        //iresolve(utterances)
-                                    //}
-                                //})
-                            //} else {
-                                //// no more steps
-                                //console.log(['RUN RULE STEPS DONE',utterances])
-                                //iresolve(utterances)
-                            //}
-                        //})
-                    //}
             
             function speakSpeechPart(part) {
                 //console.log(['SPEECH audio st',part,mute])
-                return new Promise(function(resolve,reject) {
+                return new Promise(function(iresolve,ireject) {
                     var lsMute = localStorage.getItem('mute_chat')
                     if (lsMute === 'true') {
-                        resolve()
+                        iresolve()
                     } else {
                         meSpeak.stop();
                         //console.log(['SPEAK SPEECH parts',part.text])
                         if (part && part.text) {
                             meSpeak.speak(part.text,{},function() {
                                 //console.log(['SPEECH speak called',part.text,part])
-                                resolve()
+                                iresolve()
                             })
                         } else if (part && part.audio) {
                             //console.log(['SPEECH audio',part.audio])
@@ -118,7 +122,27 @@ function ChatPage(props) {
                                  audio = new Audio(part.audio);
                                  audio.onended = function() {
                                      //console.log(['SPEECH audio end'])
-                                    resolve()
+                                    iresolve()
+                                 }
+                                 audio.onerror = function() {
+                                     //console.log(['SPEECH audio end'])
+                                    iresolve()
+                                 }
+                                 //audio.onpause = function() {
+                                     ////console.log(['SPEECH audio end'])
+                                    //iresolve()
+                                 //}
+                                 audio.onloadedmetadata = function(){ 
+                                     if (part.start > 0) {
+                                         audio.currentTime = part.start; 
+                                     }
+                                 }
+                                 audio.ontimeupdate = function() {
+                                     //console.log(['SPEECH video timeupdate',audio.currentTime])
+                                     dm.slot('audioPlayerCurrentTime',audio.currentTime)
+                                     if (part.end > 0  && audio.currentTime > part.end) {
+                                         audio.pause()
+                                     }
                                  }
                                  audio.loop = false;
                                  //console.log(['SPEECH audio play'])
@@ -127,22 +151,57 @@ function ChatPage(props) {
                             //})
 
                         } else if (part && part.video) {
-                            //console.log(['SPEECH video',part.video,videoref])
-                            
-                                setFullScreenVideo(part.video)
-                                if (videoref && videoref.current) {
-                                    videoref.current.onended = function() {
-                                        //console.log(['SPEECH video end'])
-                                        setFullScreenVideo(null)
-                                        resolve()
-                                    }
-                                    //console.log('VIDCURR')
-                                    videoref.current.play()
+                                
+                                //<YouTube videoId={videoId}  start={video && video.start ? video.start : ''} end={video && video.end ? video.end : ''} autoplay={video && video.autoplay ? 1 : 0}  />
+                                var videoId = part && part.video ? YouTubeGetID(part.video) : ''
+                                //console.log(['SPEECH video',part,videoId])
+                                            
+                                if (videoId) {
+                                     //iresolve()
+                                     function ytEnded() {
+                                        setFullScreenYoutube(null)
+                                        iresolve()
+                                     }
+                                     //
+                                     setFullScreenYoutube({start: part.start, end: part.end, autostart: part.autostart,  onEnd: ytEnded,  onError: ytEnded, youtubeVideoId: videoId})
+                                     //ytEnded()onPause: ytEnded,
+                                } else { 
                                     
-                                    //setFullScreenVideo(null)
+                                    setFullScreenVideo(part)
+                                    if (videoref && videoref.current) {
+                                        videoref.current.onended = function() {
+                                            //console.log(['SPEECH video end'])
+                                            setFullScreenVideo(null)
+                                            iresolve()
+                                        }
+                                        videoref.current.onerror = function() {
+                                            //console.log(['SPEECH video end'])
+                                            setFullScreenVideo(null)
+                                            iresolve()
+                                        }
+                                        videoref.current.ontimeupdate = function() {
+                                             //console.log(['SPEECH video timeupdate',videoref.current.currentTime])
+                                             dm.slot('videoPlayerCurrentTime',videoref.current.currentTime)
+                                             if (part.end > 0  && videoref.current.currentTime > part.end) {
+                                                 videoref.current.pause()
+                                             }
+                                         }
+                                        //videoref.current.onpause = function() {
+                                            //console.log(['SPEECH video end'])
+                                            //setFullScreenVideo(null)
+                                            //iresolve()
+                                        //}
+                                        //console.log('VIDCURR')
+                                        videoref.current.play()
+                                        
+                                        //setFullScreenVideo(null)
+                                    } else {
+                                        //console.log('VIDCURR noref')
+                                        iresolve()
+                                    }
                                 }
                         } else {
-                            resolve()
+                            iresolve()
                         }
                     }
                 })
@@ -153,7 +212,7 @@ function ChatPage(props) {
                 return new Promise(function(iresolve,ireject) {
                     var lsMute = localStorage.getItem('mute_chat')
                     if (lsMute === 'true') {
-                        resolve()
+                        iresolve()
                     } else {
                         //console.log(['AASPEAK SPEECH parts',speechPartsParam,speechPartsParam[0],speechPartsParam[0].text])
                         if (speechParts.length > 0) {
@@ -161,9 +220,9 @@ function ChatPage(props) {
                                 var newParts = speechPartsParam.slice(1)
                                 //console.log(['SPEECH speak called new',newParts])
                                 if (newParts.length > 0 && !mute) {
-                                    console.log(['SPEECH speak called recurseive',newParts])
+                                    //console.log(['SPEECH speak called recurseive',newParts])
                                     speakSpeechParts(newParts).then(function() {
-                                        //console.log(['DONE SPEAK SPEECH parts'])
+                                        //console.log(['DONE SPEAK SPEECH parts complete'])
                                         iresolve()
                                     })
                                 } else {
@@ -172,7 +231,7 @@ function ChatPage(props) {
                                 }
                             })
                         } else {
-                            //console.log(['DONE SPEAK SPEECH parts'])
+                            //console.log(['DONE SPEAK SPEECH parts no more '])
                             iresolve()
                         }
                     }
@@ -194,74 +253,107 @@ function ChatPage(props) {
         })
     }   
        
-    function sendUserMessage(message) {
+    function sendUserMessage(message) {      
         //console.log(['dm send msg',message])
-        return new Promise(function(resolve,reject) {
-                //console.log(['dm msg',message])
-                if (dm && dm.run) {
-                    //console.log(['dm msg send',message])
-                    return dm.run(message).then(function(response) {
-                        //console.log(['RES',response])
-                        speakBotResponse(response)
-                        var newHistory = history
-                        newHistory.push({user:message,bot:response})
-                        setHistory(newHistory)
-                        resolve(response)
-                    })
-                } else {
-                    resolve()
-                }
-        })
+        var newHistory = Array.isArray(history) ? history : []
+        newHistory.push({user:message,bot:[]})
+        setHistory(newHistory)
+        window.scrollTo(0,0)
+        if (dm && dm.run) {
+            dm.run(message).then(function(response) {
+                setUserMessage(' ')
+            })
+        } 
     }
-      
-    function trainChat() {
-        return new Promise(function(resolve,reject) {
-            console.log(['TRAIN',JSON.parse(JSON.stringify(currentSkill))])
+    
+    function handleBotMessage(utterance) {
+        setFullScreenYoutube(null)
+        setFullScreenVideo(null)
+        var newHistory = []
+        try {
+            newHistory = JSON.parse(localStorage.getItem('chat history'))
+        } catch (e) {
+            console.log(e)
+        }
+        //console.log(['HANDLEBOT',JSON.parse(JSON.stringify(newHistory)),utterance])
+        var lastMessage = newHistory.length > 0 ? newHistory[newHistory.length -1] :{user:'',bot:[]}
+        if (!lastMessage.user) lastMessage.user = ''
+        var bot = lastMessage && lastMessage.bot ? lastMessage.bot : []
+        bot.push(utterance)
+        lastMessage.bot = bot
+        if (newHistory.length > 0) {
+            //console.log(['HANDLEBOT replace',lastMessage])
+            newHistory[newHistory.length -1] = lastMessage
+        } else {
+            //console.log(['HANDLEBOT push',lastMessage])
+            newHistory.push(lastMessage)
             
-            exportJSON(currentSkill).then(function(config) {
-                d = DialogManager(config ? config : {})
-            
-                d.init().then(function(botWelcome) {
-                    //console.log(['TRAIN dm initied',d,botWelcome])
-                    //setChat(sendUserMessage)
-                    setDm(d)
+        }
+        //console.log(['HANDLEBOT newhist',JSON.parse(JSON.stringify(newHistory))])
+        setHistory(newHistory)
+        return speakBotResponse([utterance])
+    }
+    
+    function resetHistory() {
+        setHistory([])
+        setTimeout(function() {
+            //console.log(['RESET HIST',dm,dm ? dm.resetHistory: null])
+            if (dm) {
+                dm.init().then(function(botWelcome) {
                     var newHistory = []
                     newHistory.push({user:'',bot:botWelcome})
                     setHistory(newHistory)
-                    //resolve(response)
                     setReady(true)
-                    speakBotResponse(botWelcome)
-                    resolve()
+                })  
+            }
+        },1000)
+    }
+      
+    function trainChat() {
+        setHistory([])
+        setReady(false)
+        //console.log(['TRAIN reset history',history])
+        return new Promise(function(resolve,reject) {
+            //console.log(['TRAIN',JSON.parse(JSON.stringify(currentSkill))])
+            setHistory([])
+            exportJSON(currentSkill).then(function(config) {
+                //console.log(['TRAIN dm exported json',config])
+                var d = DialogManager(config ? config : {})
+                //console.log(['TRAIN dm create ',d])
+                d.handleBotMessage = handleBotMessage
+                setDm(d)
+                setReady(true)
+                //console.log(['TRAIN dm set ready '])
+                d.init().then(function(botWelcome) {
+                    //console.log(['TRAIN dm initied',botWelcome])
+                    setReady(true)
+                    resolve([])
                 })
             })
         })
     }  
-         
+     
+    function YouTubeGetID(url){
+        url = url.split(/(vi\/|v%3D|v=|\/v\/|youtu\.be\/|\/embed\/)/);
+        return undefined !== url[2]?url[2].split(/[^0-9a-z_\-]/i)[0]:url[0];
+    }
+    
     //console.log(['DM',d,ready,config])
     useEffect(() => {
-        //function sendUserMessage(message) {
-            //console.log(['dm send msg',message])
-            //return new Promise(function(resolve,reject) {
-                    //console.log(['dm msg',message])
-                    //return d.run(message).then(function(response) {
-                        //console.log(['RES',response])
-                        //resolve(response)
-                    //})
-            //})
-        //}
         if (currentSkill) {
-            
             trainChat()
         }
     },[currentSkill])
-
-    
-    
-  return <div>
+       
+    return <div>
       {( !props.hideBackLink) && <Link to={"./"} ><Button variant="warning" style={{float:'right'}}  >{'Back to Skill'}</Button></Link>}  
         
-        {<Button variant="success" style={{float:'left'}}  onClick={function(e) {
+         {<Button variant="success" style={{float:'left'}}  onClick={function(e) {
+            //resetHistory()
             trainChat()
+            //.then(function(welcomeResponse) {    
+                //setHistory({user:'',bot:welcomeResponse})
+            //})
         }}>{'Train'}</Button>}
         
          {!mute && <Button variant="primary" style={{float:'right'}}  onClick={function(e) {
@@ -270,20 +362,54 @@ function ChatPage(props) {
         {mute && <Button variant="primary" style={{float:'right'}}  onClick={function(e) {
             setMute(false)
         }}>{'Unmute'}</Button>}
+        {(fullScreenYoutube && fullScreenYoutube.youtubeVideoId) && <Button  variant="primary" style={{float:'right'}}  onClick={function(e) {setFullScreenYoutube(null)}}>Stop</Button>}
+        
+        {(!props.isFullScreen && props.lookups.isBigScreen && currentSkill) && <Link to={"/skills/skill/"+currentSkill.title+"/chat"} ><Button variant="primary" style={{float:'left'}}  >{'Fullscreen'}</Button></Link>}
+        
+        {false && <Button onClick={resetHistory} >Reset</Button>}
+ 
+        <form onSubmit={function(e) {
+            e.preventDefault(); 
+            sendUserMessage(userMessage)
+        }} >
+            <div style={{clear:'both',marginTop:'0.5em', border:'2px solid lightgrey'}}>
+                <div style={{clear:'both',marginTop:'0.5em', border:'2px solid grey'}}>
+                    <div style={{border:'2px solid black'}}>
+                        <input type='text' style={{width:'100%'}} value={userMessage} placeholder={history.length === 0 ? 'Start a conversation': ''} onChange={function(e) {setUserMessage(e.target.value)}} />
+                    </div>
+                </div>
+            </div>
+        </form>
+        
         
         {fullScreenVideo && <div><br/> <br/> <video ref={videoref} id="myVid" width="100%" >
             <source src={fullScreenVideo} />
             Sorry, your browser does not support HTML5 video.
         </video></div>}
        
-        {!fullScreenVideo && <>
+       {(fullScreenYoutube && fullScreenYoutube.youtubeVideoId) && <div><br/><br/>  <YouTube 
+           key={'yt-fs'} 
+           videoId={fullScreenYoutube.youtubeVideoId}  
+           opts={{
+            playerVars: {
+                start: fullScreenYoutube.start, 
+                end: fullScreenYoutube.end, 
+                controls: 1,
+                autoplay: 1
+            }}} 
+            onEnd={fullScreenYoutube.onEnd} 
+            onError={fullScreenYoutube.onError} 
+            onPause={fullScreenYoutube.onPause} 
+        /></div>
+     
+                }
+       
+        {<>
         
         
       
-      DM{dm && JSON.stringify(dm.history)}
-       LOCAL{JSON.stringify(history)}
-    {<span style={{display:(ready ? 'block' : 'none')}} ><ChatUIComponent history={history}  sendUserMessage={sendUserMessage} /></span>}
-    {!ready && <b style={{padding:'1em' , paddingTop:'5em'}}>Loading</b>}
+     {<span style={{display:(ready ? 'block' : 'none')}} ><ChatUIComponent fullScreenVideo={fullScreenVideo} fullScreenYoutube={fullScreenYoutube} jsonhistory={JSON.stringify(history)} history={history}  sendUserMessage={sendUserMessage} /></span>}
+    {!ready && <b style={{padding:'1em' , marginTop:'5em'}}>Loading</b>}
       </>}
     </div>
 }
@@ -292,7 +418,8 @@ export default ChatPage
 //JSON.stringify(dm ? [].concat(dm.chatHistory,
 //SK {JSON.stringify(currentSkill)} || : [])
  
-
+//  LOCAL{JSON.stringify(history)}
+    
  
    ///**
      //* Synthesise speech from text and send to to audio output

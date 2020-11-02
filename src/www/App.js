@@ -173,7 +173,7 @@ function App() {
 
 
     function updateApis() {
-        console.log('UPDATE apis')
+        //console.log('UPDATE apis')
         var storage = localforage.createInstance({
            name: "nlutool",
            storeName   : "apis",
@@ -218,7 +218,7 @@ function App() {
                     setApiTagsLookups(Object.keys(utteranceTags))
                     //setApiListsLookups(Object.keys(utteranceLists))
                 }
-                console.log(['UPDATED APIS',utteranceIndex])
+                //console.log(['UPDATED APIS',utteranceIndex])
                     
               });
             //});
@@ -228,7 +228,7 @@ function App() {
     
     
     function updateActions() {
-        console.log('UPDATE actions')
+        //console.log('UPDATE actions')
         var storage = localforage.createInstance({
            name: "nlutool",
            storeName   : "actions",
@@ -273,7 +273,7 @@ function App() {
                     setActionTagsLookups(Object.keys(utteranceTags))
                     setActionListsLookups(Object.keys(utteranceLists))
                 }
-                console.log(['UPDATEd actions',utteranceIndex,utteranceLists])
+                //console.log(['UPDATEd actions',utteranceIndex,utteranceLists])
                     
               });
             //});
@@ -283,7 +283,7 @@ function App() {
       
     
     function updateForms() {
-        console.log('UPDATE forms')
+        //console.log('UPDATE forms')
         var storage = localforage.createInstance({
            name: "nlutool",
            storeName   : "forms",
@@ -323,7 +323,7 @@ function App() {
                     setFormTagsLookups(Object.keys(utteranceTags))
                     setFormListsLookups(Object.keys(utteranceLists))
                 }
-                console.log(['UPDATE forms',utteranceIndex,utteranceLists])
+                //console.log(['UPDATE forms',utteranceIndex,utteranceLists])
                     
               });
             //});
@@ -331,7 +331,7 @@ function App() {
     }
     
     function updateRegexps() {
-        console.log('UPDATE regexps')
+        //console.log('UPDATE regexps')
         var storage = localforage.createInstance({
            name: "nlutool",
            storeName   : "regexps",
@@ -376,7 +376,7 @@ function App() {
                     setRegexpTagsLookups(Object.keys(utteranceTags))
                     setRegexpListsLookups(Object.keys(utteranceLists))
                 }
-                console.log(['UPDATE regexps',utteranceIndex,utteranceLists])
+                //console.log(['UPDATE regexps',utteranceIndex,utteranceLists])
                     
               });
             //});
@@ -384,7 +384,7 @@ function App() {
     }
     
     function updateUtterances() {
-        console.log('UPDATE UTTERANCES')
+        //console.log('UPDATE UTTERANCES')
         var utteranceStorage = localforage.createInstance({
            name: "nlutool",
            storeName   : "utterances",
@@ -395,7 +395,7 @@ function App() {
                 var utteranceLists={}
                 var utteranceIndex={}
                 var utteranceTags={}
-                console.log(['UPDATE UTTERANCES',err,utterances])
+                //console.log(['UPDATE UTTERANCES',err,utterances])
                 if (Array.isArray(utterances)) {
                     utterances.map(function(utterance,i) {
                         if (utterance.isSelected) {
@@ -406,9 +406,10 @@ function App() {
                          if (utterance.value) {
                              utteranceIndex[utterance.value]=true
                          }
-                         if (utterance.synonym) {
-                             utterance.synonym.split("\n").map(function(synonym) {
-                                 utteranceLists[synonym] = true
+                         var synonym = utterance.synonym ? utterance.synonym : ''
+                         if (synonym) {
+                             synonym.split("\n").map(function(synonymKey) {
+                                 utteranceLists[synonymKey] = true
                                  return null
                              })
                          } 
@@ -426,7 +427,7 @@ function App() {
                     setUtteranceTagsLookups(Object.keys(utteranceTags))
                     setUtteranceListsLookups(Object.keys(utteranceLists))
                 }
-                console.log(['UPDATEd UTTERANCES',utteranceIndex,utteranceLists])
+                //console.log(['UPDATEd UTTERANCES',utteranceIndex,utteranceLists])
                     
               });
             //});
@@ -443,7 +444,7 @@ function App() {
            name: "nlutool",
            storeName   : "lists",
          });
-         console.log(['UPDATELISTS'])
+         //console.log(['UPDATELISTS'])
          listsStorage.getItem('alldata', function (err,lists) {
             ////console.log(['UPDATELISTS',lists])
             if (lists) {
@@ -478,7 +479,7 @@ function App() {
                 setSelectedListTallyByList(newSelectedLists)
                 setListTallyByList(newLists)
                 setListsLookups(Object.keys(newLists))
-                console.log('updated lists', newLists)
+                //console.log('updated lists', newLists)
             }
         })
     }
@@ -489,7 +490,7 @@ function App() {
      * - selectedTally (intents)
      */
     function updateLookups() {
-        console.log(['UPDATELOOKUPS'])
+        //console.log(['UPDATELOOKUPS'])
         var examplesStorage = localforage.createInstance({
            name: "nlutool",
            storeName   : "examples",
@@ -541,7 +542,7 @@ function App() {
                 setSkillLookups([].concat(Object.keys(skills),skillLookups).filter(distinct))
                 setSelectedTally(selected)
                 ////console.log(entityLookups, intentLookups)
-                console.log(['UPDATEd LOOKUPS single res',intents,entities])
+                //console.log(['UPDATEd LOOKUPS single res',intents,entities])
             }
         })
     }
@@ -639,10 +640,10 @@ function App() {
                             <Route exact path='/skills/skill/:skillId/publish' render={(props) => <NluSkillsEditor {...props} doLogin={doLogin}   user={user}   lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}   publish={true}  getAxiosClient={getAxiosClient} />} 
                             />
                             
-                            <Route exact path='/skills/:skillId/chat' render={(props) => <ChatPage {...props} doLogin={doLogin}  user={user}    lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}  publish={true}   getAxiosClient={getAxiosClient} />} 
+                            <Route exact path='/skills/:skillId/chat' render={(props) => <ChatPage {...props} isFullScreen={true} doLogin={doLogin}  user={user}    lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}  publish={true}   getAxiosClient={getAxiosClient} />} 
                             />
                             
-                            <Route exact path='/skills/skill/:skillId/chat' render={(props) => <ChatPage {...props} doLogin={doLogin}   user={user}   lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}   publish={true}  getAxiosClient={getAxiosClient} />} 
+                            <Route exact path='/skills/skill/:skillId/chat' render={(props) => <ChatPage {...props}  isFullScreen={true}  doLogin={doLogin}   user={user}   lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}   publish={true}  getAxiosClient={getAxiosClient} />} 
                             />
 
                              <Route exact path='/skills' render={(props) => <NluSkillsEditor {...props} doLogin={doLogin} user={user}      lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage} getAxiosClient={getAxiosClient}   />} 
@@ -743,6 +744,32 @@ function App() {
                                       
                             />
                             
+                            <Route exact path='/utterances/list/:listId/fromform/:fromform' render={
+                                (props) => <UtterancesManager {...props}   lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}   setPageMessage={setPageMessage}  updateFunctions={updateFunctions}  />}
+                                      
+                            />
+                            <Route exact path='/utterances/filter/:filter/fromform/:fromform' render={
+                                (props) => <UtterancesManager {...props}   lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}   setPageMessage={setPageMessage}  updateFunctions={updateFunctions}  />}
+                                      
+                            />
+                            <Route exact path='/utterances/list/:listId/filter/:filter/fromform/:fromform' render={
+                                (props) => <UtterancesManager {...props}   lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}   setPageMessage={setPageMessage}  updateFunctions={updateFunctions}  />}
+                                      
+                            />
+                            
+                            <Route exact path='/utterances/list/:listId/fromskill/:fromskill/fromform/:fromform' render={
+                                (props) => <UtterancesManager {...props}   lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}   setPageMessage={setPageMessage}  updateFunctions={updateFunctions}  />}
+                                      
+                            />
+                            <Route exact path='/utterances/filter/:filter/fromskill/:fromskill/fromform/:fromform' render={
+                                (props) => <UtterancesManager {...props}   lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}   setPageMessage={setPageMessage}  updateFunctions={updateFunctions}  />}
+                                      
+                            />
+                            <Route exact path='/utterances/list/:listId/filter/:filter/fromskill/:fromskill/fromform/:fromform' render={
+                                (props) => <UtterancesManager {...props}   lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}   setPageMessage={setPageMessage}  updateFunctions={updateFunctions}  />}
+                                      
+                            />
+                            
                             
                             
                             <Route exact path='/apis' render={
@@ -824,7 +851,24 @@ function App() {
                             <Route exact path='/actions/list/:listId/filter/:filter/fromskill/:fromskill' render={
                                 (props) => <ActionsManager {...props}   lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}   setPageMessage={setPageMessage}  updateFunctions={updateFunctions}  />}
                                       
-                            />                            
+                            />    
+                            
+                             <Route exact path='/actions/fromskill/:fromskill/fromform/:fromform' render={
+                                (props) => <ActionsManager {...props}   lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}   setPageMessage={setPageMessage}  updateFunctions={updateFunctions}  />}
+                                      
+                            />
+                            <Route exact path='/actions/list/:listId/fromskill/:fromskill/fromform/:fromform' render={
+                                (props) => <ActionsManager {...props}   lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}   setPageMessage={setPageMessage}  updateFunctions={updateFunctions}  />}
+                                      
+                            />
+                            <Route exact path='/actions/filter/:filter/fromskill/:fromskill/fromform/:fromform' render={
+                                (props) => <ActionsManager {...props}   lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}   setPageMessage={setPageMessage}  updateFunctions={updateFunctions}  />}
+                                      
+                            />
+                            <Route exact path='/actions/list/:listId/filter/:filter/fromskill/:fromskill/fromform/:fromform' render={
+                                (props) => <ActionsManager {...props}   lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}   setPageMessage={setPageMessage}  updateFunctions={updateFunctions}  />}
+                                      
+                            />                             
                             
                             
                             

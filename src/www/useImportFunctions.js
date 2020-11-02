@@ -7,7 +7,7 @@ const path = require('path');
 
 export default function useImportFunctions(sendPageMessage) {
     
-    const {mergeEntities, mergeIntents, mergeUtterances, mergeRegexps, mergeSkill} = useImportMergeFunctions()
+    const {mergeEntities, mergeIntents, mergeUtterances, mergeRegexps, mergeForms, mergeActions, mergeApis, mergeSkill} = useImportMergeFunctions()
     const {unzip, splitSentences, generateIntentSplits, generateEntitySplits, generateUtteranceSplits, generateMycroftUtteranceSplits, generateIntentSplitsForMycroft, cleanListItem, extractSynonym, sortListSplits, sortExampleSplits, detectFileType, generateSplitsFromJovoJson, generateSplitsFromRasaJson, generateSplitsFromRasaMd, generateSplitsFromRasaYml} = useImportUtils()
     const history = useHistory()
     /* ONCLICK FUNCTIONS */   
@@ -22,8 +22,10 @@ export default function useImportFunctions(sendPageMessage) {
             var data = {}
             try {
                 data = JSON.parse(item.data)
-                //console.log(['IMPSKILL',data])
-        
+                console.log(['IMPSKILL',data])
+                var promises = []
+                var intentEntities = []
+                    
                 // create examples (intents)
                 if (data.title) {
                     if (data.intents) {
@@ -31,17 +33,26 @@ export default function useImportFunctions(sendPageMessage) {
                         Object.keys(data.intents).map(function(intent) {
                             if (data.intents[intent]) {
                                 data.intents[intent].map(function(example) {
-                                      example.intent = intent
-                                      
-                                      intents.push(example)
+                                    if (example) {
+                                        example.intent = intent
+                                        //if (Array.isArray(example.entities)) {
+                                            //example.entities.map(function(entity) {
+                                              //if (entity && entity.value) {
+                                                  //intentEntities.push({value:entity.value, tags: []})
+                                              //}  
+                                            //})
+                                        //}
+                                        intents.push(example)
+                                    }
                                 })
                             }
                         })
-                        mergeIntents(intents, data.title)
+                        promises.push(mergeIntents(intents, data.title))
                     }
                     // create entities
                     if (data.entitiesData) {
                         var entities = []
+                    
                         Object.keys(data.entitiesData).map(function(tag) {
                             if (data.entitiesData[tag]) {
                                 data.entitiesData[tag].map(function(entity) {
@@ -51,15 +62,24 @@ export default function useImportFunctions(sendPageMessage) {
                                 })
                             }
                         })
-                        mergeEntities(entities)
+                        intentEntities.map(function(tag) {
+                            if (Array.isArray(intentEntities[tag])) {
+                                intentEntities[tag].map(function(entity) {
+                                      entity.tags = Array.isArray(entity.tags) ? entity.tags : []
+                                      entity.tags.push(tag)
+                                      entities.push(entity)
+                                })
+                            }
+                        })
+                        promises.push(mergeEntities(entities))
                     }
                     // create utterances
-                    if (data.utterancesData) {
+                    if (data.utterances) {
                         var utterances = []
-                        Object.values(data.utterancesData).map(function(utterance) {
+                        Object.values(data.utterances).map(function(utterance) {
                             utterances.push(utterance)
                         })
-                        mergeUtterances(utterances)
+                        promises.push(mergeUtterances(utterances))
                     }
                     // create regexps
                     if (data.regexps) {
@@ -69,9 +89,41 @@ export default function useImportFunctions(sendPageMessage) {
                             }
                             return {}
                         })
-                        mergeRegexps(regexps)
+                        promises.push(mergeRegexps(regexps))
                     }
-                    mergeSkill(data)
+                    // create forms
+                    if (data.forms) {
+                        var forms = Object.values(data.forms).map(function(form) {
+                            if (form) {
+                                return form //{value: form.name, synonym: utterance.synonym}
+                            }
+                            return {}
+                        })
+                        promises.push(mergeForms(forms))
+                    }
+                    // create actions
+                    if (data.actions) {
+                        var actions = Object.values(data.actions).map(function(action) {
+                            if (action) {
+                                return action //{value: utterance.name, synonym: utterance.synonym}
+                            }
+                            return {}
+                        })
+                       promises.push( mergeActions(actions))
+                    }
+                    // create apis
+                    if (data.apis) {
+                        var apis = Object.values(data.apis).map(function(api) {
+                            if (api) {
+                                return api//{value: utterance.name, synonym: utterance.synonym}
+                            }
+                            return {}
+                        })
+                        promises.push(mergeApis(apis))
+                    }
+                    Promise.all(promises).then(function(saveResults) {
+                        mergeSkill(data)
+                    })
                 }
                 // TODO CREATE OTHER RECORDS - INTENT,ENT,UTT,REG
             } catch(e) {}
@@ -90,6 +142,7 @@ export default function useImportFunctions(sendPageMessage) {
                   switch(item.fileType) {
                     case 'opennlu.skill':
                         importSkillJson(item).then(function(skill) {
+                            console.log(['IMPORT SKILL JSON COMPLETE NOW SAVE SKILL',skill])
                             //resolve(skill)  
                             if (skill.title && skill.intents && Object.keys(skill.intents).length > 0) {
                                 setTimeout(function() {

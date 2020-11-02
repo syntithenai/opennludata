@@ -47,6 +47,7 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists, in
     }
     
     var fromAction = params.fromaction ? params.fromaction : '';
+    var fromForm = params.fromform ? params.fromform : '';
     //function setFromAction(value) {
         //var root = history.location.pathname.split("/")
         //var parts=['/'+root[1]]
@@ -253,7 +254,7 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists, in
                 var sWords = scrabbleWords()
                 if (sWords.indexOf(item.value.toUpperCase()) !== -1) {
                     if (item.tags && item.tags.indexOf('scrabbleword') === -1) {
-                        console.log('scrabbleword on save')
+                        //console.log('scrabbleword on save')
                         item.tags.push('scrabbleword')
                     }
                 } else {
@@ -286,16 +287,16 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists, in
         return baseSize + parseInt(((tallyExtras+2)/2)) * 20
     }
     
-   function createEmptyItem(list) {
+   function createEmptyItem(list,synonym) {
        var tags=[]
         if (list && list !== "Not In A List" && list.trim().length > 0) tags.push(list)
         setSearchFilter('')
-        saveItem({id:null, value:'', synonym:'',tags:tags})
+        saveItem({id:null, value:'', synonym:synonym ? synonym : '',tags:tags})
    }
     
     return {
         loadAll, saveItem, deleteItem , items, setItems, findKeyBy, filter, filteredItems, setFilteredItems, sort, 
-        searchFilter, setSearchFilter, fromSkill, setFromSkill, tagAllValue, setTagAllValue,listRef, listFilterValue, setListFilterValue,
+        searchFilter, setSearchFilter, fromSkill, setFromSkill, fromForm, fromAction, tagAllValue, setTagAllValue,listRef, listFilterValue, setListFilterValue,
         tagAll,untagAll, resetSelection, selectAll, saveItemWrap, getItemSize, deleteAll, createEmptyItem, lastSelected, setLastSelected, selectBetween, fromAction
     }
 }

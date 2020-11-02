@@ -1,3 +1,4 @@
+/* global window */
 import {useState, useEffect} from 'react';
 import {useParams, useHistory} from 'react-router-dom'
 
@@ -137,7 +138,7 @@ export default function useSkillsEditor(props) {
             }
             // merge in intents
             skill.intents = collatedItems
-            console.log('SAVE NOW - change cs or inv',JSON.parse(JSON.stringify(skill)))
+            //console.log('SAVE NOW - change cs or inv',JSON.parse(JSON.stringify(skill)))
             skillsStorage.setItem(skillFilterValue, currentSkill, function (err) {
                 if (err)  {
                     //console.log(err)
@@ -497,13 +498,15 @@ export default function useSkillsEditor(props) {
     }
     
     function deleteSlot(slot, slots) {
-        if (currentSkill && slot && slots ) {
-            var skill = currentSkill;
-            delete slots[slot]
-            skill.rasa = skill.rasa ? skill.rasa : {}
-            skill.rasa.slots = slots
-            setCurrentSkill(skill)  
-            forceReload()  
+        if (window.confirm('Really delete slot '+slot)) {
+            if (currentSkill && slot && slots ) {
+                var skill = currentSkill;
+                delete slots[slot]
+                skill.rasa = skill.rasa ? skill.rasa : {}
+                skill.rasa.slots = slots
+                setCurrentSkill(skill)  
+                forceReload()  
+            }
         }
     }
 
@@ -639,7 +642,7 @@ export default function useSkillsEditor(props) {
     }
     
     function addAction(action) {
-        console.log(['ADD action',action])
+        //console.log(['ADD action',action])
         return new Promise(function(resolve,reject) {
             if (action) {
                 //var skill = currentSkill;
@@ -669,7 +672,7 @@ export default function useSkillsEditor(props) {
     }  
 
     function addForm(action) {
-        console.log(['ADD action',action])
+        //console.log(['ADD action',action])
         return new Promise(function(resolve,reject) {
             if (action) {
                 //var skill = currentSkill;
@@ -699,7 +702,7 @@ export default function useSkillsEditor(props) {
     } 
     
     function addUtterance(utterance) {
-         console.log(['ADD utterance',utterance])
+         //console.log(['ADD utterance',utterance])
          return new Promise(function(resolve,reject) {
              if (currentSkill && utterance && utterance.name) {
                 var skill = currentSkill;
@@ -791,21 +794,21 @@ export default function useSkillsEditor(props) {
     }  
     
     function setRules(rules) {
-        console.log(['SET RULES',rules])
+        //console.log(['SET RULES',rules])
         var skill = currentSkill
         skill.rules = rules
         setCurrentSkill(skill)  
         forceReload()
-        console.log(['SET RULES skill',currentSkill])
+        //console.log(['SET RULES skill',currentSkill])
     }
    
     function setStories(stories) {
-        console.log(['SET STORIES',stories])
+        //console.log(['SET STORIES',stories])
         var skill = currentSkill
         skill.stories = stories
         setCurrentSkill(skill)  
         forceReload()
-        console.log(['SET STORIES skill',currentSkill])
+        //console.log(['SET STORIES skill',currentSkill])
     }
    
     function forceReload(skill) {

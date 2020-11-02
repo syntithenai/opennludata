@@ -210,5 +210,7 @@ function concatText(text,words) {
     function cleanRegexp(regexp) {
         return cleanText(regexp)
     }
+  
+
 
 export {cleanUtterance, cleanIntent, cleanEntity, cleanRegexp,  generateObjectId, parentUrl, concatText , findFirstDiffPos,uniquifyArray, multiplyArrays, expandOptions, splitSentences, uniquifyArrayOfObjects, replaceEntities,replaceEntitiesWithValues,  RASA, GoogleAssistant, Alexa, snakeToCamelCase, camelToSnakeCase, toSnakeCase }

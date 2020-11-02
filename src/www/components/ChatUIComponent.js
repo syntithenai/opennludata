@@ -1,110 +1,24 @@
 /* global window */
 import React,{useState, useEffect} from 'react'
-
-//import styles from './styles.module.css'
-
-
-//const mespeak = require('./mespeak.js')
+import YouTube from 'react-youtube';
 
 
-var meSpeak = window.meSpeak
-//console.log(['MESPEAK',meSpeak])
+function YouTubeGetID(url){
+    url = url.split(/(vi\/|v%3D|v=|\/v\/|youtu\.be\/|\/embed\/)/);
+    return undefined !== url[2]?url[2].split(/[^0-9a-z_\-]/i)[0]:url[0];
+}
 
 export const ChatUIComponent = (props) => {
     
-    var [voices,setVoices] = useState(null)
-    //var [collatedHistory,setCollatedHistory] = useState([])
-    //var [history,setHistory] = useState([])
-    var meSpeakId = null
-    var [userMessage,setUserMessage] = useState('')
-    
-    
-    //function collateHistory()  {
-        //var collated = []
-        //var current = {};
-        //var firstBotEntry = null;
-        //console.log(['COLLAT',props.history]);
-        //[].concat(props.history).slice(0,100).map(function(entry) {
-            //if (entry.user) {
-                //if (Object.keys(current).length > 0) {
-                    //collated.push(current)
-                    //current = {}
-                //}
-                //current.user = entry.user
-            //}
-            //if (Array.isArray(entry.bot)) {
-                ////firstBotEntry = (firstBotEntry === null) ? entry.bot : firstBotEntry;
-                //if (!Array.isArray(current.bot)) current.bot = []
-                //entry.bot.map(function(entry) { current.bot.push(entry)})
-            //}
-        //})
-        //if (Object.keys(current).length > 0) {
-            //collated.push(current)
-        //}
-        ////// welcome intent
-        ////if (collated.length === 0 && firstBotEntry) {
-            ////collated.push({user:'',bot:firstBotEntry})
-        ////}
-        //console.log(['COLLATED',collated])
-        //setCollatedHistory(collated)
-    //}
-    
-    //useEffect(() => {
-        //collateHistory()
-        ////if (meSpeak) meSpeak.loadVoice('en/en-us');
-        ////initSpeechSynthesis()
-        //setTimeout(function() {
-            ////if (meSpeak) meSpeak.speak('hello world');
-
-            ////.say('help me') 
-        //},300)
-    //},[props.history])
-    
     function sendUserMessage(message) {
-        //var newHistory = props.history
-        //newHistory.push({user:message})
         if (props.sendUserMessage) {
-            props.sendUserMessage(message).then(function(response) {
-                console.log(['chat msg resp',response])
-                if (response) {
-                    window.scrollTo(0,0)
-                    //newHistory.push({bot:response})
-                    // sequential handling of audio outputs
-                    // utterances
-                    //if (props.speakBotResponse) props.speakBotResponse(response) 
-                    //setHistory(newHistory)
-                    //collateHistory()
-                    setUserMessage(' ')
-                }
-            })
-        } else {
-            var response = {bot:{utterance:'Missing property sendUserMessage',buttons:[{text:'Try again'}]}}
-            //newHistory.push({bot:response})
-            //setHistory(newHistory)
-            //collateHistory()
-            setUserMessage(' ')
+            props.sendUserMessage(message)
         }
     }
-    
-    
 
     var history = props.history
-     //[]
-    //try {
-        //history = JSON.parse(props.history)
-    //} catch (e) {
-        //console.log(e)
-    //}
-    
-  return <div style={{border:'1px solid black', padding:'1em', width:'100%'}}>
-    <button onClick={function(e) { setUserMessage('next track') ; sendUserMessage('next track')}} >Next track</button>
-    <button onClick={function(e) { setUserMessage('play some jazz'); sendUserMessage('play some jazz')}} >JAZZ</button>
-        <form onSubmit={function(e) {
-            e.preventDefault(); 
-            sendUserMessage(userMessage)
-        }} >
-            <input type='text' style={{width:'100%'}} value={userMessage} placeholder={'Start a conversation'} onChange={function(e) {setUserMessage(e.target.value)}} />
-        </form>
+    var mute = localStorage.getItem('mute_chat') === "true" ? true : false
+    return <div style={{border:'1px solid black', padding:'1em', width:'100%'}}>
         {history.length > 0 && <div className="history" style={{padding:'0.5em', width:'100%', marginTop:'0.5em'}} >
           {[].concat(history).reverse().map(function(entry,ookey) {
            return (
@@ -115,7 +29,6 @@ export const ChatUIComponent = (props) => {
                     {entry.bot.map(function(botEntry,okey) {
                          return (<div  key={okey}  >
                                 {botEntry && botEntry.utterance && <div><b>Bot: </b><span>{botEntry.utterance}</span></div>}
-                                
                                 {botEntry && botEntry.buttons && <div style={{ margin:'0.5em'}}>{botEntry.buttons.map(function(button,key) {
                                     return <button key={key} onClick={function(e) {
                                            e.preventDefault() 
@@ -125,7 +38,7 @@ export const ChatUIComponent = (props) => {
                                 
                                 {botEntry && botEntry.images && <div style={{ margin:'0.5em'}} >
                                     {botEntry.images.map(function(image,key) {
-                                        return <img  key={key}  src={image} />
+                                        return <img  key={key}  src={image.href} style={{width:'100%'}}/>
                                     })}
                                 </div>}
                                 
@@ -137,7 +50,7 @@ export const ChatUIComponent = (props) => {
                                 
                                 {botEntry && botEntry.audio && <div style={{ margin:'0.5em'}} >
                                     {botEntry.audio.map(function(audioFile,key) {
-                                        if (audioFile.autoplay === 'true') {
+                                        if (audioFile.autoplay === 'true' && !mute) {
                                             return <div  key={key}  ></div>
                                         } else {
                                             return <audio  key={key}  src={audioFile.href} controls  />
@@ -147,7 +60,25 @@ export const ChatUIComponent = (props) => {
                                 
                                 {botEntry && botEntry.video && <div style={{ margin:'0.5em'}} >
                                     {botEntry.video.map(function(video,key) {
-                                        return <video  style={{height:'150px'}}  key={key}  src={video.href} controls />
+                                        if (video.autoplay === 'true' && !mute) {
+                                            return <div  key={key}  ></div>
+                                        } else {
+                                            var videoId = video && video.href ? YouTubeGetID(video.href) : ''
+                                            if (videoId) {
+                                                var opts = {
+                                                    playerVars: {
+                                                        start: video.start, 
+                                                        end: video.end, 
+                                                        controls: 1,
+                                                        autoplay: 0
+                                                    }, 
+                                                    
+                                                }
+                                               return  <YouTube key={key} videoId={videoId}  opts={opts} />
+                                            } else {    
+                                                return <video  style={{height:'150px'}}  key={key}  src={video.href} controls />
+                                            }
+                                        }
                                     })}
                                 </div>}
                                 

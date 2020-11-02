@@ -87,7 +87,7 @@ export default function NavbarComponent(props) {
             <Button variant="danger" size="sm"  style={{float:'right', fontWeight: 'bold',borderRadius:'20px',marginLeft:'1em'}} onClick={function(e) {props.setPageMessage('')}}>X</Button>{props.message} 
         </div>}
         
-        <img src={fireImage}  style={{height:'5em', marginRight:'0.4em'}} alt="logo"/>
+        <Link to="/"><img src={fireImage}  style={{height:'5em', marginRight:'0.4em'}} alt="logo"/></Link>
          <div style={{width: '100%'}}>
         {links}
         </div>

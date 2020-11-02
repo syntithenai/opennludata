@@ -29,25 +29,27 @@ const RenderRow = function(props) {
 }
 
 export default  function ActionsManager(props) {
-    const {items, listFilterValue, setListFilterValue, loadAll, deleteItem , findKeyBy, searchFilter, setSearchFilter, tagAllValue, setTagAllValue, listRef, tagAll,untagAll, resetSelection, selectAll, saveItemWrap,  filteredItems, deleteAll, createEmptyItem, sort, lastSelected, setLastSelected, selectBetween, fromSkill} = useListItemEditor('nlutool','actions','alldata', props.updateFunctions.updateActions, initData, props.updateFunctions.setIsChanged)
+    const {items, listFilterValue, setListFilterValue, loadAll, deleteItem , findKeyBy, searchFilter, setSearchFilter, tagAllValue, setTagAllValue, listRef, tagAll,untagAll, resetSelection, selectAll, saveItemWrap,  filteredItems, deleteAll, createEmptyItem, sort, lastSelected, setLastSelected, selectBetween, fromSkill, fromForm} = useListItemEditor('nlutool','actions','alldata', props.updateFunctions.updateActions, initData, props.updateFunctions.setIsChanged)
     //const [currentList, setCurrentList] = useState('')
 
     function getItemSize(index) {
-        console.log('action seiz',items,filteredItems)
+        //console.log('action seiz',items,filteredItems)
         var item = items[index]
         var baseSize = 0
         if (window.innerWidth < 430) {
-               baseSize =  520
+               baseSize =  620
         // medium screen tablet
         } else if (window.innerWidth <= 768) {
-               baseSize = 3435
+               baseSize = 515
         } else {
-            baseSize = 305
+            baseSize = 505
         }
         var numResponses = item.responses ? item.responses.length : 0
         var numApis = item.apis ? item.apis.length : 0
-        console.log('action seiz',item.apis,item.responses, index, item,baseSize,numResponses)
-        return baseSize + numResponses * 70 + numApis * 70
+        var numForms = item.forms ? item.forms.length : 0
+        
+        //console.log('action seiz',item.apis,item.responses, index, item,baseSize,numResponses)
+        return baseSize + numResponses * 70 + numApis * 70 + numForms * 70
     }
     
     
@@ -122,7 +124,7 @@ export default  function ActionsManager(props) {
     return <div>
         
                    
-        {<ActionsManagerSearchBar {...props} fromSkill={fromSkill} searchFilter={searchFilter} setSearchFilter={setSearchFilter} listFilterValue={listFilterValue} setListFilterValue={setListFilterValue} resetSelection={resetSelection} selectAll={selectAll} createEmptyItem={createEmptyItem} sort={sort} />}
+        {<ActionsManagerSearchBar {...props} fromSkill={fromSkill}  fromForm={fromForm} searchFilter={searchFilter} setSearchFilter={setSearchFilter} listFilterValue={listFilterValue} setListFilterValue={setListFilterValue} resetSelection={resetSelection} selectAll={selectAll} createEmptyItem={createEmptyItem} sort={sort} />}
          
          
          {renderEditor(props)}

@@ -26,22 +26,31 @@ const RenderRow = function(props) {
     return <ApisManagerRow  
          item={item}  splitNumber={index} style={style}
          saveItem={props.data.saveItem} deleteItem={props.data.deleteItem} saveNlu={props.data.saveNlu}
-         lookups={props.data.lookups}  lastSelected={props.data.lastSelected} setLastSelected={props.data.setLastSelected} selectBetween={props.data.selectBetween}  />
+         lookups={props.data.lookups} updateFunctions={props.data.updateFunctions}  lastSelected={props.data.lastSelected} setLastSelected={props.data.setLastSelected} selectBetween={props.data.selectBetween}  />
 }
 
 export default  function ApisManager(props) {
-    const {listFilterValue, setListFilterValue, loadAll, deleteItem , findKeyBy, searchFilter, setSearchFilter, tagAllValue, setTagAllValue, listRef, tagAll,untagAll, resetSelection, selectAll, saveItemWrap,  filteredItems, deleteAll, createEmptyItem, sort, lastSelected, setLastSelected, selectBetween, fromSkill, fromAction} = useListItemEditor('nlutool','apis','alldata', props.updateFunctions.updateApis, initData, props.updateFunctions.setIsChanged)
+    const {items, listFilterValue, setListFilterValue, loadAll, deleteItem , findKeyBy, searchFilter, setSearchFilter, tagAllValue, setTagAllValue, listRef, tagAll,untagAll, resetSelection, selectAll, saveItemWrap,  filteredItems, deleteAll, createEmptyItem, sort, lastSelected, setLastSelected, selectBetween, fromSkill, fromAction} = useListItemEditor('nlutool','apis','alldata', props.updateFunctions.updateApis, initData, props.updateFunctions.setIsChanged)
     //const [currentList, setCurrentList] = useState('')
 
-    function getItemSize() {
+    function getItemSize(index) {
+        //console.log('action seiz',items,filteredItems)
+        var item = items[index]
+        var baseSize = 0
         if (window.innerWidth < 430) {
-               return 440
+               baseSize =  750
         // medium screen tablet
         } else if (window.innerWidth <= 768) {
-               return 375
+               baseSize = 700
         } else {
-            return 265
+            baseSize = 705
         }
+        var numResponses = item.responses ? item.responses.length : 0
+        var numApis = item.apis ? item.apis.length : 0
+        var numForms = item.forms ? item.forms.length : 0
+        
+        //console.log('action seiz',item.apis,item.responses, index, item,baseSize,numResponses)
+        return baseSize + numResponses * 90 + numApis * 90 + numForms * 90
     }
 
     useEffect(() => {
@@ -85,7 +94,7 @@ export default  function ApisManager(props) {
                             <List
                                 key="list"
                                 ref={listRef}
-                                itemData={{items: filteredItems, saveItem: saveItemWrap, deleteItem, findKeyBy, lookups: props.lookups, lastSelected, setLastSelected, selectBetween}}
+                                itemData={{items: filteredItems, saveItem: saveItemWrap, deleteItem, findKeyBy, lookups: props.lookups, lastSelected, setLastSelected, selectBetween, updateFunctions: props.updateFunctions}}
                                 itemKey={index => index}  
                                 className="List"
                                 height={700}

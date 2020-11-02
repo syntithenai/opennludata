@@ -29,6 +29,7 @@ export default function ActionsManagerRow(props) {
     } = useListItemRow(props.item, props.saveItem, props.splitNumber, props.style, props.lastSelected, props.setLastSelected, props.selectBetween)
  
     const [suggestions, setSuggestions] = useState([])
+    const [formSuggestions, setFormSuggestions] = useState([])
     const [apiSuggestions, setApiSuggestions] = useState([])
     const [selectionState,setSelectionState] = useState({start:{row:0,column:0}, end:{row:0,column:0}})
     
@@ -42,7 +43,7 @@ export default function ActionsManagerRow(props) {
             var postLines = lines.slice(endRow + 1)
             var preLine = lines[selectionState.start.row] ? lines[selectionState.start.row] : ''
             var postLine = lines[selectionState.end.row] ? lines[selectionState.end.row] : ''
-            console.log(['INS',JSON.stringify(selectionState),preLine,postLine,preLines,postLines,middle,final])
+            //console.log(['INS',JSON.stringify(selectionState),preLine,postLine,preLines,postLines,middle,final])
             //if (preLines && postLines)  {
                 var middle = preLine.slice(0,selectionState.start.column) + text + postLine.slice(selectionState.end.column )
                 var final = [].concat(preLines,[middle],postLines)
@@ -55,7 +56,7 @@ export default function ActionsManagerRow(props) {
     }
     
     function addUtterance(utterance) {
-         console.log(['ADD utterance',utterance])
+         //console.log(['ADD utterance',utterance])
          return new Promise(function(resolve,reject) {
              if (utterance && utterance.name && utterance.name.trim()) {
                 if (!props.lookups.utterancesLookups[utterance.name]) {
@@ -101,10 +102,7 @@ export default function ActionsManagerRow(props) {
             setSuggestions(props.lookups.utterancesLookups)
         }
     };
-    function onApiSuggestionsFetchRequested ({ value }) {
-         setApiSuggestions(props.lookups.apisLookups)
-    };
-
+    
     // Autosuggest will call this function every time you need to clear suggestions.
     function  onSuggestionsClearRequested()  {
        setSuggestions([]);
@@ -113,6 +111,17 @@ export default function ActionsManagerRow(props) {
     function  onApiSuggestionsClearRequested()  {
        setApiSuggestions([]);
     };
+    function onApiSuggestionsFetchRequested ({ value }) {
+         setApiSuggestions(props.lookups.apisLookups)
+    };
+    
+    function  onFormSuggestionsClearRequested()  {
+       setFormSuggestions([]);
+    };
+    function onFormSuggestionsFetchRequested ({ value }) {
+         setFormSuggestions(props.lookups.formsLookups)
+    };
+
         var codeTextareaId = 'aceeditor_' + splitNumber;
         //console.log('ID',splitNumber)
        //var buttonImageStyle={color:'white', height:'2em'}
@@ -206,12 +215,76 @@ export default function ActionsManagerRow(props) {
                                 {(button && button.text && props.lookups.utterancesLookups.indexOf(button.text)  !== -1) && <Link to={'/utterances/filter/'+button.text+ ((props.fromSkill && props.fromSkill.trim()) ? '/fromskill/' + props.fromSkill : '') + '/fromaction/'+item.value } ><Button style={{marginLeft:'1em'}} variant="primary">Edit</Button></Link>}
                                 
                                 <Button variant="success" style={{marginLeft:'0.5em'}} onClick={function(e) {
-                                    insertAtCaret("response('"+button.text+"')")
+                                    insertAtCaret("response('"+button.text+"').then(function() {\n\n})")
                                 }}>Insert at Cursor</Button>
                             </div>
                                 
                         })}
                     </div> }
+                    
+                    {<div style={{marginTop:'0.5em', borderTop:'1px solid grey', clear:'both'}}>
+                        <span style={{marginRight:'0.5em', float:'left'}}>Forms</span> 
+                        <Button style={{marginRight:'0.5em', float:'left'}} variant="success" onClick={function(e) {addListItemData('forms',{text:''});  }}>Use Form</Button>
+                        {Array.isArray(item.forms) && item.forms.map(function(button,buttonKey) {
+                            return <div  style={{marginTop:'0.5em', clear:'both'}} key={buttonKey}>
+                            
+                                <span style={{float:'left'}} >
+                                <Button style={{marginRight:'0.3em'}} variant="danger" onClick={function(e) {deleteListItemData('forms', buttonKey)}} > X </Button>
+                                
+                                </span>
+                               
+                                <span style={{float:'left'}}><Autosuggest
+                                    suggestions={formSuggestions.map(function(suggestion) {return {tag: suggestion}})}
+                                    shouldRenderSuggestions={function() {return true}}
+                                    onSuggestionsFetchRequested={onFormSuggestionsFetchRequested}
+                                    onSuggestionsClearRequested={onFormSuggestionsClearRequested}
+                                    getSuggestionValue={function (suggestion)  { return suggestion.tag}}
+                                    renderSuggestion={renderSuggestion}
+                                    onSuggestionSelected={function(event, { suggestion, suggestionValue, suggestionIndex, sectionIndex, method }) {
+                                        if (button) {
+                                            var newButton = button; 
+                                            newButton.text = suggestionValue; 
+                                            updateListItemData('forms',buttonKey,newButton)
+                                        }
+                                        //updateRuleStep(triggerIntent,key,ruleStepType + ' '+suggestionValue)
+                                    }}
+                                    inputProps={{
+                                        style:{width:'30em', display:'inline', float:'left'},
+                                      value: button ? button.text : '',
+                                      onChange: function(e) {
+                                          if (button) {
+                                              var newButton = button; 
+                                              newButton.text = e.target.value; 
+                                              updateListItemData('forms',buttonKey,newButton)
+                                              //updateRuleStep(triggerIntent,key,ruleStepType + ' '+e.target.value)
+                                          }
+                                        }
+                                    }}
+                                /></span>
+                                {(button && button.text && props.lookups.formsLookups.indexOf(button.text) === -1) && (
+                                    <span >{button.text && <Button 
+                                        style={{marginLeft:'1em'}} 
+                                        onClick={function(e) {
+                                            addUtterance({name:button.text}).then(function() {
+                                                    setTimeout(props.updateFunctions.updateForms,500)
+                                            })
+                                        }} variant="success">
+                                            Save New
+                                    </Button>}</span>
+                                )}
+                                
+                                
+                                {(button && button.text && props.lookups.utterancesLookups.indexOf(button.text)  !== -1) && <Link to={'/utterances/filter/'+button.text+ ((props.fromSkill && props.fromSkill.trim()) ? '/fromskill/' + props.fromSkill : '') + '/fromaction/'+item.value } ><Button style={{marginLeft:'1em'}} variant="primary">Edit</Button></Link>}
+                                
+                                <Button variant="success" style={{marginLeft:'0.5em'}} onClick={function(e) {
+                                    insertAtCaret("form('"+button.text+"')")
+                                }}>Insert at Cursor</Button>
+                            </div>
+                                
+                        })}
+                    </div> }
+                    
+                    
                     
                     {<div style={{marginTop:'0.5em', borderTop:'1px solid grey', clear:'both'}}>
                         <span style={{marginRight:'0.5em', float:'left'}}>Apis</span> 
@@ -224,12 +297,12 @@ export default function ActionsManagerRow(props) {
                             props.lookups.apisCompleteLookups.map(function(apiComplete) {
                               if (apiComplete.value === button.text) {
                                 try {
-                                    apiInstance = new Function('history','slots','config',apiComplete.synonym.trim())
+                                    apiInstance = new Function('intent','history','slots','config','handleBotMessage','utils', 'window','slot','reset','restart','back','listen','nolisten','form', apiComplete.synonym.trim())
+                                    if (typeof apiInstance === 'function') {
+                                        apiFunctions = apiInstance([],{},{}) 
+                                    }
                                 } catch (e) {
                                     console.log(e)
-                                }
-                                if (typeof apiInstance === 'function') {
-                                    apiFunctions = apiInstance([],{},{}) 
                                 }
      
                               }  
@@ -242,7 +315,6 @@ export default function ActionsManagerRow(props) {
                                 </span>
                                 <span style={{float:'left'}}>
                                     <select value={button ? button.text : ''} onChange={function(e) {
-                                        console.log(['select onChange',e,e.target.value])
                                           if (button) {
                                               var newButton = button; 
                                               newButton.text = e.target.value 
@@ -250,7 +322,7 @@ export default function ActionsManagerRow(props) {
                                               //updateRuleStep(triggerIntent,key,ruleStepType + ' '+e.target.value)
                                           }
                                         }} >
-                                        <option key={''} value={''} >{'   '}</option>
+                                        <option key={'blank'} value={''} >{'   '}</option>
                                         {Array.isArray(props.lookups.apisLookups) && props.lookups.apisLookups.sort(function(a,b) {if (a<b) return -1 ; else return 1 }).map(function(suggestion) {
                                             return <option key={suggestion} value={suggestion} >{suggestion}</option>
                                         })}
@@ -264,7 +336,6 @@ export default function ActionsManagerRow(props) {
                                 
                                 <span style={{float:'left'}}>
                                     <select value={button ? button.functionCall : ''} onChange={function(e) {
-                                        console.log(['select onChange',e,e.target.value])
                                           if (button) {
                                               var newButton = button; 
                                               newButton.functionCall = e.target.value 
@@ -272,8 +343,8 @@ export default function ActionsManagerRow(props) {
                                               //updateRuleStep(triggerIntent,key,ruleStepType + ' '+e.target.value)
                                           }
                                         }} >
-                                        <option key={''} value={''} >{'   '}</option>
-                                        {Object.keys(apiFunctions).sort(function(a,b) {if (a<b) return -1 ; else return 1 }).map(function(suggestion) {
+                                        <option key={'blank'} value={''} >{'   '}</option>
+                                        {apiFunctions && Object.keys(apiFunctions).sort(function(a,b) {if (a<b) return -1 ; else return 1 }).map(function(suggestion) {
                                             return <option key={suggestion} value={suggestion} >{suggestion}</option>
                                         })}
                                     
@@ -288,18 +359,13 @@ export default function ActionsManagerRow(props) {
                                   <Dropdown.Toggle  variant="success"  split   id="dropdown-split-basic" ></Dropdown.Toggle>
                                   <Button  variant="success"   >{'Insert at Cursor'} </Button>
                                   <Dropdown.Menu  variant="success" >
+                                      
                                       {button.functionCall && <Dropdown.Item  variant="success" key={'Slot'} value={'Slot'} onClick={function(e) {
-                                          insertAtCaret("slot('slotName',api('"+button.text+"')."+button.functionCall+"())")  
+                                          insertAtCaret("api('"+button.text+"')."+button.functionCall+"().then(function(result) {slot('slotName',result)})")  
                                       }}  ><b>Slot</b></Dropdown.Item>}
                                       {button.functionCall && <Dropdown.Item  variant="success" key={'Utterance'} value={'Utterance'} onClick={function(e) {
-                                          insertAtCaret("response(api('"+button.text+"')."+button.functionCall+"())")  
+                                          insertAtCaret("api('"+button.text+"')."+button.functionCall+"().then(function(result) {response(result).then(function() {\n\n})})")  
                                       }}  ><b>Utterance</b></Dropdown.Item>}
-                                      {button.functionCall && <Dropdown.Item  variant="success" key={'Async Slot'} value={'Async Slot'} onClick={function(e) {
-                                          insertAtCaret("api('"+button.text+"')."+button.functionCall+"().then(function(result) {slot('slotName',result)})")  
-                                      }}  ><b>Async Slot</b></Dropdown.Item>}
-                                      {button.functionCall && <Dropdown.Item  variant="success" key={'Async Utterance'} value={'Async Utterance'} onClick={function(e) {
-                                          insertAtCaret("api('"+button.text+"')."+button.functionCall+"().then(function(result) {response(result)})")  
-                                      }}  ><b>Async Utterance</b></Dropdown.Item>}
                                       <Dropdown.Item  variant="success" key={'Constructor'} value={'Constructor'} onClick={function(e) {
                                           insertAtCaret("api('"+button.text+"')")  
                                       }}  ><b>Constructor</b></Dropdown.Item>
@@ -317,12 +383,12 @@ export default function ActionsManagerRow(props) {
                         
                       <div style={{}}>  
                           <AceEditor
-                          style={{width:'100%',height:'14em',border:'1px solid black'}} 
+                          style={{width:'100%',border:'1px solid black'}} 
                             id={codeTextareaId}
                             mode="javascript"
                             theme="github"
                             showGutter={false}
-                            maxLines={15}
+                            maxLines={50}
                             minLines={15}
                             enableBasicAutocompletion={true}
                             enableLiveAutocompletion={true}

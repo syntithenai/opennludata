@@ -26,16 +26,17 @@ export default function FormsManagerRow(props) {
     const {    
         tags, reactTags,  addListItemData, deleteListItemData, updateListItemData, moveListItemDataUp, moveListItemDataDown,
         addListItemDataItem, deleteListItemDataItem, updateListItemDataItem, moveListItemDataItemUp, moveListItemDataItemDown,
-        onTagDelete, onTagAddition, updateExampleContent,updateExampleSynonym,  selectItem, deselectItem, onListItemTagDelete, onListItemTagAddition
+        onTagDelete, onTagAddition, updateExampleContent,updateExampleSynonym,updateExampleField,  selectItem, deselectItem, onListItemTagDelete, onListItemTagAddition
     } = useListItemRow(props.item, props.saveItem, props.splitNumber, props.style, props.lastSelected, props.setLastSelected, props.selectBetween)
  
     const [suggestions, setSuggestions] = useState([])
     const [apiSuggestions, setApiSuggestions] = useState([])
+    const [actionSuggestions, setActionSuggestions] = useState([])
     
     useEffect(() => props.updateFunctions.updateLookups(),[])
     
     function addUtterance(utterance) {
-         console.log(['ADD utterance',utterance])
+         //console.log(['ADD utterance',utterance])
          return new Promise(function(resolve,reject) {
              if (utterance && utterance.name && utterance.name.trim()) {
                 if (!props.lookups.utterancesLookups[utterance.name]) {
@@ -60,6 +61,37 @@ export default function FormsManagerRow(props) {
            }
         })
     }
+    
+        function addAction(action) {
+        //console.log(['ADD action',action])
+        return new Promise(function(resolve,reject) {
+            if (action) {
+                //var skill = currentSkill;
+                //if (!Array.isArray(skill.regexps)) skill.regexps=[]
+                //skill.regexps.push({name: regexp.name, synonym: regexp.synonym ,entity:entity})
+                ////skill.regexps = uniquifyArray(skill.regexps)
+                //setCurrentSkill(skill)  
+                //// if this is a new regexp, add it to the main database
+                    var actionStorage = localforage.createInstance({
+                       name: "nlutool",
+                       storeName   : "actions",
+                     });
+                     actionStorage.getItem('alldata', function (err,actions) {
+                         if (err) throw new Error(err)
+                         if (Array.isArray(actions)) {
+                             actions.unshift({id:generateObjectId(), value:action, synonyms:'', tags:[]})
+                             actionStorage.setItem('alldata',actions)
+                         }
+                     })
+                //forceReload()
+                props.updateFunctions.setIsChanged(true)
+                resolve()
+           } else {
+               resolve()
+           }
+        })
+    } 
+    
         
         // STEP AUTOCOMPLETE FUNCTIONS
     function searchShowAll() {
@@ -84,7 +116,18 @@ export default function FormsManagerRow(props) {
     function onApiSuggestionsFetchRequested ({ value }) {
          setApiSuggestions(props.lookups.apisLookups)
     };
-
+    function onActionSuggestionsFetchRequested ({ value }) {
+        //console.log(['GS fetch']);
+        if (value && value.trim()) {    
+            var as =props.lookups.actionsLookups.filter(function (lookup)  {if (lookup.indexOf(value) !== -1) return true; else return false})
+            //console.log(['GS have value',as]);
+            
+            setActionSuggestions(as)
+        } else {
+            //console.log(['GS no value',props.lookups.actionsLookups]);
+            setActionSuggestions(props.lookups.actionsLookups)
+        }
+    };
     // Autosuggest will call this function every time you need to clear suggestions.
     function  onSuggestionsClearRequested()  {
        setSuggestions([]);
@@ -95,6 +138,11 @@ export default function FormsManagerRow(props) {
     };
  
 
+    function  onActionSuggestionsClearRequested()  {
+        //console.log(['GS clear']);
+       setActionSuggestions([]);
+    };
+ 
 
     
 
@@ -112,7 +160,9 @@ export default function FormsManagerRow(props) {
                   </div>
                   
                   <label><span style={{ marginLeft:'0.5em', marginRight:'0.5em', clear:'both'}}>Description </span> <input  size='50'   
-                       type='text'  value={item.value}  onChange={function(e) { updateExampleContent(e.target.value)}} /></label>
+                       type='text'  value={item.value}  onChange={function(e) { 
+                           updateExampleContent(e.target.value)
+                        }} /></label>
                 
                    <label style={{float:'right', marginRight:'2em'}} >
                      <span  style={{float:'left', marginRight:'0.5em'}}>Tags </span>
@@ -132,6 +182,67 @@ export default function FormsManagerRow(props) {
                         onAddition={onTagAddition.bind(this)} /> 
                         </span>
                     </label>
+                     
+                     
+                    <span >
+                        <label><span style={{float:'left', marginRight:'1em', marginLeft:'1em' }}>Finished Action</span>
+                            
+                            <span style={{float:'left'}}><Autosuggest
+                            suggestions={actionSuggestions.map(function(suggestion) {return {tag: suggestion}})}
+                            shouldRenderSuggestions={function() {return true}}
+                            onSuggestionsFetchRequested={onActionSuggestionsFetchRequested}
+                            onSuggestionsClearRequested={onActionSuggestionsClearRequested}
+                            getSuggestionValue={function (suggestion)  {return suggestion.tag}}
+                            renderSuggestion={renderSuggestion}
+                            onSuggestionSelected={function(event, { suggestion, suggestionValue, suggestionIndex, sectionIndex, method }) {
+                                if (item) {
+                                    updateExampleField('finished',suggestionValue)
+                                    
+                                    //from suggestions param above - actionSuggestions.map(function(suggestion) {console.log(['GS',suggestion]); return {tag: suggestion}})
+                                    
+                                    //var newButton = button; 
+                                    //newButton.finished = suggestionValue; 
+                                    //updateListItemData('slots',buttonKey,newButton)
+                                }
+                                //updateRuleStep(triggerIntent,key,ruleStepType + ' '+suggestionValue)
+                            }}
+                            inputProps={{
+                                style:{width:'30em', display:'inline', float:'left'},
+                              value: item && item.finished ? item.finished : '',
+                              onChange: function(e) {
+                                  if (item) {
+                                      updateExampleField('finished',e.target.value)
+                                      //var newButton = button; 
+                                      //newButton.finished = e.target.value; 
+                                      //updateListItemData('slots',buttonKey,newButton)
+                                      //updateRuleStep(triggerIntent,key,ruleStepType + ' '+e.target.value)
+                                  }
+                                }
+                            }}
+                        /></span></label>
+                    </span>
+                        
+                    <span >
+                        {(item && item.finished && props.lookups.actionsLookups.indexOf(item.finished) === -1) && (
+                            <span >{item && <Button 
+                                style={{marginLeft:'1em'}} 
+                                onClick={function(e) {
+                                    addAction({name:item.finished}).then(function() {
+                                            setTimeout(props.updateFunctions.updateActions,500)
+                                    })
+                                }} variant="success">
+                                    Save New
+                            </Button>}</span>
+                        )}
+                        
+                        
+                        {(item && item.finished && props.lookups.actionsLookups.indexOf(item.finished)  !== -1) && <Link to={'/actions/filter/'+item.finished+ ((props.fromSkill && props.fromSkill.trim()) ? '/fromskill/' + props.fromSkill : '') + '/fromform/'+item.value } ><Button style={{marginLeft:'1em'}} variant="primary">Edit</Button></Link>}
+                        
+                    </span>
+                        
+                        
+                        
+                     
                      
                     {<div style={{marginTop:'0.5em', borderTop:'1px solid grey', clear:'both'}}>
                         <span style={{marginRight:'0.5em', float:'left'}}>Slots</span> 
@@ -182,7 +293,7 @@ export default function FormsManagerRow(props) {
                                     }}
                                 /></span></label></span>
                                 
-                                {(button && button.text && props.lookups.utterancesLookups.indexOf(button.text) === -1) && (
+                                <span style={{float:'left'}}>{(button && button.text && props.lookups.utterancesLookups.indexOf(button.text) === -1) && (
                                     <span >{button.text && <Button 
                                         style={{marginLeft:'1em'}} 
                                         onClick={function(e) {
@@ -195,7 +306,14 @@ export default function FormsManagerRow(props) {
                                 )}
                                 
                                 
-                                {(button && button.text && props.lookups.utterancesLookups.indexOf(button.text)  !== -1) && <Link to={'/utterances/filter/'+button.text+ ((props.fromSkill && props.fromSkill.trim()) ? '/fromskill/' + props.fromSkill : '') + '/fromaction/'+item.value } ><Button style={{marginLeft:'1em'}} variant="primary">Edit</Button></Link>}
+                                {(button && button.text && props.lookups.utterancesLookups.indexOf(button.text)  !== -1) && <Link to={'/utterances/filter/'+button.text+ ((props.fromSkill && props.fromSkill.trim()) ? '/fromskill/' + props.fromSkill : '') + '/fromform/'+item.value } ><Button style={{marginLeft:'1em'}} variant="primary">Edit</Button></Link>}
+                                
+                                </span>
+                                
+                                
+                                
+                                
+                                
                                 
                                <div  style={{marginLeft:'2em', marginTop:'0.5em', clear:'both'}} >
                                

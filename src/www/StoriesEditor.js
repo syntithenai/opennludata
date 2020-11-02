@@ -49,7 +49,7 @@ function StoriesEditor(props) {
         var final = []
         //console.log(['TORULES',Object.values(rules)])
         rules.map(function(rule) {
-            console.log(rule)
+            //console.log(rule)
            //if (rule.triggerIntent) 
            final.push( {story:rule.name, steps: rule.steps}  )
            return null
@@ -84,7 +84,7 @@ function StoriesEditor(props) {
     
     function save(newRules) {
         setRules(newRules)
-        console.log(['SAVE',newRules,toRulesArray(),props.setStories])
+        //console.log(['SAVE',newRules,toRulesArray(),props.setStories])
         props.setStories(toRulesArray())
     }
     
@@ -97,7 +97,7 @@ function StoriesEditor(props) {
     
         
     function addRule(source) {
-        console.log(['ADD RULE SRC',source])
+        //console.log(['ADD RULE SRC',source])
         var steps=[]
         if (source.indexOf('From story ') === 0) {
             var ruleName = source.slice(11)
@@ -120,7 +120,7 @@ function StoriesEditor(props) {
         }
         var newRules = rules
         newRules.unshift({name:newRuleName , steps:steps})
-        console.log(['ADD RULE SRC',newRules])
+        //console.log(['ADD RULE SRC',newRules])
         setNewRuleName('')
         save(newRules)
     }
@@ -311,7 +311,7 @@ function StoriesEditor(props) {
                                 var clickCreate = null
                                 if (ruleStepType === "utter") {
                                     createNewLabel = createNewLabel + 'Utterance '
-                                    suggestions = props.utterances ? props.utterances.filter(function(a) {if (a.indexOf(ruleStepName) !== -1) {return true} else return false }).sort() : []
+                                    suggestions = props.lookups.utterancesLookups ? props.lookups.utterancesLookups.filter(function(a) {if (a.indexOf(ruleStepName) !== -1) {return true} else return false }).sort() : []
                                     clickCreate = function(e) {
                                         props.createUtterance({name:ruleStepName}).then(function() {
                                                 setTimeout(props.updateFunctions.updateUtterances,500)
@@ -321,7 +321,7 @@ function StoriesEditor(props) {
                                 }
                                 if (ruleStepType === "action") {
                                     createNewLabel = createNewLabel + 'Action '
-                                    suggestions = props.actions ? props.actions.filter(function(a) {if (a.indexOf(ruleStepName) !== -1) {return true} else return false }).sort() : []
+                                    suggestions = [].concat((props.actions ? props.actions.filter(function(a) {if (a.indexOf(ruleStepName) !== -1) {return true} else return false }).sort() : []),['reset','start','finish','listen','nolisten'])
                                     clickCreate = function(e) {
                                         props.createAction(ruleStepName).then(function() {
                                                 setTimeout(props.updateFunctions.updateActions,500)

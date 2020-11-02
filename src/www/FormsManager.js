@@ -33,7 +33,7 @@ export default  function FormsManager(props) {
     //const [currentList, setCurrentList] = useState('')
 
     function getItemSize(index) {
-        console.log('action seiz',items,filteredItems)
+        //console.log('action seiz',items,filteredItems)
         var item = items[index]
         var baseSize = 0
         if (window.innerWidth < 430) {
@@ -46,7 +46,7 @@ export default  function FormsManager(props) {
         }
         var numResponses = item.responses ? item.responses.length : 0
         var numApis = item.apis ? item.apis.length : 0
-        console.log('action seiz',item.apis,item.responses, index, item,baseSize,numResponses)
+        //console.log('action seiz',item.apis,item.responses, index, item,baseSize,numResponses)
         return baseSize + numResponses * 70 + numApis * 70
     }
     

@@ -15,7 +15,7 @@ function useListItemRow(item, saveItem, splitNumber, style, lastSelected, setLas
 
 
     function addListItemData(type,data) {
-        console.log(['add',type,data])
+        //console.log(['add',type,data])
         var newItem = item
         var list = Array.isArray(item[type]) ? item[type] : []
         list.push(data)
@@ -24,7 +24,7 @@ function useListItemRow(item, saveItem, splitNumber, style, lastSelected, setLas
     }
     
     function deleteListItemData(type,index) {
-        console.log(['delete',type,index])
+        //console.log(['delete',type,index])
         if (window.confirm('Really delete?')) {
             var newItem = item
             var list = Array.isArray(item[type]) ? item[type].filter(function(data,key) {if (key !== index) return true; else return false }) : []
@@ -34,21 +34,21 @@ function useListItemRow(item, saveItem, splitNumber, style, lastSelected, setLas
     }
     
     function updateListItemData(type,index,data) {
-        console.log(['udpate',type,index,data,item])
+        //console.log(['udpate',type,index,data,item])
         var newItem = item
         var list = Array.isArray(item[type]) ? item[type] : []
-        console.log(['udpate',list, list.length, index])
+        //console.log(['udpate',list, list.length, index])
         if (list.length < index) {
             list[index] = data
         }
-        console.log(['udpateF',list])
+        //console.log(['udpateF',list])
         
         newItem[type] = list
         saveItem(newItem,splitNumber)
     }
     
     function moveListItemDataUp(type,index) {
-        console.log(['move down',type,index])
+        //console.log(['move down',type,index])
         var newItem = item
         var list = Array.isArray(item[type]) ? item[type] : []
         if (index > 0) {
@@ -61,7 +61,7 @@ function useListItemRow(item, saveItem, splitNumber, style, lastSelected, setLas
     }
 
     function moveListItemDataDown(type,index) {
-        console.log(['move up',type,index])
+        //console.log(['move up',type,index])
         var newItem = item
         var list = Array.isArray(item[type]) ? item[type] : []
         if (index <= list.length) {
@@ -77,7 +77,7 @@ function useListItemRow(item, saveItem, splitNumber, style, lastSelected, setLas
     //List items inside list inside ListItem
     
     function addListItemDataItem(type,index,field,data) {
-        console.log(['add item',type,index,field,data])
+        //console.log(['add item',type,index,field,data])
         var newItem = item
         var list = Array.isArray(item[type]) ? item[type] : []
         if (index < list.length && list[index]) {
@@ -92,7 +92,7 @@ function useListItemRow(item, saveItem, splitNumber, style, lastSelected, setLas
     }
     
     function deleteListItemDataItem(type,index,field,itemIndex) {
-        console.log(['delete item',type,index,field,itemIndex])
+        //console.log(['delete item',type,index,field,itemIndex])
         if (window.confirm('Really delete?')) {
             var newItem = item
             var list = Array.isArray(item[type]) ? item[type] : []
@@ -108,7 +108,7 @@ function useListItemRow(item, saveItem, splitNumber, style, lastSelected, setLas
     }
     
     function updateListItemDataItem(type,index,field,itemIndex,data) {
-        console.log(['udpate item',type,index,field,itemIndex,data])
+        //console.log(['udpate item',type,index,field,itemIndex,data])
         var newItem = item
         var list = Array.isArray(item[type]) ? item[type] : []
         if (index < list.length && list[index]) {
@@ -125,7 +125,7 @@ function useListItemRow(item, saveItem, splitNumber, style, lastSelected, setLas
     }
     
     function moveListItemDataItemUp(type,index,field,itemIndex) {
-        console.log(['move down item',type,index,field,itemIndex])
+        //console.log(['move down item',type,index,field,itemIndex])
         var newItem = item
         var list = Array.isArray(item[type]) ? item[type] : []
         if (index < list.length && list[index]) {
@@ -144,7 +144,7 @@ function useListItemRow(item, saveItem, splitNumber, style, lastSelected, setLas
     }
 
     function moveListItemDataItemDown(type,index,field,itemIndex) {
-        console.log(['move down item',type,index,field,itemIndex])
+        //console.log(['move down item',type,index,field,itemIndex])
         var newItem = item
         var list = Array.isArray(item[type]) ? item[type] : []
         if (index < list.length && list[index]) {
@@ -165,7 +165,7 @@ function useListItemRow(item, saveItem, splitNumber, style, lastSelected, setLas
     
     
      function onListItemTagDelete (type,index,field,fieldIndex,subField,subFieldIndex) {
-        console.log(['ontagdel',type,index,field,fieldIndex,subField,subFieldIndex])
+        //console.log(['ontagdel',type,index,field,fieldIndex,subField,subFieldIndex])
         //var newItem = item
         //var list = Array.isArray(item[type]) ? item[type] : []
         //if (index < list.length && list[index]) {
@@ -186,7 +186,7 @@ function useListItemRow(item, saveItem, splitNumber, style, lastSelected, setLas
      
       
      function onListItemTagAddition (type,index,field,fieldIndex,subField,subFieldValue) {
-        console.log(['ontagad',type,index,field,fieldIndex,subField,subFieldValue])
+        //console.log(['ontagad',type,index,field,fieldIndex,subField,subFieldValue])
         var newItem = item
         //var list = Array.isArray(item[type]) ? item[type] : []
         //if (index < list.length && list[index]) {
@@ -248,6 +248,17 @@ function useListItemRow(item, saveItem, splitNumber, style, lastSelected, setLas
         }
     }
     
+    function updateExampleField(field,content) {
+        //console.log(['UPDTEXT', item, content])
+        if (field && item && typeof content === "string") {
+            ////console.log('UPDTEXTREAL')
+            const newItem = item ? item : {} //JSON.parse(JSON.stringify(item));
+            
+            newItem[field] = content;
+            saveItem(newItem,splitNumber)
+        }
+    }
+    
      function updateExampleSynonym(content) {
         //console.log('UPDTEXT')
         if (item && typeof content === "string") {
@@ -283,7 +294,7 @@ function useListItemRow(item, saveItem, splitNumber, style, lastSelected, setLas
     } 
     
     return {    
-        selectionState, setSelectionState, tags, setTags, reactTags, onTagDelete, onTagAddition, updateExampleContent, updateExampleSynonym, selectItem, deselectItem, addListItemData, deleteListItemData, updateListItemData, moveListItemDataUp, moveListItemDataDown, addListItemDataItem, deleteListItemDataItem, updateListItemDataItem, moveListItemDataItemUp, moveListItemDataItemDown, onListItemTagDelete, onListItemTagAddition
+        selectionState, setSelectionState, tags, setTags, reactTags, onTagDelete, onTagAddition, updateExampleContent, updateExampleSynonym, updateExampleField, selectItem, deselectItem, addListItemData, deleteListItemData, updateListItemData, moveListItemDataUp, moveListItemDataDown, addListItemDataItem, deleteListItemDataItem, updateListItemDataItem, moveListItemDataItemUp, moveListItemDataItemDown, onListItemTagDelete, onListItemTagAddition
     }
     
 }

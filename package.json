@@ -52,10 +52,12 @@
     "react-scripts": "3.0.1",
     "react-tag-autocomplete": "^6.1.0",
     "react-window": "^1.8.5",
+    "react-youtube": "^7.13.0",
     "semantic-ui-css": "^2.4.1",
     "semantic-ui-react": "^1.2.1",
     "video-react": "^0.14.1",
-    "voicedialogjs": "file:../voicedialogjs"
+    "voicedialogjs": "file:../voicedialogjs",
+    "youtube-api-search": "0.0.5"
   },
   "devDependencies": {
     "concurrently": "^4.1.0",

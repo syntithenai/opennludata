@@ -8,12 +8,20 @@ import useListItemRow from './useListItemRow'
 import SuggestionComponent from './components/SuggestionComponent'
 import checkImage from './images/check.svg'
 import TagComponent from './components/TagComponent'
+import YouTube from 'react-youtube';
 
 import FileReaderInput from 'react-file-reader-input';
 import "video-react/dist/video-react.css"; // import css
 import { Player } from 'video-react';
 import AudioPlayer from 'react-h5-audio-player';
 import 'react-h5-audio-player/lib/styles.css';
+    
+    
+function YouTubeGetID(url){
+    url = url.split(/(vi\/|v%3D|v=|\/v\/|youtu\.be\/|\/embed\/)/);
+    return undefined !== url[2]?url[2].split(/[^0-9a-z_\-]/i)[0]:url[0];
+}
+
 
 export default function UtterancesManagerRow(props) {
         const  {item, splitNumber , style} = props;
@@ -25,6 +33,7 @@ export default function UtterancesManagerRow(props) {
         const [imageGrabUrl, setImageGrabUrl] = useState('')
         const [audioGrabUrl, setAudioGrabUrl] = useState('')
         const [videoGrabUrl, setVideoGrabUrl] = useState('')
+        const [frameGrabUrl, setFrameGrabUrl] = useState('')
         
         function updateExampleSynonymWrap(content) {
             updateExampleSynonym(content)
@@ -62,8 +71,18 @@ export default function UtterancesManagerRow(props) {
     
     
     function handleUrlGrab(type,url) {
-        addListItemData(type,{label:url,href:url}) 
-          
+        var videoId = YouTubeGetID(url)
+            
+        if (type==='video') {
+            console.log('ISYOUTUBE '+videoId)
+        }
+        
+        addListItemData(type,{label:url,href:url, youtubeVideoId: videoId, start:'', end:''}) 
+        setImageGrabUrl('')
+        setAudioGrabUrl('')
+        setVideoGrabUrl('')
+        setFrameGrabUrl('')
+         
         //// Initialize the XMLHttpRequest and wait until file is loaded
         //var xhr = new XMLHttpRequest();
         //xhr.onload = function () {
@@ -82,7 +101,7 @@ export default function UtterancesManagerRow(props) {
         //xhr.send();
 
     }
-         
+
        
        //var buttonImageStyle={color:'white', height:'2em'}
        return item && <div style={style} className={splitNumber % 2 ? 'ListItemOdd' : 'ListItemEven'}>
@@ -184,6 +203,9 @@ export default function UtterancesManagerRow(props) {
                             
                             <label>&nbsp;&nbsp;&nbsp;Label&nbsp;&nbsp; <input size="60" type="text" value={button.label} onChange={function(e) {var newButton = button; newButton.label = e.target.value; updateListItemData('images',buttonKey,newButton)}} /></label>
                             
+                            
+                            <label>&nbsp;&nbsp;&nbsp;URL&nbsp;&nbsp; <input size="60" type="text" value={button.href} onChange={function(e) {var newButton = button; newButton.href = e.target.value; updateListItemData('images',buttonKey,newButton)}} /></label>
+                            
                             <label>&nbsp;&nbsp;&nbsp;File&nbsp;&nbsp; 
                             
                                
@@ -215,10 +237,22 @@ export default function UtterancesManagerRow(props) {
                             <Button variant="primary"onClick={function(e) {moveListItemDataUp('audio', buttonKey)}}  > ^ </Button>
                             <Button variant="primary" onClick={function(e) {moveListItemDataDown('audio', buttonKey)}}  > v </Button>
                             
+                            
+                            
                             <label>&nbsp;&nbsp;&nbsp;Label&nbsp;&nbsp; <input size="60" type="text" value={button.label} onChange={function(e) {var newButton = button; newButton.label = e.target.value; updateListItemData('audio',buttonKey,newButton)}} /></label>
+                            
+                        
+                            
                              <label>&nbsp;&nbsp;&nbsp;Auto play?&nbsp;&nbsp; <input size="60" type="checkbox" checked={button.autoplay === 'true' ? true : false} onChange={function(e) { var newButton = button; newButton.autoplay = e.target.checked ? 'true' : 'false'; updateListItemData('video',buttonKey,newButton)}} /></label>
-                            {button.href && <span style={{marginLeft:'1em' ,position: 'relative', height:"100px", width:"100px" }}>
+                            
+                            {<>
+                                 <label>&nbsp;&nbsp;&nbsp;Start&nbsp;&nbsp; <input size="6" type="text" value={button.start} onChange={function(e) { var newButton = button; newButton.start = e.target.value; updateListItemData('audio',buttonKey,newButton)}} /></label>
                              
+                                 <label>&nbsp;&nbsp;&nbsp;End&nbsp;&nbsp; <input size="6" type="text" value={button.end} onChange={function(e) { var newButton = button; newButton.end = e.target.value; updateListItemData('audio',buttonKey,newButton)}} /></label>                            
+                            </>}
+                            
+                            
+                            {button.href && <span style={{marginLeft:'1em' ,position: 'relative', height:"100px", width:"100px" }}>
                              <audio
                                 src={button.href}
                                 controls
@@ -244,6 +278,9 @@ export default function UtterancesManagerRow(props) {
                             <Button variant="success" type="submit" >From URL</Button>
                         </form>
                         {Array.isArray(item.video) && item.video.map(function(button,buttonKey) {
+                        
+                        var videoId = YouTubeGetID(button.href)
+                        
                         return <div style={{marginTop:'1.5em'}} key={buttonKey}>
                             <Button variant="danger" onClick={function(e) {deleteListItemData('video', buttonKey)}} > X </Button>
                             <Button variant="primary"onClick={function(e) {moveListItemDataUp('video', buttonKey)}}  > ^ </Button>
@@ -252,13 +289,21 @@ export default function UtterancesManagerRow(props) {
                             <label>&nbsp;&nbsp;&nbsp;Label&nbsp;&nbsp; <input size="60" type="text" value={button.label} onChange={function(e) {var newButton = button; newButton.label = e.target.value; updateListItemData('video',buttonKey,newButton)}} /></label>
                             <label>&nbsp;&nbsp;&nbsp;Auto play?&nbsp;&nbsp; <input size="60" type="checkbox" checked={button.autoplay === 'true' ? true : false} onChange={function(e) { var newButton = button; newButton.autoplay = e.target.checked ? 'true' : 'false'; updateListItemData('video',buttonKey,newButton)}} /></label>
                             
-                          
-                            {button.href && <span style={{float:'right', position: 'relative', height:"100px", width:"100px" }}>
-                             <Player height={100} fluid={false} >
+                             <label>&nbsp;&nbsp;&nbsp;URL&nbsp;&nbsp; <input size="60" type="text" value={button.href} onChange={function(e) {var newButton = button; newButton.href = e.target.value; updateListItemData('video',buttonKey,newButton)}} /></label>
+                            
+                             {<>
+                                 <label>&nbsp;&nbsp;&nbsp;Start&nbsp;&nbsp; <input size="6" type="text" value={button.start} onChange={function(e) { var newButton = button; newButton.start = e.target.value; updateListItemData('video',buttonKey,newButton)}} /></label>
+                             
+                                 <label>&nbsp;&nbsp;&nbsp;End&nbsp;&nbsp; <input size="6" type="text" value={button.end} onChange={function(e) { var newButton = button; newButton.end = e.target.value; updateListItemData('video',buttonKey,newButton)}} /></label>                            
+                            </>}
+                            
+                            {false && <>{(videoId) && <YouTube opts={{height:'80', playerVars:{}}}  videoId={button.youtubeVideoId}  />}
+                            {(!videoId && button.href) && <span style={{position: 'relative', height:"80px", width:"80px" }}>
+                             <Player height={'80'} fluid={false} >
                               <source src={button.href} />
                             </Player>
                             </span>}
-                            
+                            </>}
                             </div>
                         })}
                     </div> 
@@ -266,8 +311,8 @@ export default function UtterancesManagerRow(props) {
                     
                     <div style={{marginTop:'0.5em', borderTop:'1px solid grey', clear:'both'}}>
                         <span style={{marginRight:'0.5em'}}>Frames</span> 
-                         <form  style={{float:'right'}} onSubmit={function(e) {e.preventDefault(); handleUrlGrab('frames',videoGrabUrl) }} >
-                            <input type='text' size="40" value={videoGrabUrl} onChange={function(e) {setVideoGrabUrl(e.target.value)}} />
+                         <form  style={{float:'right'}} onSubmit={function(e) {e.preventDefault(); handleUrlGrab('frames',frameGrabUrl) }} >
+                            <input type='text' size="40" value={frameGrabUrl} onChange={function(e) {setFrameGrabUrl(e.target.value)}} />
                             <Button variant="success" type="submit" >New Frame</Button>
                         </form>
                         {Array.isArray(item.frames) && item.frames.map(function(button,buttonKey) {

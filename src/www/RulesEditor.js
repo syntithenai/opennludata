@@ -23,7 +23,11 @@ function RulesEditor(props) {
     const [ruleFilter, setRuleFilter] = useState('')
     const [newRuleName, setNewRuleName] = useState('')
     const [suggestions, setSuggestions] = useState([])
+    const [formSuggestions, setFormSuggestions] = useState([])
     
+    const [newCondition, setNewCondition] = useState('')
+    const [conditions, setConditions] = useState([])
+        
     //console.log(['USE EFFECT RULES',props])
     useEffect(() => {
         var newRules = []
@@ -33,7 +37,7 @@ function RulesEditor(props) {
                 if (rule && Array.isArray(rule.steps) && rule.steps.length > 0  && rule.steps[0] && rule.steps[0].indexOf('intent ') === 0) {
                     var intentName = rule.steps[0].slice(7)
                     if (intentName) {
-                        newRules.push({name: rule.rule, triggerIntent: intentName, steps: rule.steps.slice(1)})
+                        newRules.push({name: rule.rule, triggerIntent: intentName, steps: rule.steps.slice(1), conditions: rule.conditions})
                     }
                 }
             })
@@ -50,9 +54,9 @@ function RulesEditor(props) {
         var final = []
         //console.log(['TORULES',Object.values(rules)])
         rules.map(function(rule) {
-            console.log(rule)
+            //console.log(rule)
            //if (rule.triggerIntent) 
-           final.push( {rule:rule.name, steps: [].concat(['intent ' + rule.triggerIntent],rule.steps)}  )
+           final.push( {rule:rule.name, steps: [].concat(['intent ' + rule.triggerIntent],rule.steps), conditions: rule.conditions}  )
            return null
         })
         return final
@@ -85,7 +89,7 @@ function RulesEditor(props) {
     
     function save(newRules) {
         setRules(newRules)
-        console.log(['SAVERULES',toRulesArray()])
+        //console.log(['SAVERULES',toRulesArray()])
         props.setRules(toRulesArray())
     }
     
@@ -100,6 +104,7 @@ function RulesEditor(props) {
     function addRule(intent) {
         var newRules = rules
         newRules.unshift({name:(newRuleName && newRuleName.trim()) ? newRuleName : intent, triggerIntent: intent, steps:[]})
+        setNewRuleName('')
         save(newRules)
     }
 
@@ -112,15 +117,59 @@ function RulesEditor(props) {
         }
     }
 
+
+    function moveRuleUp(ruleKey) {
+        //console.log(['moveup',ruleKey,rules])
+        var newRules = rules
+        if (Array.isArray(rules) && ruleKey > 0) {
+            const tmp = rules[ruleKey]
+            rules[ruleKey] = rules[ruleKey-1]
+            rules[ruleKey-1] = tmp
+            //console.log(['swapped',JSON.stringify(rules)])
+            //console.log(['swapped',index,JSON.stringify(rules[intent].steps)])
+        }
+        save(newRules)
+    }
+
+    function moveRuleDown(ruleKey) {
+        var newRules = rules
+        //console.log(['movedown',ruleKey,rules,rules[ruleKey + 1]])
+        if (Array.isArray(rules)  && ruleKey <= rules.length ) {
+            const tmp = rules[ruleKey + 1]
+            if (tmp) {
+                rules[ruleKey + 1] = rules[ruleKey]
+                rules[ruleKey] = tmp
+                //console.log(['swapped',JSON.stringify(rules)])
+            }
+            // else console.log('notmpe')
+        }
+        save(newRules)
+    }
+
+
+
+    function updateRuleTriggerIntent(ruleKey,intent) {
+        //console.log(['update rules step',intent,key,step])
+        var newRules = rules
+        var newRule = newRules[ruleKey]
+        if (newRule) {
+            newRule.triggerIntent = intent
+            newRules[ruleKey] = newRule
+            save(newRules)
+        }
+    }
+    
+    // STEPS
+
     function addRuleStep(ruleKey,type) {
-        console.log(['ADDSTEP',ruleKey,type])
+        //console.log(['ADDSTEP',ruleKey,type])
         var newRules = rules
         var newRule = newRules[ruleKey]
         if (newRule) {
             if (!Array.isArray(newRule.steps)) newRule.steps=[]
             newRule.steps.push(type+' ')
             newRules[ruleKey] = newRule
-            console.log(['ADDSTEP RULES',newRules])
+            //console.log(['ADDSTEP RULES',newRules])
             save(newRules)
         }
     }
@@ -136,17 +185,6 @@ function RulesEditor(props) {
         }
     }
     
-    function updateRuleTriggerIntent(ruleKey,intent) {
-        //console.log(['update rules step',intent,key,step])
-        var newRules = rules
-        var newRule = newRules[ruleKey]
-        if (newRule) {
-            newRule.triggerIntent = intent
-            newRules[ruleKey] = newRule
-            save(newRules)
-        }
-    }
-
     function deleteRuleStep(ruleKey,indexIn) {
         if (window.confirm('Really delete step?')) {
             var newRules = rules
@@ -158,33 +196,6 @@ function RulesEditor(props) {
         }
     }
 
-
-    function moveRuleUp(ruleKey) {
-        //console.log(['moveup',intent,index,rules])
-        var newRules = rules
-        if (Array.isArray(rules[ruleKey]) && ruleKey > 0) {
-            const tmp = rules[ruleKey]
-            rules[ruleKey] = rules[ruleKey-1]
-            rules[ruleKey-1] = tmp
-            //console.log(['swapped',index,JSON.stringify(rules[intent].steps)])
-        }
-        save(newRules)
-    }
-
-    function moveRuleDown(ruleKey) {
-        var newRules = rules
-        //console.log(['movedown',intent,index,rules])
-        if (Array.isArray(rules)  && ruleKey <= rules.length ) {
-            const tmp = rules[ruleKey + 1]
-            if (tmp) {
-                rules[ruleKey + 1] = rules[ruleKey]
-                rules[ruleKey] = tmp
-                //console.log(['swapped',index,JSON.stringify(rules[intent].steps)])
-            }
-            // else console.log('notmpe')
-        }
-        save(newRules)
-    }
 
     function moveRuleStepUp(ruleKey,index) {
         //console.log(['moveup',intent,index,rules])
@@ -212,7 +223,83 @@ function RulesEditor(props) {
         }
         save(newRules)
     }
+    
+    
+    
+    
+    
+     // CONDITIONS 
 
+    function addRuleCondition(ruleKey,type) {
+        //console.log(['ADD cond',ruleKey,type])
+        var newRules = rules
+        var newRule = newRules[ruleKey]
+        if (newRule) {
+            if (!Array.isArray(newRule.conditions)) newRule.conditions=[]
+            newRule.conditions.push(type+' ')
+            newRules[ruleKey] = newRule
+            //console.log(['ADD cond RULES',newRules])
+            save(newRules)
+        }
+    }
+    
+    function updateRuleCondition(ruleKey,key,condition) {
+        //console.log(['update rules condition',intent,key,condition])
+        var newRules = rules
+        var newRule = newRules[ruleKey]
+        if (newRule.conditions) {
+            newRule.conditions[key] = condition
+            newRules[ruleKey] = newRule
+            save(newRules)
+        }
+    }
+    
+    function deleteRuleCondition(ruleKey,indexIn) {
+        if (window.confirm('Really delete condition?')) {
+            var newRules = rules
+            const index = parseInt(indexIn)
+            if (rules && rules[ruleKey] && Array.isArray(rules[ruleKey].conditions) && index !== NaN ) {
+                newRules[ruleKey].conditions.remove(index)
+            }
+            save(newRules)
+        }
+    }
+
+
+    function moveRuleConditionUp(ruleKey,index) {
+        //console.log(['moveup',intent,index,rules])
+        var newRules = rules
+        if (rules && rules[ruleKey] && Array.isArray(rules[ruleKey].conditions) && index > 0) {
+            const tmp = rules[ruleKey].conditions[index]
+            rules[ruleKey].conditions[index] = rules[ruleKey].conditions[index-1]
+            rules[ruleKey].conditions[index-1] = tmp
+            //console.log(['swapped',index,JSON.stringify(rules[intent].conditions)])
+        }
+        save(newRules)
+    }
+
+    function moveRuleConditionDown(ruleKey,index) {
+        var newRules = rules
+        //console.log(['movedown',intent,index,rules])
+        if (rules && rules[ruleKey] && Array.isArray(rules[ruleKey].conditions)  && index <= rules[ruleKey].conditions.length ) {
+            const tmp = rules[ruleKey].conditions[index + 1]
+            if (tmp) {
+                rules[ruleKey].conditions[index + 1] = rules[ruleKey].conditions[index]
+                rules[ruleKey].conditions[index] = tmp
+                //console.log(['swapped',index,JSON.stringify(rules[intent].conditions)])
+            }
+            // else console.log('notmpe')
+        }
+        save(newRules)
+    }
+    
+    
+    
+    
+    
+    
+    
+    
     // STEP AUTOCOMPLETE FUNCTIONS
     function searchShowAll() {
         //setSearchResults(Object.values(props.lookups.skills))
@@ -235,13 +322,23 @@ function RulesEditor(props) {
        setSuggestions([]);
     };
 
+        // Autosuggest will call this function every time you need to update suggestions.
+    function onFormSuggestionsFetchRequested ({ value }) {
+         setFormSuggestions(props.lookups.formsLookups ? ['None'].concat(props.lookups.formsLookups.filter(function(a) {if (a.indexOf(value) !== -1) {return true} else return false }).sort()) : ['None'])
+         
+                                    
+    };
+
+    // Autosuggest will call this function every time you need to clear suggestions.
+    function  onFormSuggestionsClearRequested()  {
+       setFormSuggestions([]);
+    };
+
     
     
     return (
         <div>
 
-        
-     
             <label style={{float:'left'}}>
               <input type='text' value={newRuleName} onChange={function(e) {setNewRuleName(e.target.value)}} />
             </label>
@@ -263,7 +360,9 @@ function RulesEditor(props) {
                         
                         var steps = (Array.isArray(rule.steps) && rule.steps.length > 0) ? rule.steps : []
                        return (
-                       <div key={key} style={{clear:'both'}}>
+                       <div key={key} style={{clear:'both', borderTop:'2px solid black'}}>
+                       
+                       
                        <hr style={{clear:'both', width:'100%'}} />
                        <Button style={{float:'right', width:'10em', marginBottom:'0.5em'}} size="sm" variant="danger" onClick={function(e) {deleteRule(key)}} > Delete Rule </Button>
                        
@@ -277,7 +376,75 @@ function RulesEditor(props) {
                         
                        <span  >&nbsp;&nbsp;<label style={{fontWeight:'bold'}} >Description </label> <input size='40' type='text' value={rule.name} onChange={function(e) {setRuleName(key, e.target.value)}} /></span>  
                        
+                       
+                       
+                        
+                        
+                        
                         <div  style={{clear:'both', width: '100%'}}  >
+                            <b>Conditions</b>
+                            <div style={{fontWeight:'bold', width: '100%'}} >
+                            {rule.conditions && rule.conditions.map(function(step,stepKey) {
+                                var parts = step.split(' ')
+                                var ruleStepType = parts[0].trim()
+                                var ruleStepName = parts.slice(1).join(' ')
+                                //console.log(props.lookups)
+                                var suggestions = []
+                                var createNewLabel = 'Create New Condition'
+                                
+                                return <div  style={{width: '100%'}} key={stepKey} >
+                                <br/>
+                                <span style={{float:'left', clear:'both'}} >
+                                    {<Button  variant="danger" onClick={function(e) {e.preventDefault(); deleteRuleCondition(key,stepKey)}} > X </Button>}
+                                    
+                                    &nbsp;&nbsp;<Button variant="primary" onClick={function(e) {moveRuleConditionUp(key,stepKey)}} > ^ </Button> 
+                                    &nbsp;<Button variant="primary" onClick={function(e) {moveRuleConditionDown(key,stepKey)}} > v </Button>
+                                   
+                                    &nbsp;&nbsp;<b>{ruleStepType.padEnd(12,' ')}&nbsp;&nbsp;</b>
+                                </span>
+                                <span style={{float:'left', width:'20em', display:'inline'}} >
+                                       
+                                        
+                                        {ruleStepType === 'has_slot' && <input style={{float:'left', width:'20em', display:'inline'}} type="text" value={ruleStepName}  onChange={function(e) {updateRuleCondition(key,stepKey,ruleStepType + ' '+e.target.value)}} />}
+                                        
+                                        {ruleStepType === 'active_form' && <Autosuggest
+                                            suggestions={formSuggestions.map(function(suggestion) {return {tag: suggestion}})}
+                                            shouldRenderSuggestions={function() {return true}}
+                                            onSuggestionsFetchRequested={onFormSuggestionsFetchRequested}
+                                            onSuggestionsClearRequested={onFormSuggestionsClearRequested}
+                                            getSuggestionValue={function (suggestion)  { return suggestion.tag}}
+                                            renderSuggestion={renderSuggestion}
+                                            onSuggestionSelected={function(event, { suggestion, suggestionValue, suggestionIndex, sectionIndex, method }) {
+                                                updateRuleCondition(key,stepKey,ruleStepType + ' '+suggestionValue)
+                                            }}
+                                            inputProps={{
+                                                style:{width:'30em', display:'inline', float:'left'},
+                                              value: ruleStepName,
+                                              onChange: function(e) {updateRuleCondition(key,stepKey,ruleStepType + ' '+e.target.value)}
+                                            }}
+                                        />}
+                                        
+                                </span>
+                               
+                               </div>
+                            })}
+                            <span style={{float:'left', clear:'both'}}  ><br/><DropDownSelectorComponent  variant = "success" title={'New Condition'} options={['is_conversation_start','has_slot','active_form']} selectItem = {function(v) {addRuleCondition(key,v)}} /></span>
+                            </div> 
+                            <span style={{float:'left', clear:'both'}} ><br/><br/></span>
+                        </div>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <div  style={{clear:'both', width: '100%'}}  >
+                            <b>Steps</b>
                             <div style={{fontWeight:'bold', width: '100%'}} >
                             {steps.map(function(step,stepKey) {
                                 var parts = step.split(' ')
@@ -290,7 +457,7 @@ function RulesEditor(props) {
                                 var editLink=''
                                 if (ruleStepType === "utter") {
                                     createNewLabel = createNewLabel + 'Utterance '
-                                    suggestions = props.utterances ? props.utterances.filter(function(a) {if (a.indexOf(ruleStepName) !== -1) {return true} else return false }).sort() : []
+                                    suggestions = props.lookups.utterancesLookups ? props.lookups.utterancesLookups.filter(function(a) {if (a.indexOf(ruleStepName) !== -1) {return true} else return false }).sort() : []
                                     clickCreate = function(e) {
                                         props.createUtterance({name:ruleStepName}).then(function() {
                                                 setTimeout(props.updateFunctions.updateUtterances,500)
@@ -300,7 +467,8 @@ function RulesEditor(props) {
                                 }
                                 if (ruleStepType === "action") {
                                     createNewLabel = createNewLabel + 'Action '
-                                    suggestions = props.actions ? props.actions.filter(function(a) {if (a.indexOf(ruleStepName) !== -1) {return true} else return false }).sort() : []
+                                    suggestions = [].concat((props.actions ? props.actions.filter(function(a) {if (a.indexOf(ruleStepName) !== -1) {return true} else return false }).sort() : []),['reset','start','finish','listen','nolisten'])
+
                                     clickCreate = function(e) {
                                         props.createAction(ruleStepName).then(function() {
                                                 setTimeout(props.updateFunctions.updateActions,500)
@@ -322,15 +490,7 @@ function RulesEditor(props) {
                                 if (ruleStepType === "checkpoint") {
                                     createNewLabel = createNewLabel + 'Checkpoint '
                                     suggestions = []
-                                    //clickCreate = function(e) {
-                                        //props.createAction({name:ruleStepName}).then(function() {
-                                                //setTimeout(props.updateFunctions.updateActions,500)
-                                        //})
-                                    //}
                                 }
-                                
-                                // TODO
-                                //var suggestions = (ruleStepType === "utter") ? (props.utterances ? props.utterances.filter(function(a) {if (a.indexOf(ruleStepName) !== -1) {return true} else return false }).sort() : []) : ((ruleStepType === "action") ? (props.actions ? props.actions.filter(function(a) {if (a.indexOf(ruleStepName) !== -1) {return true} else return false }).sort() : []) : [])
                                 
                                 
                                 return <div  style={{width: '100%'}} key={stepKey} >
@@ -381,6 +541,9 @@ function RulesEditor(props) {
                             </div> 
                             <span style={{float:'left', clear:'both'}} ><br/><br/></span>
                         </div>
+                        
+                        
+                        
                         
                        </div>
                         )

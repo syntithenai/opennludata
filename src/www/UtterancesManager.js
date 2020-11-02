@@ -22,39 +22,53 @@ const RenderRow = function(props) {
 }
 
 export default  function UtterancesManager(props) {
-    const {items, listFilterValue, setListFilterValue, loadAll, deleteItem , findKeyBy, searchFilter, setSearchFilter, tagAllValue, setTagAllValue, listRef, tagAll,untagAll, resetSelection, selectAll, saveItemWrap,  filteredItems, deleteAll, createEmptyItem, sort, lastSelected, setLastSelected, selectBetween, fromSkill, fromAction} = useListItemEditor('nlutool','utterances','alldata', props.updateFunctions.updateUtterances,[], props.updateFunctions.setIsChanged)
+    const {items, listFilterValue, setListFilterValue, loadAll, deleteItem , findKeyBy, searchFilter, setSearchFilter, tagAllValue, setTagAllValue, listRef, tagAll,untagAll, resetSelection, selectAll, saveItemWrap,  filteredItems, deleteAll, createEmptyItem, sort, lastSelected, setLastSelected, selectBetween, fromSkill, fromAction, fromForm} = useListItemEditor('nlutool','utterances','alldata', props.updateFunctions.updateUtterances,[], props.updateFunctions.setIsChanged)
     //const [currentList, setCurrentList] = useState('')
 
     function getItemSize(index) {
         var buttonOffset = 0;
         var size=0;
         var item = items[index]
-        if (item && item.buttons) {
-            buttonOffset = item.buttons.length * 100;
+        if (item && item.buttons && item.buttons.length) {
+            buttonOffset = buttonOffset + (item.buttons.length) * 80;
+        } else {
+            buttonOffset = buttonOffset +50
         }
-        if (item && item.images) {
-            buttonOffset = buttonOffset + item.images.length * 110;
+        if (item && item.images && item.images.length) {
+            buttonOffset = buttonOffset + (item.images.length) * 80;
+        } else {
+            buttonOffset = buttonOffset +50
         }
-        if (item && item.texts) {
-            buttonOffset = buttonOffset + item.texts.length * 110;
+        if (item && item.texts && item.texts.length) {
+            buttonOffset = buttonOffset + (item.texts.length) * 80;
+        } else {
+            buttonOffset = buttonOffset +50
         }
-        if (item && item.audio) {
-            buttonOffset = buttonOffset + item.audio.length * 120;
+        if (item && item.audio && item.audio.length) {
+            buttonOffset = buttonOffset + (item.audio.length) * 80;
+        } else {
+            buttonOffset = buttonOffset +50
         }
-        if (item && item.video) {
-            buttonOffset = buttonOffset + item.video.length * 160;
+        if (item && item.video && item.video.length) {
+            buttonOffset = buttonOffset + (item.video.length) * 210;
+        } else {
+            buttonOffset = buttonOffset +50
         }
-        if (item && item.frames) {
-            buttonOffset = buttonOffset + item.frames.length * 160;
+        if (item && item.frames && item.frames.length) {
+            buttonOffset = buttonOffset + (item.frames.length) * 200;
+        } else {
+            buttonOffset = buttonOffset +50
         }
+        //console.log(['UT SIZE',buttonOffset,item])
         if (window.innerWidth < 430) {
                size = 450
         // medium screen tablet
         } else if (window.innerWidth <= 768) {
-               size = 400
+               size = 220
         } else {
-            size = 390
+            size = 120
         }
+        //console.log(['UT SIZE',buttonOffset,size,item])
         return size + buttonOffset
     }
 
@@ -104,7 +118,7 @@ export default  function UtterancesManager(props) {
     return <div>
        
                    
-        {<UtterancesManagerSearchBar {...props} fromSkill={fromSkill} fromAction={fromAction} searchFilter={searchFilter} setSearchFilter={setSearchFilter} listFilterValue={listFilterValue} setListFilterValue={setListFilterValue} resetSelection={resetSelection} selectAll={selectAll} createEmptyItem={createEmptyItem} sort={sort}  />}
+        {<UtterancesManagerSearchBar {...props} fromSkill={fromSkill} fromAction={fromAction} fromForm={fromForm} searchFilter={searchFilter} setSearchFilter={setSearchFilter} listFilterValue={listFilterValue} setListFilterValue={setListFilterValue} resetSelection={resetSelection} selectAll={selectAll} createEmptyItem={createEmptyItem} sort={sort}  />}
          
          
          {renderEditor(props)}

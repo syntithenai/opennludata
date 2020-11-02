@@ -42,7 +42,7 @@ export default function NluExampleRow(props) {
               </Button>
               <Button variant="info" size="sm" onClick={function(e) {entityDelete(i,'')}} >X</Button>
               <Dropdown.Menu>
-                  <form  style={{display:'inline'}} onSubmit={function(e) {e.preventDefault(); console.log(['ETT',i,entity.type]); entityTypeChanged(i,entity.type);   return false}} >
+                  <form  style={{display:'inline'}} onSubmit={function(e) {e.preventDefault();  entityTypeChanged(i,entity.type);   return false}} >
                     <div className="form-group">
                       <input type="text" className="form-control" onChange={function(e) {entityTypeChanged(i,e.target.value)}}
                     value={entity.type} />
@@ -63,7 +63,7 @@ export default function NluExampleRow(props) {
           <Button  variant='success' size="sm" >New Entity</Button>
 
           <Dropdown.Menu>
-           <form style={{display:'inline'}} onSubmit={function(e) {e.preventDefault(); entityTypeChanged(-1,newEntity); console.log('ETT'); return false}}>
+           <form style={{display:'inline'}} onSubmit={function(e) {e.preventDefault(); entityTypeChanged(-1,newEntity);  return false}}>
                 <div className="form-group">
                   ss<input type="text" className="form-control" onChange={function(e) {setNewEntity(e.target.value)}}
                 value={newEntity} />

@@ -39,7 +39,7 @@ export default  function NluSkillsEditor(props) {
              }
              return item
          })
-         console.log(['newdups',newDups])
+         //console.log(['newdups',newDups])
          return updateIntents(newDups)
      } 
       
@@ -84,7 +84,7 @@ export default  function NluSkillsEditor(props) {
     var width=props.lookups.isBigScreen ? "69%" : "100%"
             
     return <div>
-        { props.lookups.isBigScreen && <div style={{width:'30%', minHeight:'800px', float:'right', borderLeft:'2px solid black'}}>
+        { (currentSkill && props.lookups.isBigScreen) && <div style={{width:'30%', minHeight:'800px', float:'right', borderLeft:'2px solid black'}}>
         <ChatPage {...props}   user={props.user} currentSkill={currentSkill}    lookups={props.lookups}  startWaiting={props.startWaiting} stopWaiting={props.stopWaiting} updateFunctions={props.updateFunctions}  setPageMessage={props.setPageMessage}  publish={true}   getAxiosClient={props.getAxiosClient} hideBackLink={true} />
                          
         </div>}

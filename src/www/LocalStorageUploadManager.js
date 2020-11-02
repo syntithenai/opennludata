@@ -37,6 +37,7 @@ function FilesList(props) {
     
      const { items} = props  
      var saveSkill=function (skill) {
+         console.log(['IMPORT COMPLETE NOW SAVE SKILL',skill])
         localforageStorageImport.setItem('alldata',skill).then(function() {
             props.history.push('/importreview')
         })

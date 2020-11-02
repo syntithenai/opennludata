@@ -32,10 +32,14 @@ const ActionsManagerSearchBar = function(props) {
                       {topTagOptions} 
                   </Dropdown.Menu>
                 </Dropdown>}
-              <Button  style={{marginLeft:'1em'}} variant="success" onClick={function(e) {props.createEmptyItem(props.listFilterValue)}} >New Action</Button>
+              <Button  style={{marginLeft:'1em'}} variant="success" onClick={function(e) {props.createEmptyItem(props.listFilterValue,'resolve(output,slots)')}} >New Action</Button>
               <Button  style={{marginLeft:'1em'}} variant="primary" onClick={function(e) {props.sort(function(a,b) { if (a.value < b.value) return -1; else return 1;})}} >Sort</Button>
               
-              {props.fromSkill && <Link to={'/skills/skill/'+props.fromSkill}><Button  style={{marginLeft:'1em', float:'right'}} variant="warning"  >Back to Skill</Button></Link>}
+              {(props.fromSkill && !props.fromForm) && <Link to={'/skills/skill/'+props.fromSkill}><Button  style={{marginLeft:'1em', float:'right'}} variant="warning"  >Back to Skill</Button></Link>}
+              
+              {(props.fromForm) && <Link to={'/forms/filter/'+props.fromForm+((props.fromSkill && props.fromSkill.trim()) ? '/fromskill/' + props.fromSkill : '')}><Button  style={{marginLeft:'1em', float:'right'}} variant="warning"  >Back to Form</Button></Link>}
+              
+              
         </div>
 }
 export default ActionsManagerSearchBar

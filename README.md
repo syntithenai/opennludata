@@ -1,3 +1,74 @@
+
+# BUG
+- api search tag fails when used with /fromskill
+
+- entities slots editor
+
+- firefox 
+    - broken import - skill and intents but no others
+    - responses/actions - multi click then "response could not be cloned"
+
+
+# TODO
+
+- music player 
+    - next/prev/stop
+    - play many
+
+- slot featurization
+- predict use history slice ?
+
+- ace editor fullscreen
+
+- apis
+  - wikipedia
+  - hassio
+  - jamendo
+  - musicbrainz
+  - ala animals
+  - gmail/calendar
+  - gdocs
+  
+  
+- apis have packages => window scope  
+  
+- restrict form to two sequential tries of same slot before dropout
+- goals - finish goal -> end conversation
+- sizE limit on embedded response files
+
+- external tts
+- external nlu
+- audio input
+- interactive learning
+- deploy
+  - alexa endpoint/serverless
+  - hermod
+  - linux/pi
+  - rasa
+
+- import/export nlp.js
+- export RASA2 from stories/rules
+- mix entities - duplicate intents
+- auto remove duplicate tags on save
+
+- docs 
+    - opennlu format
+    - actions and apis - available vars in scope
+    - default actions
+    - stories and rules
+    
+- log nlu and stories
+- server side actions (select option python/js/node_
+- form as action ?
+- OR in stories
+- form tagall/deleteAll
+- autotrain on changed
+- rules/stories/forms tab with form select override finished action -> dialogman run form 
+- skill settings - invocation, description
+- api help text per function
+
+
+
 Visit https://opennludata.org/ 
 
 

@@ -29,7 +29,7 @@ export default function NluSkillEditorComponent(props) {
     const [suggestions, setSuggestions] = useState([])
     
     function addIntent(intentName,skillId) {
-         console.log(['ADD intent',intentName,skillId])
+         //console.log(['ADD intent',intentName,skillId])
          return new Promise(function(resolve,reject) {
              //if (intentName && intentName.trim()) {
                      var examplesStorage = localforage.createInstance({
@@ -95,7 +95,24 @@ export default function NluSkillEditorComponent(props) {
            
             //const utteranceTags = props.currentSkill && props.currentSkill.utterances ? props.currentSkill.utterances.map(function(listItem,listItemKey) {return {id:listItemKey, name:listItem} }) : []
             //const utteranceListTags = props.currentSkill && props.currentSkill.utterancesLists ? props.currentSkill.utterancesLists.map(function(listItem,listItemKey) {return {id:listItemKey, name:listItem} }) : []
-            const slots = props.currentSkill && props.currentSkill.rasa && props.currentSkill.rasa.slots ? props.currentSkill.rasa.slots : props.entitiesForSkill;
+            var currentSlots = props.currentSkill && props.currentSkill.rasa && props.currentSkill.rasa.slots ? props.currentSkill.rasa.slots : {}
+            // ensure slots for entities
+            var slots = {}
+            if (props.entitiesForSkill) {
+                Object.keys(props.entitiesForSkill).map(function(entity) {
+                    //console.log(['MESLOT',entity])
+                    if (!slots[entity]) {
+                        slots[entity] = {slotType:''}
+                    }  
+                })
+            }
+            Object.keys(currentSlots).map(function(slotKey) {
+                slots[slotKey] =   currentSlots[slotKey]
+            })
+            
+            //slots = Object.assign(newSlots,slots)
+            //console.log(['MESLOT rasa ',(props.currentSkill && props.currentSkill.rasa) ? props.currentSkill.rasa : ''])
+            //console.log(['MESLOT entforskill',props.entitiesForSkill])
             const skillTags = props.currentSkill && props.currentSkill.tags ? props.currentSkill.tags.map(function(tag,i) {return {id: i, name: tag}}):[]
             return <div>
                         <span style={{float:'left', fontWeight: 'bold', fontSize:'1.7em'}} >{props.skillFilterValue} </span>
@@ -114,6 +131,8 @@ export default function NluSkillEditorComponent(props) {
                                 onAddition={function(tag) {props.addSkillTag(tag)}} />
                             </span>
                         </div>
+                        
+                        
                         <div style={{clear:'both', marginTop:'0.7em', marginBottom:'0.7em', borderTop: '2px solid black'}} >
                             <b style={{marginRight:'1em', marginLeft:'0.5em'}} >Intents</b>
                             <span>{Object.keys(props.collatedItems).sort().map(function(collatedIntent, i) {
@@ -141,6 +160,11 @@ export default function NluSkillEditorComponent(props) {
                                     }
                                     
                             })}</span>
+                            
+                            
+                           
+                            
+                            
                             <span style={{marginLeft:'1em'}} >
                             <Autosuggest 
                                 suggestions={Object.keys(props.collatedItems).sort().map(function(suggestion) {return {tag: suggestion}})}
@@ -159,7 +183,6 @@ export default function NluSkillEditorComponent(props) {
                                 }}
                             />&nbsp;<Button  style={{display:'inline'}}  variant="success" onClick={function() {
                                 addIntent(newIntentName,props.skillFilterValue).then(function() {
-                                  console.log('added')  
                                   var intentExt = newIntentName && newIntentName.trim() ? '/intent/'+newIntentName : ''
                                   setNewIntentName('')
                                   props.history.push('/examples/skill/'+props.skillFilterValue+intentExt)
@@ -168,7 +191,8 @@ export default function NluSkillEditorComponent(props) {
                             </span>
                         </div>
                         
-                        <div style={{marginTop:'0.7em', borderTop: '2px solid black'}} >
+                        
+                         {<div style={{marginTop:'0.7em', borderTop: '2px solid black'}} >
                             <b style={{marginRight:'1em', marginLeft:'0.5em'}} >Entities</b><Tabs defaultActiveKey="entity-0" id="entities-tabs">{Object.keys(props.entitiesForSkill).map(function(collatedEntity, i) {
                          
                                 const listTags = props.currentSkill && props.currentSkill.entities && props.currentSkill.entities[collatedEntity] && props.currentSkill.entities[collatedEntity].lists ? props.currentSkill.entities[collatedEntity].lists.map(function(listItem,listItemKey) {return {id:listItemKey, name:listItem} }) : []
@@ -232,7 +256,33 @@ export default function NluSkillEditorComponent(props) {
 
                         })}
                         </Tabs>
-                        </div>
+                        </div>}
+                        
+                        
+                         <div style={{marginBottom:'1em', marginLeft:'0.4em', marginTop:'0.7em', borderTop: '2px solid black'}} >
+                                 <b style={{marginRight:'1em'}} >Slots</b>
+                                 <form onSubmit={function(e) {e.preventDefault(); props.newSlot(props.newSlotValue,slots)}} ><input value={props.newSlotValue} onChange={function(e) {props.setNewSlotValue(e.target.value)}} /><Button size="sm" onClick={function() {props.newSlot(props.newSlotValue,slots)}}>New Slot</Button>
+                                 </form>
+                                  <div style={{marginTop:'0.7em'}} >{Object.keys(slots).map(function(collatedEntity, i) { 
+                                      const listTags = props.currentSkill && props.currentSkill.entities && props.currentSkill.entities[collatedEntity] && props.currentSkill.entities[collatedEntity].lists ? props.currentSkill.entities[collatedEntity].lists.map(function(listItem,listItemKey) {return {id:listItemKey, name:listItem} }) : []
+                                
+                                        return <span style={{ height: '2em', margin:'1em', padding:'0.5em', border: '3px solid grey', borderRadius:'15px' }}  title={collatedEntity}  key={collatedEntity}>
+                                                        <span style={{height: '2em', marginTop:'0.5em'}} ><DropDownComponent options={Object.keys(RASA.slotTypes)} title={collatedEntity} value={props.currentSkill.rasa && props.currentSkill.rasa.slots && props.currentSkill.rasa.slots[collatedEntity] && props.currentSkill.rasa.slots[collatedEntity].slotType ? props.currentSkill.rasa.slots[collatedEntity].slotType : 'unfeaturized'} selectItem={function(entityType) {
+                                                                props.setRASASlotType(collatedEntity,entityType,slots)
+                                                            }} />&nbsp;&nbsp;{props.entitiesForSkill[collatedEntity] &&  <DropDownComponent 
+                                                                 options={RASA.autofillOptions} 
+                                                                 title="autofill" 
+                                                                 value={props.currentSkill.rasa && props.currentSkill.rasa.slots && props.currentSkill.entities[collatedEntity] && props.currentSkill.rasa.slots[collatedEntity] && props.currentSkill.rasa.slots[collatedEntity].slotAutofill && props.currentSkill.rasa.slots[collatedEntity].slotAutofill.trim().length > 0 ? props.currentSkill.rasa.slots[collatedEntity].slotAutofill : 'Yes'} selectItem={function(entityType) {
+                                                                props.setRASASlotAutofill(collatedEntity,entityType,slots)
+                                                            }} />}{ !(props.entitiesForSkill && props.entitiesForSkill[collatedEntity]) && <Button variant="danger"  size="sm" style={{marginLeft:'0.5em',  fontWeight:'bold', borderRadius:'15px', marginTop:'0.2em'}} onClick={function(e) {props.deleteSlot(collatedEntity,slots)}}>X</Button>}
+                                                        </span></span>
+                                            //}
+                                            
+                                    })}</div>
+                            </div>
+
+                        
+                       
                         
                         {false &&
                         
