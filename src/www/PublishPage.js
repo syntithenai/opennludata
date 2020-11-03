@@ -12,7 +12,7 @@ export default  function PublishPage(props) {
     return <div>
              <Link to={"/skills/skill/"+props.currentSkill.title} ><Button variant="success" style={{float:'right'}} >Back to Skill</Button></Link>
              <h1>Publish</h1>
-                <div>Ready to share your skill - <b>{props.currentSkill.title}</b>,  so other people can download and remix your intents, entities and utterances into new skills.</div>
+                <div>Ready to share your skill - <b>{props.currentSkill.title}</b>,  so other people can chat with your skill as well as download and remix into new skills.</div>
                 <br/>
                 <div ><b>By publishing your extension, you are agreeing to the following</b>
                 <ul>

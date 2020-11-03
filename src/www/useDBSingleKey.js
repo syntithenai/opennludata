@@ -8,7 +8,7 @@ import localforage from 'localforage'
 
 // handle list updates with minimum disruption to top level items
 function reducer(state, action) {
-    if (Array.isArray(state)) {
+    //if (Array.isArray(state)) {
         const index = parseInt(action.index)
         ////console.log(['REDUCE',action.type,action.index, action.item,action.items,state])
         switch (action.type) {
@@ -60,9 +60,9 @@ function reducer(state, action) {
           throw new Error('Invalid reduction in useDBSingleKey');
      
         }
-    } else {
-         return []
-     }
+    //} else {
+         //return []
+     //}
     
 }
 
@@ -85,14 +85,16 @@ export default function useDB(database, databaseTable,singleKey, initialData=[],
     
     useEffect(function() {
         console.log(['dbsingle key items updated',items])
-        var cleanItems = []
-        try {
-            cleanItems = JSON.parse(JSON.stringify(items))
-            console.log(['dbsingle key items updated CLEAN',cleanItems])
-            localforageStorage.setItem(singleKey,cleanItems)  
-        } catch (e) {
-            console.log(e)
+        //var cleanItems = []
+        //try {
+            //cleanItems = JSON.parse(JSON.stringify(items))
+            //console.log(['dbsingle key items updated CLEAN',cleanItems])
+        if (typeof items === "object") {
+            localforageStorage.setItem(singleKey,items)  
         }
+        //} catch (e) {
+            //console.log(e)
+        //}
     // eslint-disable-next-line react-hooks/exhaustive-deps
     },[items])
 
@@ -117,7 +119,7 @@ export default function useDB(database, databaseTable,singleKey, initialData=[],
     
     // save or create
     function saveItem(item,index) {
-        ////console.log(['save',item,index])
+        console.log(['save singlekey',item,index])
         if (item) {
             // update sources and save text in seperate localstorage
             // ensure id
@@ -170,6 +172,7 @@ export default function useDB(database, databaseTable,singleKey, initialData=[],
     }
 
     function setItemsWrap(items) {
+        console.log(['setitems is singlekey',items])
         localforageStorage.clear().then(function() {
             dispatch({ type: "replaceall", items: items})
             if (setChanged) setChanged(true)

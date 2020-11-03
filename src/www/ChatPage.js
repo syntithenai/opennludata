@@ -11,7 +11,7 @@ import {exportJSON} from './export/exportJSON'
 import DialogManager from 'voicedialogjs'
 //import localforage from 'localforage'
 import YouTube from 'react-youtube';
-
+import MicrophoneComponent from './MicrophoneComponent'
 //var config={}
     
 var meSpeak = window.meSpeak
@@ -374,8 +374,9 @@ function ChatPage(props) {
         }} >
             <div style={{clear:'both',marginTop:'0.5em', border:'2px solid lightgrey'}}>
                 <div style={{clear:'both',marginTop:'0.5em', border:'2px solid grey'}}>
-                    <div style={{border:'2px solid black'}}>
-                        <input type='text' style={{width:'100%'}} value={userMessage} placeholder={history.length === 0 ? 'Start a conversation': ''} onChange={function(e) {setUserMessage(e.target.value)}} />
+                    <div style={{border:'2px solid black', padding:'0.3em'}}>
+                        <MicrophoneComponent style={{width:'2em', height:'2em', float:'right'}} onMessage={function(message) {setUserMessage(message); sendUserMessage(message);}} />
+                        <input type='text' style={{width:'85%'}} value={userMessage} placeholder={history.length === 0 ? 'Start a conversation': ''} onChange={function(e) {setUserMessage(e.target.value)}} />
                     </div>
                 </div>
             </div>

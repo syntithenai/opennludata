@@ -244,8 +244,8 @@ export default function SkillSearchPage(props) {
                 
                 {(result.tags && result.tags.length > 0) && <span>
                     
-                    {result.tags.map(function(tag) { 
-                        return <Button style={bStyle} variant="outline-warning" >{tag}</Button>
+                    {result.tags.map(function(tag,tk) { 
+                        return <Button style={bStyle} key={tk} variant="outline-warning" >{tag}</Button>
                     })}
                     
                     </span>}
