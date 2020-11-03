@@ -241,9 +241,9 @@ export default function useImportMergeFunctions() {
                             updated += 1
                             newListItem.tags = newListItem.tags ? newListItem.tags : []
                             // merge alternatives
-                            var existingAlternatives = allListsIndex[listItem.value].synonym ? allListsIndex[listItem.value].synonym.split("\n") : []
-                            var newAlternatives = newListItem.synonym ? newListItem.synonym.split("\n") : []
-                            newListItem.synonym = uniquifyArray([].concat(existingAlternatives, newAlternatives)).sort().join("\n")
+                            //var existingAlternatives = allListsIndex[listItem.value].synonym ? allListsIndex[listItem.value].synonym.split("\n") : []
+                            //var newAlternatives = newListItem.synonym ? newListItem.synonym.split("\n") : []
+                            //newListItem.synonym = uniquifyArray([].concat(existingAlternatives, newAlternatives)).sort().join("\n")
                             // add tag ?
                             if (addTag && addTag.trim().length > 0) newListItem.tags.push(addTag.trim())
                             // uniquify and sort tags
@@ -306,11 +306,6 @@ export default function useImportMergeFunctions() {
                         if (allListsIndex[listItem.value]) {
                             updated += 1
                             newListItem.tags = newListItem.tags ? newListItem.tags : []
-                            // merge alternatives
-                            //var existingAlternatives = allListsIndex[listItem.value].synonym ? allListsIndex[listItem.value].synonym.split("\n") : []
-                            //var newAlternatives = newListItem.synonym ? newListItem.synonym.split("\n") : []
-                            //newListItem.synonym = uniquifyArray([].concat(existingAlternatives, newAlternatives)).sort().join("\n")
-                            // add tag ?
                             if (addTag && addTag.trim().length > 0) newListItem.tags.push(addTag.trim())
                             // uniquify and sort tags
                             newListItem.tags = uniquifyArray(newListItem.tags).sort()
@@ -477,10 +472,6 @@ export default function useImportMergeFunctions() {
                         if (allListsIndex[listItem.value]) {
                             updated += 1
                             newListItem.tags = newListItem.tags ? newListItem.tags : []
-                            // merge alternatives
-                            //var existingAlternatives = allListsIndex[listItem.value].synonym ? allListsIndex[listItem.value].synonym.split("\n") : []
-                            //var newAlternatives = newListItem.synonym ? newListItem.synonym.split("\n") : []
-                            //newListItem.synonym = uniquifyArray([].concat(existingAlternatives, newAlternatives)).sort().join("\n")
                             // add tag ?
                             if (addTag && addTag.trim().length > 0) newListItem.tags.push(addTag.trim())
                             // uniquify and sort tags
