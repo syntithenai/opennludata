@@ -17,6 +17,7 @@ const mongoose = require('mongoose')
 const restify = require('express-restify-mongoose')
 var cors = require('cors')
 var proxy = require('express-http-proxy');
+var JWT = require('jsonwebtoken');
     
 //console.log("PRECONNECT")    
 try {
@@ -29,6 +30,17 @@ try {
 const {skillsSchema, skillTagsSchema, entitiesSchema, utterancesSchema, regexpsSchema} = require('./schemas')
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
+function getUserFromAccessToken(bearerToken,secret) {
+   return new Promise(function(resolve,reject) {
+        return JWT.verify(bearerToken, secret, function(err, decoded) {
+            if (err) {
+              resolve(err, false);   // the err contains JWT error data
+            }
+            resolve(false,decoded.user)
+        });
+   })
+}
 
 function startMainWebServer() {
     if (!config.skipWWW) {

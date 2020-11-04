@@ -44,7 +44,7 @@
     "react-copy-to-clipboard": "^5.0.2",
     "react-dom": "^16.14.0",
     "react-express-oauth-login-system": "^1.1.6",
-    "react-express-oauth-login-system-components": "^1.0.5",
+    "react-express-oauth-login-system-components": "file:../react-express-oauth-login-system-components",
     "react-file-reader-input": "^2.0.0",
     "react-ga": "^3.1.2",
     "react-h5-audio-player": "^3.4.1",

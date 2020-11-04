@@ -29,6 +29,7 @@ export default function useSkillsEditor(props) {
     const [collatedCounts, setCollatedCounts] = useState({})
     const [newSlotValue, setNewSlotValue] = useState('')
     const [skillMatches, setSkillMatches] = useState([])
+    //const [axiosClient, setAxiosClient] = useState(null)
     const [skillUpdatedMatches, setSkillUpdatedMatches] = useState([])
     var skillsStorage = localforage.createInstance({
        name: "nlutool",

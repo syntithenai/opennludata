@@ -60,7 +60,7 @@ export default function SkillSearchPage(props) {
     }
     
     function loadSkill(skill) {
-        //console.log(['LOaD SKIL',skill])  
+        console.log(['LOaD SKIL',skill])  
         return new Promise(function(resolve,reject) {
             if (skill && skill.file) {
                 //console.log(['LOaD SKIL have file',(process.env.REACT_APP_githubSkillsUrl ? process.env.REACT_APP_githubSkillsUrl : '/static/media/skills/')+skill.file])  

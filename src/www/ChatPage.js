@@ -70,10 +70,10 @@ function ChatPage(props) {
         //setHistoryHash(JSON.stringify(history))
     },[])
        
-    useEffect( () => {
-        //console.log('UP HIST')
-        //setHistoryHash(JSON.stringify(history))
-    },[history])
+    //useEffect( () => {
+        ////console.log('UP HIST')
+        ////setHistoryHash(JSON.stringify(history))
+    //},[history])
        
        
        
