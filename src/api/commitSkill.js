@@ -84,45 +84,51 @@ async function commitSkill(skill, deleteSkill) {
           const head = process.env.github_data_head ? process.env.github_data_head : ''
           const fileContent = JSON.stringify(skill)
           const skillFileName = (skill.userAvatar ?  skill.userAvatar + '-'  : '') + skill.title + '-' + skill.id +".json"
-          const filePath = (process.env.github_data_filePath ? process.env.github_data_filePath : 'docs/static/media/skills/') + skillFileName
+          const folderPath = (process.env.github_data_filePath ? process.env.github_data_filePath : 'docs/static/media/skills/')
+          const filePath = folderPath + skillFileName
+          const skillDemoFile = folderPath + (skill.userAvatar ?  skill.userAvatar + '-'  : '') + skill.title +".html"
           //const devFilePath = process.env.github_data_devFilePath ?  +((skill.userAvatar ?  skill.userAvatar + '-'  : '') + skill.title + '-' + skill.id +".json" ): ''
           // try to load index
           const indexPath = (process.env.github_data_filePath ? process.env.github_data_filePath : 'public/skills/') + 'index.js'
+          const templateFile = (process.env.github_data_filePath ? process.env.github_data_filePath : 'public/skills/') + 'chat_template.html'
+          
           const changes = {
             files: {},
             commit: 'Published skill '+skill.title+(' (' + skill.id+')')+(skill.userAvatar ? ' by ' + skill.userAvatar : '')
           }
           if (deleteSkill) changes.commit = 'Unpublished skill ' + skill.id
-          
-          fs.readFile(indexPath, 'utf8', function(err, contents) {
-              var skillIndex = {}
-              if (contents) {
-                  try {
-                      var skillIndex = JSON.parse(contents)
-                  } catch (e) {
-                     // first time no file    
+          fs.readFile(templateFile, 'utf8', function(err, skillTemplate) {
+              fs.readFile(indexPath, 'utf8', function(err, contents) {
+                  var skillIndex = {}
+                  if (contents) {
+                      try {
+                          var skillIndex = JSON.parse(contents)
+                      } catch (e) {
+                         // first time no file    
+                      }
                   }
-              }
-              skillIndex = typeof skillIndex === "object" ? skillIndex : {}
-              
-              skillIndex[skill.id] = {id: skill.id, _id: skill._id, title: skill.title, userAvatar: skill.userAvatar, updated_date: skill.updated_date, created_date: skill.created_date, tags: skill.tags, entities: skill.entities ? Object.keys(skill.entities).length : 0, intents: skill.intents ? Object.keys(skill.intents).length : 0, utterances: skill.utterances ? skill.utterances.length : 0, regexps: skill.regexps ? skill.regexps.length : 0, file:skillFileName, user: skill.user}
-              
-              if (deleteSkill && skill._id && skillIndex[skill.id] && skillIndex[skill.id]._id === skill._id) {
-                   skillIndex[skill.id].deleted = true;
-              } 
-              
-              var notDeleted = {}
-              Object.values(skillIndex).filter(function(skill) {if (!skill.deleted) return true; else return false }).map(function(iskill) {
-                  notDeleted[iskill.id] = iskill
-                  return null
-              });
-              changes.files[indexPath] = JSON.stringify(notDeleted)       
-              changes.files[filePath] = fileContent  
-              //console.log(['COMMIT SKILL push',changes, owner, repo, base, head])
-              push({ owner, repo, base, head, changes }).then(function() {
-                resolve()
-              })      
-          })
+                  skillIndex = typeof skillIndex === "object" ? skillIndex : {}
+                  
+                  skillIndex[skill.id] = {id: skill.id, _id: skill._id, title: skill.title, userAvatar: skill.userAvatar, updated_date: skill.updated_date, created_date: skill.created_date, tags: skill.tags, entities: skill.entities ? Object.keys(skill.entities).length : 0, intents: skill.intents ? Object.keys(skill.intents).length : 0, utterances: skill.utterances ? skill.utterances.length : 0, regexps: skill.regexps ? skill.regexps.length : 0, file:skillFileName, user: skill.user}
+                  
+                  if (deleteSkill && skill._id && skillIndex[skill.id] && skillIndex[skill.id]._id === skill._id) {
+                       skillIndex[skill.id].deleted = true;
+                  } 
+                  
+                  var notDeleted = {}
+                  Object.values(skillIndex).filter(function(skill) {if (!skill.deleted) return true; else return false }).map(function(iskill) {
+                      notDeleted[iskill.id] = iskill
+                      return null
+                  });
+                  changes.files[indexPath] = JSON.stringify(notDeleted)  
+                       
+                  changes.files[filePath] = fileContent  
+                  //console.log(['COMMIT SKILL push',changes, owner, repo, base, head])
+                  push({ owner, repo, base, head, changes }).then(function() {
+                    resolve()
+                  })      
+              })
+        })
           
           
           
