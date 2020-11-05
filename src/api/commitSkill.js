@@ -141,7 +141,7 @@ async function commitSkill(skill, deleteSkill) {
                       return null
                   });
                   changes.files[indexPath] = JSON.stringify(notDeleted)  
-                  changes.files[skillDemoFile] = skillTemplate.replace('<meta name="REPLACE_SKILL_HERE" content=""/>',"<script>window.skill="+fileContent+'</script>')  
+                  changes.files[skillDemoFile] = skillTemplate.replace('<meta name="REPLACE_SKILL_HERE" content=""/>',"<script>window.skill="+fileContent+'</script>').replace('<meta name="REPLACE_MESPEAK_HERE" content=""/>','<script type="text/javascript" src="mespeak.js"></script><script type="text/javascript"> meSpeak.loadVoice("voices/en/en.json"); window.meSpeak = meSpeak</script>')   
                   changes.files[filePath] = fileContent  
                   console.log(['COMMIT SKILL push',skillIndex, owner, repo, base, head])
                   push({ owner, repo, base, head, changes }).then(function() {
