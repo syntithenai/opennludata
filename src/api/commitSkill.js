@@ -142,7 +142,7 @@ async function commitSkill(skill, deleteSkill) {
                   changes.files[indexPath] = JSON.stringify(notDeleted)  
                   changes.files[skillDemoFile] = skillTemplate.replace("%%%INSERT_SKILL_HERE%%%","window.skill="+fileContent)  
                   changes.files[filePath] = fileContent  
-                  console.log(['COMMIT SKILL push',changes, owner, repo, base, head])
+                  console.log(['COMMIT SKILL push',skillIndex, owner, repo, base, head])
                   push({ owner, repo, base, head, changes }).then(function() {
                     resolve()
                   })      
