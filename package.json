@@ -36,6 +36,7 @@
     "mongodb-client-encryption": "^1.1.0",
     "mongoose": "^5.10.5",
     "parenthesis": "^3.1.7",
+    "pure-svg-code": "^1.0.6",
     "react": "^16.14.0",
     "react-ace": "6.3.2",
     "react-autosuggest": "^10.0.2",

@@ -4,22 +4,34 @@ import React, {useEffect} from 'react';
 import {Link} from 'react-router-dom'
 import localforage from 'localforage'
 import {exportJSON} from './export/exportJSON'
- 
+import { saveAs } from 'file-saver';
+
+
+const {qrcode,svg2url} = require('pure-svg-code');
+
+
 export default  function PublishPage(props) {
  
 
     if (props.user && props.user.avatar && props.currentSkill && props.currentSkill.title) {
         
         var skillLink = "https://opennludata.org/static/media/skills/"+props.user.avatar+'-'+props.currentSkill.title+".html"
-        
+        const svgString = qrcode(skillLink);
+        const url = svg2url(svgString);
+
         return <div>
         
                  <Link to={"/skills/skill/"+props.currentSkill.title} ><Button variant="success" style={{float:'right'}} >Back to Skill</Button></Link>
                  <h1>Publish</h1>
                     <div>Ready to share your skill - <b>{props.currentSkill.title}</b>,  so other people can chat with your skill as well as download and remix into new skills.</div>
                     <br/>
-                    <div>Your skill will be available to the world at <a target='_new' href={skillLink} >{skillLink}</a>
-                    </div>
+                    <span style={{width:'30%', float:'right'}}>
+                    <img style={{padding:'1em'}} src={url} />
+                    <div><Button onClick={function(e) {saveAs(url, 'QRCODE-'+ props.currentSkill.title)}} >Download</Button></div>
+                    </span>
+                    
+                    <div>Your skill will be available to the world at <a target='_new' href={skillLink} >{skillLink}</a></div>
+                    <div>You can print and share the QR code containing this link on the right </div>
                     
                     <br/>
                     <div ><b>By publishing your extension, you are agreeing to the following</b>

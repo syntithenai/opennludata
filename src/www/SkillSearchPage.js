@@ -243,7 +243,7 @@ export default function SkillSearchPage(props) {
              return <Col sm={12} md={6} lg={4} xl={4} key={key} style={{border: '2px solid black', padding: '0.5em', margin: '0.5em'}}>
                 
                 
-                {(true || result.utterances > 0 && (result.stories > 0 || result.rules > 0)) && <a target="_new" href={skillLink} ><Button variant="primary" style={{float:'right'}} >Chat</Button></a>}
+                {(result.utterances > 0 && (result.stories > 0 || result.rules > 0)) && <a target="_new" href={skillLink} ><Button variant="primary" style={{float:'right'}} >Chat</Button></a>}
                 
                 <Button variant="success" style={{float:'right'}} onClick={function(e) {importItem(result)}}>Grab</Button>
                 <h4 style={{marginBottom:'0.3em'}} >{result.title} {result.userAvatar && <span>by {result.userAvatar}</span>} </h4>
