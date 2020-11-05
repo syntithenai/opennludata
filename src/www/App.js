@@ -1,6 +1,6 @@
 import React from 'react';
 import {useState, useEffect} from 'react';
-import {BrowserRouter as  Router, Route, Link  } from 'react-router-dom'
+import {HashRouter as  Router, Route, Link  } from 'react-router-dom'
 import LocalStorageUploadManager from './LocalStorageUploadManager'
 import ListsManager from './ListsManager'
 import UtterancesManager from './UtterancesManager'
@@ -561,7 +561,7 @@ function App() {
             >{(user,setUser,getAxiosClient,getMediaQueryString,getCsrfQueryString, isLoggedIn, loadUser, doLogout, doLogin, doProfile,  authServer, authServerHostname) => {  
                 
                 return <div  >
-                <Router>
+                <Router  basename='/'>
                       
                 
                         <Route exact path='*' render={

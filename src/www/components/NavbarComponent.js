@@ -5,7 +5,7 @@ import {Link, useParams, useHistory} from 'react-router-dom'
 import fireImage from '../images/singingman.svg'
 import waitingImage from '../images/waiting.gif'
 import ReactGA from 'react-ga';
-
+import GitHubButton from 'react-github-btn'
 
 ReactGA.initialize('UA-3712973-4');
 
@@ -86,26 +86,25 @@ export default function NavbarComponent(props) {
         {props.message && <div style={{position:'fixed',top:100,left:window.innerWidth ? (window.innerWidth /2 - 40) : 100, border: '2px solid red', background: 'pink', padding: '0.5em', minWidth:'400px' ,borderRadius:'5px', zIndex:999}} >
             <Button variant="danger" size="sm"  style={{float:'right', fontWeight: 'bold',borderRadius:'20px',marginLeft:'1em'}} onClick={function(e) {props.setPageMessage('')}}>X</Button>{props.message} 
         </div>}
-        
+            
         <Link to="/"><img src={fireImage}  style={{height:'5em', marginRight:'0.4em'}} alt="logo"/></Link>
-         <div style={{width: '100%'}}>
-        {links}
+        <div style={{width: '100%'}}>
+            {links}
+            {props.isLoggedIn() && 
+                <span>
+                    <Button style={{float:'right'}} variant="primary" onClick={props.doProfile} >{'Profile'}</Button>
+                    <Button  style={{float:'right'}} variant="danger" onClick={props.doLogout}  >{'Logout'}</Button>
+                </span>
+            }
+            { !props.isLoggedIn() && 
+                <Button  style={{float:'right'}}  variant="success" onClick={props.doLogin} >{'Login'}</Button>
+            }
+            <span style={{float:'right', marginRight:'1em'}} >
+            <GitHubButton href="https://github.com/syntithenai/opennludata" data-color-scheme="no-preference: light; light: light; dark: light;" data-icon="octicon-star" data-size="large" data-show-count="true" aria-label="Star syntithenai/opennludata on GitHub">Star</GitHubButton></span>
         </div>
         
-         <div style={{float:'right', vAlign:'top', minWidth:'3em', marginRight:'0em'}}>
-        {props.isLoggedIn() && 
-            <>
-                <Button variant="primary" onClick={props.doProfile} >{'Profile'}</Button>
-                <Button variant="danger" onClick={props.doLogout}  >{'Logout'}</Button>
-            </>
-        }
-        { !props.isLoggedIn() && 
-            <Button variant="success" onClick={props.doLogin} >{'Login'}</Button>
-        }
         
-        </div>
         
-
          <img src={waitingImage} alt='waiting' style={{position:'fixed', top:5, right:5, zIndex:99, display: props.waiting ? 'block' : 'none' }} />
     </Navbar>
     } else {

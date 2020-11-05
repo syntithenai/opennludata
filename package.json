@@ -47,6 +47,7 @@
     "react-express-oauth-login-system-components": "file:../react-express-oauth-login-system-components",
     "react-file-reader-input": "^2.0.0",
     "react-ga": "^3.1.2",
+    "react-github-btn": "^1.2.0",
     "react-h5-audio-player": "^3.4.1",
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.0.1",

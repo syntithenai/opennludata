@@ -12,7 +12,13 @@ export default  function SkillSettingsPage (props) {
     return <>{currentSkill && <div>
              <Link to={"/skills/skill/"+currentSkill.title} ><Button variant="success" style={{float:'right'}} >Back to Skill</Button></Link>
              
-             {JSON.stringify(Object.keys(currentSkill))}
+            
              <h1>Settings</h1>
     </div>}</>
 }
+ //
+ /**
+  * TODO - invocation, chat history length, docs, description, 
+  * 
+  */ 
+  //{JSON.stringify(Object.keys(currentSkill))}

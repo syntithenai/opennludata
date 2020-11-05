@@ -207,7 +207,7 @@ export default function SkillSearchPage(props) {
         //loadSuggestions(text)
     } 
     
-   
+        
     return <div style={{marginLeft:'1em'}}>
          <Form onSubmit={function(e) {e.preventDefault(); doSearch()}} >
             <Row><Col>
@@ -237,8 +237,14 @@ export default function SkillSearchPage(props) {
         {searchFilter.trim() && <h3>Search Results</h3>}
         <Container fluid ><Row>
         {(searchResults && searchResults.length > 0) && searchResults.map(function(result, key) {
+            var skillLink = "https://opennludata.org/static/media/skills/"+result.userAvatar+'-'+result.title+".html"
+    
             const bStyle = {marginLeft:'0.5em', marginBottom:'0.2em'}
              return <Col sm={12} md={6} lg={4} xl={4} key={key} style={{border: '2px solid black', padding: '0.5em', margin: '0.5em'}}>
+                
+                
+                {(true || result.utterances > 0 && (result.stories > 0 || result.rules > 0)) && <a target="_new" href={skillLink} ><Button variant="primary" style={{float:'right'}} >Chat</Button></a>}
+                
                 <Button variant="success" style={{float:'right'}} onClick={function(e) {importItem(result)}}>Grab</Button>
                 <h4 style={{marginBottom:'0.3em'}} >{result.title} {result.userAvatar && <span>by {result.userAvatar}</span>} </h4>
                 
@@ -254,6 +260,14 @@ export default function SkillSearchPage(props) {
                     {(result.entities > 0) && <Button variant="outline-primary"style={bStyle}>{result.entities} entities</Button>}
                     {(result.regexps > 0) && <Button variant="outline-primary"style={bStyle}>{result.regexps} regular expressions</Button>}
                     {(result.utterances > 0 )&& <Button variant="outline-primary"style={bStyle}>{result.utterances} utterances</Button>}
+                    {(result.forms > 0 )&& <Button variant="outline-primary"style={bStyle}>{result.forms} forms</Button>}
+                    {(result.actions > 0 )&& <Button variant="outline-primary"style={bStyle}>{result.actions} actions</Button>}
+                    {(result.apis > 0 )&& <Button variant="outline-primary"style={bStyle}>{result.apis} apis</Button>}
+                    {(result.rules > 0 )&& <Button variant="outline-primary"style={bStyle}>{result.rules} rules</Button>}
+                    {(result.stories > 0 )&& <Button variant="outline-primary"style={bStyle}>{result.stories} stories</Button>}
+                    
+                    
+                    
                     {<Button style={{marginLeft:'0.5em', marginTop:'1em'}} variant="outline-secondary" >Updated: {new Date(result.updated_date).toUTCString()}</Button>}
                 </div>
              </Col>
