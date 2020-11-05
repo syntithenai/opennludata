@@ -83,14 +83,15 @@ async function commitSkill(skill, deleteSkill) {
           const base = process.env.github_data_base ? process.env.github_data_base : ''
           const head = process.env.github_data_head ? process.env.github_data_head : ''
           const fileContent = JSON.stringify(skill)
-          const skillFileName = (skill.userAvatar ?  skill.userAvatar + '-'  : '') + skill.title + '-' + skill.id +".json"
-          const folderPath = (process.env.github_data_filePath ? process.env.github_data_filePath : 'docs/static/media/skills/')
+          const templateFile = 'docs/static/skills/index.html'
+          
+          const skillFileName = (skill.userAvatar ?  skill.userAvatar + '-'  : '') + skill.title +".json"
+          const folderPath = 'docs/static/skills/'
           const filePath = folderPath + skillFileName
-          const skillDemoFile = 'docs/static/skills/' + (skill.userAvatar ?  skill.userAvatar + '-'  : '') + skill.title +".html"
+          const skillDemoFile = folderPath +  (skill.userAvatar ?  skill.userAvatar + '-'  : '') + skill.title +".html"
           //const devFilePath = process.env.github_data_devFilePath ?  +((skill.userAvatar ?  skill.userAvatar + '-'  : '') + skill.title + '-' + skill.id +".json" ): ''
           // try to load index
-          const indexPath = (process.env.github_data_filePath ? process.env.github_data_filePath : 'public/skills/') + 'index.js'
-          const templateFile = 'docs/static/skills/index.html'
+          const indexPath = folderPath + 'index.js'
           
           const changes = {
             files: {},
