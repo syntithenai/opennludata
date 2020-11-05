@@ -65,7 +65,7 @@ export default function SkillSearchPage(props) {
             if (skill && skill.file) {
                 //console.log(['LOaD SKIL have file',(process.env.REACT_APP_githubSkillsUrl ? process.env.REACT_APP_githubSkillsUrl : '/static/media/skills/')+skill.file])  
                 const axiosClient = props.getAxiosClient()
-                axiosClient.get((process.env.REACT_APP_githubSkillsUrl ? process.env.REACT_APP_githubSkillsUrl : '/static/media/skills/')+skill.file).then(function(res) {
+                axiosClient.get(('/static/skills/')+skill.file).then(function(res) {
                   //console.log(['LOaDed SKIL',res.data])  
                   if (res.data) {
                       ////console.log(res.data)
@@ -237,7 +237,7 @@ export default function SkillSearchPage(props) {
         {searchFilter.trim() && <h3>Search Results</h3>}
         <Container fluid ><Row>
         {(searchResults && searchResults.length > 0) && searchResults.map(function(result, key) {
-            var skillLink = "https://opennludata.org/static/media/skills/"+result.userAvatar+'-'+result.title+".html"
+            var skillLink = "https://opennludata.org/static/skills/"+result.userAvatar+'-'+result.title+".html"
     
             const bStyle = {marginLeft:'0.5em', marginBottom:'0.2em'}
              return <Col sm={12} md={6} lg={4} xl={4} key={key} style={{border: '2px solid black', padding: '0.5em', margin: '0.5em'}}>

@@ -58,7 +58,7 @@ export default  function NluSkillsEditor(props) {
             if (skill && skill.file) {
                 //console.log(['LOaD SKIL have file',(process.env.REACT_APP_githubSkillsUrl ? process.env.REACT_APP_githubSkillsUrl : '/static/media/skills/')+skill.file])  
                 const axiosClient = props.getAxiosClient()
-                axiosClient.get((process.env.REACT_APP_githubSkillsUrl ? process.env.REACT_APP_githubSkillsUrl : '/static/media/skills/')+skill.file).then(function(res) {
+                axiosClient.get(('/static/skills/')+skill.file).then(function(res) {
                   //console.log(['LOaDed SKIL',res.data])  
                   if (res.data) {
                       ////console.log(res.data)

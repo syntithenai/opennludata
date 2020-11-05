@@ -138,7 +138,7 @@ function App() {
     
     
     function loadSkills() {
-        return axios.get((process.env.REACT_APP_githubSkillsUrl ? process.env.REACT_APP_githubSkillsUrl : '/static/media/skills/')+'index.js?no_cache=1&t='+parseInt(Math.random() * 1000000000000)).then(function(res) {
+        return axios.get( '/static/skills/' +'index.js?no_cache=1&t='+parseInt(Math.random() * 1000000000000)).then(function(res) {
           console.log(['LOaD SKILSS githubskill',res.data])  
           var tags={}
           if (res.data) {

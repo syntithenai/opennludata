@@ -15,7 +15,7 @@ export default  function PublishPage(props) {
 
     if (props.user && props.user.avatar && props.currentSkill && props.currentSkill.title) {
         
-        var skillLink = "https://opennludata.org/static/media/skills/"+props.user.avatar+'-'+props.currentSkill.title+".html"
+        var skillLink = "https://opennludata.org/static/skills/"+props.user.avatar+'-'+props.currentSkill.title+".html"
         const svgString = qrcode(skillLink);
         const url = svg2url(svgString);
 
