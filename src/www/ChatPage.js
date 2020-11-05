@@ -362,21 +362,33 @@ function ChatPage(props) {
         {mute && <Button variant="primary" style={{float:'right'}}  onClick={function(e) {
             setMute(false)
         }}>{'Unmute'}</Button>}
-        {(fullScreenYoutube && fullScreenYoutube.youtubeVideoId) && <Button  variant="primary" style={{float:'right'}}  onClick={function(e) {setFullScreenYoutube(null)}}>Stop</Button>}
+        {(fullScreenYoutube && fullScreenYoutube.youtubeVideoId) && <Button  variant="danger" style={{float:'right'}}  onClick={function(e) {setFullScreenYoutube(null)}}>Stop</Button>}
         
         {(!props.isFullScreen && props.lookups.isBigScreen && currentSkill) && <Link to={"/skills/skill/"+currentSkill.title+"/chat"} ><Button variant="primary" style={{float:'left'}}  >{'Fullscreen'}</Button></Link>}
         
         {false && <Button onClick={resetHistory} >Reset</Button>}
  
         <form onSubmit={function(e) {
-            e.preventDefault(); 
             sendUserMessage(userMessage)
+            setUserMessage('')
+            e.preventDefault();
+            
         }} >
             <div style={{clear:'both',marginTop:'0.5em', border:'2px solid lightgrey'}}>
                 <div style={{clear:'both',marginTop:'0.5em', border:'2px solid grey'}}>
                     <div style={{border:'2px solid black', padding:'0.3em'}}>
                         <MicrophoneComponent style={{width:'2em', height:'2em', float:'right'}} onMessage={function(message) {setUserMessage(message); sendUserMessage(message);}} />
-                        <input type='text' style={{width:'85%'}} value={userMessage} placeholder={history.length === 0 ? 'Start a conversation': ''} onChange={function(e) {setUserMessage(e.target.value)}} />
+                        <input type='text' style={{width:'85%'}} value={userMessage} placeholder={history.length === 0 ? 'Start a conversation': ''} 
+                        onKeyUp={function(e) {
+                            if (e.keyCode === 13) {
+                                sendUserMessage(userMessage)
+                                setUserMessage('')
+                            }
+                        }}  
+                        onChange={function(e) {
+                            setUserMessage(e.target.value); 
+                        }}  />
+                        
                     </div>
                 </div>
             </div>
@@ -420,7 +432,7 @@ export default ChatPage
 //SK {JSON.stringify(currentSkill)} || : [])
  
 //  LOCAL{JSON.stringify(history)}
-    
+    //if (e.target.value.slice(-1) === "\n") {console.log('END SUB');  sendUserMessage(userMessage); setUserMessage()}
  
    ///**
      //* Synthesise speech from text and send to to audio output
