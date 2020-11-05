@@ -84,7 +84,7 @@ export default  function NluSkillsEditor(props) {
     var width=props.lookups.isBigScreen ? "69%" : "100%"
             
     return <div>
-        { (currentSkill && props.lookups.isBigScreen) && <div style={{width:'30%', minHeight:'800px', float:'right', borderLeft:'2px solid black'}}>
+        { (currentSkill && props.lookups.isBigScreen && !props.publish) && <div style={{width:'30%', minHeight:'800px', float:'right', borderLeft:'2px solid black'}}>
         <ChatPage {...props}   user={props.user} currentSkill={currentSkill}    lookups={props.lookups}  startWaiting={props.startWaiting} stopWaiting={props.stopWaiting} updateFunctions={props.updateFunctions}  setPageMessage={props.setPageMessage}  publish={true}   getAxiosClient={props.getAxiosClient} hideBackLink={true} />
                          
         </div>}
@@ -141,7 +141,7 @@ export default  function NluSkillsEditor(props) {
            
            {(!props.lookups.isBigScreen && currentSkill) && <Link to={"/skills/skill/"+currentSkill.title+"/chat"} ><Button variant="warning" style={{float:'right'}}  >{'Chat'}</Button></Link>}
            
-           {(currentSkill) && <Link to={"/skills/skill/"+currentSkill.title+"/settings"} ><Button variant="warning" style={{float:'right'}}  >{'Settings'}</Button></Link>}
+           {(currentSkill && !props.publish) && <Link to={"/skills/skill/"+currentSkill.title+"/settings"} ><Button variant="warning" style={{float:'right'}}  >{'Settings'}</Button></Link>}
            
            
           

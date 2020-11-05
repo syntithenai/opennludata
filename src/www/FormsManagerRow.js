@@ -319,7 +319,7 @@ export default function FormsManagerRow(props) {
                                
                                <Button variant="success" onClick={function(e) {addListItemDataItem('slots',buttonKey,'capturefrom',{type:'from entity', intentValue:'', entity:'', intent:[],notintent:[]})}} >New Slot Capture</Button>
                                {(button && Array.isArray(button.capturefrom)) && <div>{button.capturefrom.map(function(capture,captureKey) {
-                                    return <div>
+                                    return <div key={captureKey} >
                                     <span style={{float:'left'}} >
                                         <Button variant="danger" onClick={function(e) {deleteListItemDataItem('slots',buttonKey,'capturefrom',captureKey)}} > X </Button>
                                         <Button variant="primary"onClick={function(e) {moveListItemDataItemUp('slots',buttonKey,'capturefrom',captureKey)}}  > ^ </Button>

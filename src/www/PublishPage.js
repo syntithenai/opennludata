@@ -32,6 +32,7 @@ export default  function PublishPage(props) {
                     
                     <div>Your skill will be available to the world at <a target='_new' href={skillLink} >{skillLink}</a></div>
                     <div>You can print and share the QR code containing this link on the right </div>
+                    <div style={{fontWeight:'bold'}} >Please note that it can take a few minutes for changes to become available.</div>
                     
                     <br/>
                     <div ><b>By publishing your extension, you are agreeing to the following</b>

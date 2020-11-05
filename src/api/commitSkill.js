@@ -86,11 +86,11 @@ async function commitSkill(skill, deleteSkill) {
           const skillFileName = (skill.userAvatar ?  skill.userAvatar + '-'  : '') + skill.title + '-' + skill.id +".json"
           const folderPath = (process.env.github_data_filePath ? process.env.github_data_filePath : 'docs/static/media/skills/')
           const filePath = folderPath + skillFileName
-          const skillDemoFile = folderPath + (skill.userAvatar ?  skill.userAvatar + '-'  : '') + skill.title +".html"
+          const skillDemoFile = 'docs/static/skills/' + (skill.userAvatar ?  skill.userAvatar + '-'  : '') + skill.title +".html"
           //const devFilePath = process.env.github_data_devFilePath ?  +((skill.userAvatar ?  skill.userAvatar + '-'  : '') + skill.title + '-' + skill.id +".json" ): ''
           // try to load index
           const indexPath = (process.env.github_data_filePath ? process.env.github_data_filePath : 'public/skills/') + 'index.js'
-          const templateFile = (process.env.github_data_filePath ? process.env.github_data_filePath : 'public/skills/') + 'chat_template.html'
+          const templateFile = 'docs/static/skills/index.html'
           
           const changes = {
             files: {},
@@ -140,7 +140,7 @@ async function commitSkill(skill, deleteSkill) {
                       return null
                   });
                   changes.files[indexPath] = JSON.stringify(notDeleted)  
-                  changes.files[skillDemoFile] = skillTemplate.replace("%%%INSERT_SKILL_HERE%%%","window.skill="+fileContent)  
+                  changes.files[skillDemoFile] = skillTemplate.replace('<meta name="REPLACE_SKILL_HERE" content=""/>',"<script>window.skill="+fileContent+'</script>')  
                   changes.files[filePath] = fileContent  
                   console.log(['COMMIT SKILL push',skillIndex, owner, repo, base, head])
                   push({ owner, repo, base, head, changes }).then(function() {

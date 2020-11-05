@@ -1,3 +1,4 @@
+/* global window */
 import {Route} from 'react-router-dom'
 import React, {useEffect} from 'react';
 import './App.css';
@@ -75,18 +76,20 @@ function FilesList(props) {
                    {!item.fileType.endsWith('.zip') && <Link to={props.match.url+"/text/"+item.id} ><Button style={{float:'right',marginLeft:'0.5em'}}  >Edit</Button></Link>}
                    
                    {item.fileType === "text" && <div className="textimportbuttons" >
-                       <Button style={{float:'right', marginLeft:'0.5em'}} variant="success" onClick={function(e) { props.importFunctions.importIntents(item).then(saveSkill).catch(showError)  }}    >Import Intents</Button>
-                       <Button style={{float:'right', marginLeft:'0.5em'}} variant="success" onClick={function(e) { props.importFunctions.importEntities(item).then(saveSkill).catch(showError)  }}    >Import Entities</Button>
-                       <Button style={{float:'right', marginLeft:'0.5em'}} variant="success" onClick={function(e) { props.importFunctions.importUtterances(item).then(saveSkill).catch(showError)  }}    >Import Utterances</Button>
+                       <Button style={{float:'right', marginLeft:'0.5em'}} variant="success" onClick={function(e) { if (window.confirm('Importing these intents will override local changes. Are you sure you want to import ?')) { props.importFunctions.importIntents(item).then(saveSkill).catch(showError) } }}    >Import Intents</Button>
+                       <Button style={{float:'right', marginLeft:'0.5em'}} variant="success" onClick={function(e) { if (window.confirm('Importing these entities will override local changes. Are you sure you want to import ?')) {props.importFunctions.importEntities(item).then(saveSkill).catch(showError) }  }}    >Import Entities</Button>
+                       <Button style={{float:'right', marginLeft:'0.5em'}} variant="success" onClick={function(e) { if (window.confirm('Importing these utterances will override local changes. Are you sure you want to import ?')) {props.importFunctions.importUtterances(item).then(saveSkill).catch(showError) } }}    >Import Utterances</Button>
                     </div>}
                     
                     {item.fileType !== "text" && <>
                        {/* Import whatever is available */}
                        {<Button style={{float:'right', marginLeft:'0.5em'}} variant="success" 
                            onClick={function(e) { 
-                               props.importFunctions.importAll(item)
+                               if (window.confirm('Importing this skill will override local changes. Are you sure you want to import ?')) {
+                                   props.importFunctions.importAll(item)
                                // save import results and redirect to import overview
                                .then(saveSkill).catch(showError) 
+                               }
                             }}    >Import</Button>}
                     </>}
                     
