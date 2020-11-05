@@ -109,7 +109,26 @@ async function commitSkill(skill, deleteSkill) {
                   }
                   skillIndex = typeof skillIndex === "object" ? skillIndex : {}
                   
-                  skillIndex[skill.id] = {id: skill.id, _id: skill._id, title: skill.title, userAvatar: skill.userAvatar, updated_date: skill.updated_date, created_date: skill.created_date, tags: skill.tags, entities: skill.entities ? Object.keys(skill.entities).length : 0, intents: skill.intents ? Object.keys(skill.intents).length : 0, utterances: skill.utterances ? skill.utterances.length : 0, regexps: skill.regexps ? skill.regexps.length : 0,forms: skill.forms ? skill.forms.length : 0,actions: skill.actions ? skill.actions.length : 0,apis: skill.apis ? skill.apis.length : 0, rules: skill.rules ? Object.keys(skill.rules).length, stories: skill.stories ? Object.keys(skill.stories).length,  file:skillFileName, user: skill.user}
+                  skillIndex[skill.id] = {
+                      id: skill.id, 
+                      _id: skill._id, 
+                      title: skill.title, 
+                      userAvatar: skill.userAvatar, 
+                      updated_date: skill.updated_date, 
+                      created_date: skill.created_date, 
+                      tags: skill.tags, 
+                      entities: skill.entities ? Object.keys(skill.entities).length : 0, 
+                      intents: skill.intents ? Object.keys(skill.intents).length : 0, 
+                      utterances: skill.utterances ? skill.utterances.length : 0, 
+                      regexps: skill.regexps ? skill.regexps.length : 0,
+                      forms: skill.forms ? skill.forms.length : 0,
+                      actions: skill.actions ? skill.actions.length : 0,
+                      apis: skill.apis ? skill.apis.length : 0, 
+                      rules: skill.rules ? Object.keys(skill.rules).length: 0, 
+                      stories: skill.stories ? Object.keys(skill.stories).length: 0,  
+                      file:skillFileName, 
+                      user: skill.user
+                  }
                   
                   if (deleteSkill && skill._id && skillIndex[skill.id] && skillIndex[skill.id]._id === skill._id) {
                        skillIndex[skill.id].deleted = true;
