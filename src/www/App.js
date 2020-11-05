@@ -20,7 +20,7 @@ import NluSkillsEditor from './NluSkillsEditor'
 import ImportReviewPage from './ImportReviewPage'
 import SkillSearchPage from './SkillSearchPage'
 import ChatPage from './ChatPage'
-
+import SkillSettingsPage from './SkillSettingsPage'
 
 import {Button} from 'react-bootstrap'
 import localforage from 'localforage'
@@ -644,6 +644,12 @@ function App() {
                             />
                             
                             <Route exact path='/skills/skill/:skillId/chat' render={(props) => <ChatPage {...props}  isFullScreen={true}  doLogin={doLogin}   user={user}   lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}   publish={true}  getAxiosClient={getAxiosClient} />} 
+                            />
+                            
+                            <Route exact path='/skills/:skillId/settings' render={(props) => <SkillSettingsPage {...props} lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  getAxiosClient={getAxiosClient} />} 
+                            />
+                            
+                            <Route exact path='/skills/skill/:skillId/settings' render={(props) => <SkillSettingsPage {...props} lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  getAxiosClient={getAxiosClient} />} 
                             />
 
                              <Route exact path='/skills' render={(props) => <NluSkillsEditor {...props} doLogin={doLogin} user={user}      lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage} getAxiosClient={getAxiosClient}   />} 

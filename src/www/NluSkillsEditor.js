@@ -141,6 +141,7 @@ export default  function NluSkillsEditor(props) {
            
            {(!props.lookups.isBigScreen && currentSkill) && <Link to={"/skills/skill/"+currentSkill.title+"/chat"} ><Button variant="warning" style={{float:'right'}}  >{'Chat'}</Button></Link>}
            
+           {(currentSkill) && <Link to={"/skills/skill/"+currentSkill.title+"/settings"} ><Button variant="warning" style={{float:'right'}}  >{'Settings'}</Button></Link>}
            
            
           
