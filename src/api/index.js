@@ -63,7 +63,7 @@ function startWebSocketAsr(server) {
      
     function originIsAllowed(origin) {
         if (config.websocketAsr  && config.websocketAsr.googleServiceCredentialsFile && Array.isArray(config.websocketAsr.allowedOrigins)) {
-            if (config.allowedOrigins.indexOf(origin) !== -1) {
+            if (config.websocketAsr.allowedOrigins.indexOf(origin) !== -1) {
                 return true
             }
         } 
