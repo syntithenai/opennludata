@@ -87,5 +87,9 @@ module.exports = {
         //pass: 'ddd'
       //}
     //}
+    websocketAsr: {
+        allowedOrigins:process.env.websocketAsrAllowedOrigins ? process.env.websocketAsrAllowedOrigins.trim().split(",") : [],
+        googleServiceCredentialsFile: process.env.websocketAsrGoogleServiceCredentialsFile,
+    }
 }
 

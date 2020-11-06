@@ -24,3 +24,5 @@ tmp/
 secrets/
 
 react-express-oauth-login-system/
+
+google-service-creds-opennlu.json

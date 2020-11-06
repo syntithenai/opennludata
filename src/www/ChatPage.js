@@ -369,8 +369,6 @@ function ChatPage(props) {
         {false && <Button onClick={resetHistory} >Reset</Button>}
  
         <form onSubmit={function(e) {
-            sendUserMessage(userMessage)
-            setUserMessage('')
             e.preventDefault();
             
         }} >
@@ -380,7 +378,7 @@ function ChatPage(props) {
                         <MicrophoneComponent style={{width:'2em', height:'2em', float:'right'}} onMessage={function(message) {setUserMessage(message); sendUserMessage(message);}} />
                         <input type='text' style={{width:'85%'}} value={userMessage} placeholder={history.length === 0 ? 'Start a conversation': ''} 
                         onKeyUp={function(e) {
-                            if (e.keyCode === 13) {
+                            if (e.keyCode === 13 && userMessage.trim().length > 0) {
                                 sendUserMessage(userMessage)
                                 setUserMessage('')
                             }

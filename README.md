@@ -68,15 +68,31 @@ Search for skills in the community repository
 
 # BUGS
 - api search tag fails when used with /fromskill
+- sample regexps
+- bounce on first letter in search /response key
 
 
 # TODO
 
 
+- audio input
+    - hotword picvoice /face recognise - https://github.com/justadudewhohacks/face-api.js#models-face-recognition
+    - google asr
+
+- export RASA2 from stories/rules
+
+
+
+- settings
+
+- youtube play muted 
+- face id
+
 - slot featurization
 - predict use history slice ?
 
 - ace editor fullscreen
+- image -add width, (Def 100%) link, description
 
 - apis
   - wikipedia
@@ -97,10 +113,6 @@ Search for skills in the community repository
 - external tts
 - external nlu (+ service using nlp.js)
 - external core routing  (+ service using nlp.js)
-
-- audio input
-    - hotword picvoice /face recognise - https://github.com/justadudewhohacks/face-api.js#models-face-recognition
-    - google asr
     
 - interactive learning
 - deploy
@@ -110,7 +122,6 @@ Search for skills in the community repository
   - rasa
 
 - import/export nlp.js
-- export RASA2 from stories/rules
 - mix entities - duplicate intents
 - auto remove duplicate tags on save
 
@@ -129,4 +140,6 @@ Search for skills in the community repository
 - rules/stories/forms tab with form select override finished action -> dialogman run form 
 - skill settings - invocation, description
 - api help text per function
+- chromecast chat client
+- public chat -= analytics
 

@@ -18,7 +18,13 @@ const restify = require('express-restify-mongoose')
 var cors = require('cors')
 var proxy = require('express-http-proxy');
 var JWT = require('jsonwebtoken');
-    
+var WebSocketServer = require('websocket').server;
+const speech = require('@google-cloud/speech');
+
+var stream = require('stream') 
+var Readable = stream.Readable;
+
+ 
 //console.log("PRECONNECT")    
 try {
     //mongoose.connect(config.databaseConnection+config.database, {useNewUrlParser: true})
@@ -41,6 +47,91 @@ function getUserFromAccessToken(bearerToken,secret) {
         });
    })
 }
+
+function startWebSocketAsr(server) {
+    console.log('START WEBSOCKT')
+    console.log([config])
+    wsServer = new WebSocketServer({
+        httpServer: server,
+        // You should not use autoAcceptConnections for production
+        // applications, as it defeats all standard cross-origin protection
+        // facilities built into the protocol and the browser.  You should
+        // *always* verify the connection's origin and decide whether or not
+        // to accept it.
+        autoAcceptConnections: false
+    });
+     
+    function originIsAllowed(origin) {
+        if (config.websocketAsr  && config.websocketAsr.googleServiceCredentialsFile && Array.isArray(config.websocketAsr.allowedOrigins)) {
+            if (allowedOrigins.indexOf(origin) !== -1) {
+                return true
+            }
+        } 
+      // put logic here to detect whether the specified origin is allowed.
+      return false;
+    }
+     
+    wsServer.on('request', function(request) {
+        console.log(['request',request])
+        if (!originIsAllowed(request.origin)) {
+          // Make sure we only accept requests from an allowed origin
+          request.reject();
+          console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected.');
+          return;
+        }
+        // Creates a speech recognition client
+        const client = new speech.SpeechClient();
+        const encoding = 'LINEAR16';
+        const sampleRateHertz = 16000;
+        const languageCode = 'en-AU';
+        const speechRequest = {
+          config: {
+            encoding: encoding,
+            sampleRateHertz: sampleRateHertz,
+            languageCode: languageCode,
+          },
+          interimResults: false, // If you want interim results, set this to true
+        };
+
+        // Stream the audio to the Google Cloud Speech API
+        const detector = client
+          .streamingRecognize(speechRequest)
+          .on('error', console.log)
+          .on('data', data => {
+            console.log(['TRANSCRIPT',(data && data.results && data.results[0] && data.results[0].alternatives && data.results[0].alternatives[0]  && data.results[0].alternatives[0].transcript) ?  data.results[0].alternatives[0].transcript : "NOTRANSCRIPT"])
+            detector.pause()
+            detector.destroy()
+            if (data && data.results && data.results[0] && data.results[0].alternatives && data.results[0].alternatives[0]  && data.results[0].alternatives[0].transcript && data.results[0].alternatives[0].transcript.trim()) {
+                connection.sendUTF(data.results[0].alternatives[0].transcript)
+            }
+            
+          });
+        // audio to stream - pushed to when audio packet arrives
+        var audioIn = new Readable()
+        audioIn._read = () => {} // _read is required but you can noop it
+        audioIn.pipe(detector)	
+
+        var connection = request.accept('asr-audio', request.origin);
+        //console.log((new Date()) + ' Connection accepted.');
+        connection.on('message', function(message) {
+            console.log(['Received Message: ',message]);
+            if (message.type === 'utf8') {
+                //console.log('Received Text Message: ' + message.utf8Data);
+                //connection.sendUTF(message.utf8Data);
+            }
+            else if (message.type === 'binary') {
+                //console.log('Received Binary Message of ' + message.binaryData.length + ' bytes');
+                //connection.sendBytes(message.binaryData);
+                audioIn.push(message.binaryData)
+            }
+        });
+        connection.on('close', function(reasonCode, description) {
+            console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
+        });
+    });
+
+}
+
 
 function startMainWebServer() {
     if (!config.skipWWW) {
@@ -106,23 +197,23 @@ loginSystem(config).then(function(login) {
         }
     }
 
-    // use media authentication with cookie and req parameter because media element cannot send auth in header.
-    router.use('/api/protectedimage',cors(),csrf.checkToken, checkMedia,function (req,res) {
-        const stream = fs.createReadStream(__dirname + '/lock.jpg')
-        stream.pipe(res)
-    });
+    //// use media authentication with cookie and req parameter because media element cannot send auth in header.
+    //router.use('/api/protectedimage',cors(),csrf.checkToken, checkMedia,function (req,res) {
+        //const stream = fs.createReadStream(__dirname + '/lock.jpg')
+        //stream.pipe(res)
+    //});
 
 
-    router.use('/api/csrfimage',cors(),csrf.checkToken,function (req,res) {
-        const stream = fs.createReadStream(__dirname + '/protect.jpg')
-        stream.pipe(res)
-    });
+    //router.use('/api/csrfimage',cors(),csrf.checkToken,function (req,res) {
+        //const stream = fs.createReadStream(__dirname + '/protect.jpg')
+        //stream.pipe(res)
+    //});
 
-    // An api endpoint that returns a short list of items
-    router.use('/api/getlist',cors(), authenticate, (req,res) => {
-        var list = ["item1", "item2", "item3"];
-        res.send([{items:list}]);
-    });
+    //// An api endpoint that returns a short list of items
+    //router.use('/api/getlist',cors(), authenticate, (req,res) => {
+        //var list = ["item1", "item2", "item3"];
+        //res.send([{items:list}]);
+    //});
 
     var options = {
         findOneAndUpdate: false,
@@ -365,13 +456,13 @@ loginSystem(config).then(function(login) {
     //})
     //sudo certbot certonly --standalone -d auth.opennludata.org -d api.opennludata.org
     if (config.sslKeyFile && config.sslKeyFile.trim() && config.sslCertFile && config.sslCertFile.trim()) {
-        https.createServer({
+        startWebSocketAsr(https.createServer({
             key: fs.readFileSync(config.sslKeyFile),
             cert: fs.readFileSync(config.sslCertFile),
         }, app).listen(port, () => {
           console.log(`OpenNLU listening securely at https://localhost:${port}`)
           startMainWebServer()
-        })
+        }))
     } else {
         app.listen(port, () => {
           console.log(`OpenNLU listening at http://localhost:${port}`)
