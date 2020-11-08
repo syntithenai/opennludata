@@ -62,6 +62,7 @@ function startWebSocketAsr(server) {
     });
      
     function originIsAllowed(origin) {
+        return true
         if (config.websocketAsr  && config.websocketAsr.googleServiceCredentialsFile && Array.isArray(config.websocketAsr.allowedOrigins)) {
             if (config.websocketAsr.allowedOrigins.indexOf(origin) !== -1) {
                 return true
@@ -70,10 +71,18 @@ function startWebSocketAsr(server) {
       // put logic here to detect whether the specified origin is allowed.
       return false;
     }
+    
+    wsServer.on('connect', function(request) {
+        console.log(['WS connect',request])
+    })
+    
+    wsServer.on('WS close', function(request) {
+        
+    })
      
     wsServer.on('request', function(request) {
-        console.log(['request',request])
         if (!originIsAllowed(request.origin)) {
+            console.log(['WS request denied',request])
           // Make sure we only accept requests from an allowed origin
           request.reject();
           console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected.');
