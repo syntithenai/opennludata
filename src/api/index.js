@@ -143,6 +143,7 @@ function startWebSocketAsr(server) {
                 detector.destroy()
             }
         });
+    })
 
 }
 
