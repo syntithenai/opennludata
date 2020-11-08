@@ -93,57 +93,42 @@ function startWebSocketAsr(server) {
           interimResults: false, // If you want interim results, set this to true
         };
 
+        // Stream the audio to the Google Cloud Speech API
+        const detector = client
+          .streamingRecognize(speechRequest)
+          .on('error', console.log)
+          .on('data', data => {
+            console.log(['TRANSCRIPT',(data && data.results && data.results[0] && data.results[0].alternatives && data.results[0].alternatives[0]  && data.results[0].alternatives[0].transcript) ?  data.results[0].alternatives[0].transcript : "NOTRANSCRIPT"])
+            detector.pause()
+            detector.destroy()
+            if (data && data.results && data.results[0] && data.results[0].alternatives && data.results[0].alternatives[0]  && data.results[0].alternatives[0].transcript && data.results[0].alternatives[0].transcript.trim()) {
+                connection.sendUTF(data.results[0].alternatives[0].transcript)
+            }
+        });
+        // audio to stream - pushed to when audio packet arrives
+        var audioIn = new Readable()
+        audioIn._read = () => {} // _read is required but you can noop it
+        audioIn.pipe(detector)	
+
+        var connection = request.accept('asr-audio', request.origin);
+        //console.log((new Date()) + ' Connection accepted.');
+        connection.on('message', function(message) {
+            console.log(['Received Message: ',message]);
+            if (message.type === 'utf8') {
+                //console.log('Received Text Message: ' + message.utf8Data);
+                //connection.sendUTF(message.utf8Data);
+            }
+            else if (message.type === 'binary') {
+                //console.log('Received Binary Message of ' + message.binaryData.length + ' bytes');
+                //connection.sendBytes(message.binaryData);
+                audioIn.push(message.binaryData)
+            }
+        });
         connection.on('close', function(reasonCode, description) {
-            console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.'+description);
-            if (detector) {
-                detector.pause()
-                detector.destroy()
-            }
+            console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
         });
-        connection.on('open', function(reasonCode, description) {
-            console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' connected.');
-            // Stream the audio to the Google Cloud Speech API
-            const detector = client
-              .streamingRecognize(speechRequest)
-              .on('error', console.log)
-              .on('data', data => {
-                console.log(['TRANSCRIPT',(data && data.results && data.results[0] && data.results[0].alternatives && data.results[0].alternatives[0]  && data.results[0].alternatives[0].transcript) ?  data.results[0].alternatives[0].transcript : "NOTRANSCRIPT"])
-                detector.pause()
-                detector.destroy()
-                if (data && data.results && data.results[0] && data.results[0].alternatives && data.results[0].alternatives[0]  && data.results[0].alternatives[0].transcript && data.results[0].alternatives[0].transcript.trim()) {
-                    connection.sendUTF(data.results[0].alternatives[0].transcript)
-                }
-                
-              });
-            // audio to stream - pushed to when audio packet arrives
-            var audioIn = new Readable()
-            audioIn._read = () => {} // _read is required but you can noop it
-            audioIn.pipe(detector)	
-
-            var connection = request.accept('asr-audio', request.origin);
-            console.log((new Date()) + ' Connection accepted.');
-            connection.on('message', function(message) {
-                console.log(['Received Message: ',message]);
-                if (message.type === 'utf8') {
-                    //console.log('Received Text Message: ' + message.utf8Data);
-                    //connection.sendUTF(message.utf8Data);
-                }
-                else if (message.type === 'binary') {
-                    //console.log('Received Binary Message of ' + message.binaryData.length + ' bytes');
-                    //connection.sendBytes(message.binaryData);
-                    audioIn.push(message.binaryData)
-                }
-            });
-
-        });
-        connection.on('error', function(event,d) {
-            console.log([(new Date()) + ' Peer ' + connection.remoteAddress + ' error.',event,d]);
-            if (detector) {
-                detector.pause()
-                detector.destroy()
-            }
-        });
-    })
+        
+    });
 
 }
 
