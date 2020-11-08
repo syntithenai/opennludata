@@ -63,12 +63,12 @@ function startWebSocketAsr(server) {
      
     function originIsAllowed(origin) {
         if (config.websocketAsr  && config.websocketAsr.googleServiceCredentialsFile && Array.isArray(config.websocketAsr.allowedOrigins)) {
-            if (config.websocketAsr.allowedOrigins.indexOf(origin) !== -1) {
+            if (allowedOrigins.indexOf(origin) !== -1) {
                 return true
             }
         } 
       // put logic here to detect whether the specified origin is allowed.
-      return false;
+      return true;
     }
      
     wsServer.on('request', function(request) {
@@ -104,7 +104,8 @@ function startWebSocketAsr(server) {
             if (data && data.results && data.results[0] && data.results[0].alternatives && data.results[0].alternatives[0]  && data.results[0].alternatives[0].transcript && data.results[0].alternatives[0].transcript.trim()) {
                 connection.sendUTF(data.results[0].alternatives[0].transcript)
             }
-        });
+            
+          });
         // audio to stream - pushed to when audio packet arrives
         var audioIn = new Readable()
         audioIn._read = () => {} // _read is required but you can noop it
@@ -127,7 +128,6 @@ function startWebSocketAsr(server) {
         connection.on('close', function(reasonCode, description) {
             console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
         });
-        
     });
 
 }
