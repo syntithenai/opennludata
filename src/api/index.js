@@ -120,15 +120,15 @@ function startWebSocketAsr(server) {
         audioIn.pipe(detector)	
 
         var connection = request.accept('asr-audio', request.origin);
-        //console.log((new Date()) + ' Connection accepted.');
+        console.log((new Date()) + ' Connection accepted.');
         connection.on('message', function(message) {
-            console.log(['Received Message: ',message]);
+            //console.log(['Received Message: ',message]);
             if (message.type === 'utf8') {
-                //console.log('Received Text Message: ' + message.utf8Data);
+                console.log('Received Text Message: ' + message.utf8Data);
                 //connection.sendUTF(message.utf8Data);
             }
             else if (message.type === 'binary') {
-                //console.log('Received Binary Message of ' + message.binaryData.length + ' bytes');
+                console.log('Received Binary Message of ' + message.binaryData.length + ' bytes');
                 //connection.sendBytes(message.binaryData);
                 audioIn.push(message.binaryData)
             }
