@@ -100,7 +100,9 @@ function startWebSocketAsr(server) {
                 try {
                     json = JSON.parse(message.utf8Data)
                 } catch (e) {}
+                console.log(['JSON',json])
                 if (json && json.init && json.init.trim()) {
+                    console.log(['CREATE CLIENT NOW'])
                     // Creates a speech recognition client
                     const client = new speech.SpeechClient();
                     const encoding = 'LINEAR16';
