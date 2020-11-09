@@ -88,7 +88,37 @@ function startWebSocketAsr(server) {
           console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected.');
           return;
         }
-        var audioIn = null
+        // Creates a speech recognition client
+        const client = new speech.SpeechClient();
+        const encoding = 'LINEAR16';
+        const sampleRateHertz = 16000;
+        const languageCode = 'en-AU';
+        const speechRequest = {
+          config: {
+            encoding: encoding,
+            sampleRateHertz: sampleRateHertz,
+            languageCode: languageCode,
+          },
+          interimResults: false, // If you want interim results, set this to true
+        };
+
+        // Stream the audio to the Google Cloud Speech API
+        const detector = client
+          .streamingRecognize(speechRequest)
+          .on('error', console.log)
+          .on('data', data => {
+            console.log(['TRANSCRIPT',(data && data.results && data.results[0] && data.results[0].alternatives && data.results[0].alternatives[0]  && data.results[0].alternatives[0].transcript) ?  data.results[0].alternatives[0].transcript : "NOTRANSCRIPT"])
+            detector.pause()
+            detector.destroy()
+            if (data && data.results && data.results[0] && data.results[0].alternatives && data.results[0].alternatives[0]  && data.results[0].alternatives[0].transcript && data.results[0].alternatives[0].transcript.trim()) {
+                connection.sendUTF(data.results[0].alternatives[0].transcript)
+            }
+        });
+        // audio to stream - pushed to when audio packet arrives
+        var audioIn = new Readable()
+        audioIn._read = () => {} // _read is required but you can noop it
+        audioIn.pipe(detector)	
+
         var connection = request.accept('asr-audio', request.origin);
         console.log((new Date()) + ' Connection accepted.');
         connection.on('message', function(message) {
@@ -96,46 +126,6 @@ function startWebSocketAsr(server) {
             if (message.type === 'utf8') {
                 console.log('Received Text Message: ' + message.utf8Data);
                 //connection.sendUTF(message.utf8Data);
-                var json = []
-                try {
-                    json = JSON.parse(message.utf8Data)
-                } catch (e) {}
-                console.log(['JSON',json])
-                if (json && json.init && json.init.trim()) {
-                    console.log(['CREATE CLIENT NOW'])
-                    // Creates a speech recognition client
-                    const client = new speech.SpeechClient();
-                    const encoding = 'LINEAR16';
-                    const sampleRateHertz = 16000;
-                    const languageCode = 'en-AU';
-                    const speechRequest = {
-                      config: {
-                        encoding: encoding,
-                        sampleRateHertz: sampleRateHertz,
-                        languageCode: languageCode,
-                      },
-                      interimResults: false, // If you want interim results, set this to true
-                    };
-
-                    // Stream the audio to the Google Cloud Speech API
-                    const detector = client
-                      .streamingRecognize(speechRequest)
-                      .on('error', console.log)
-                      .on('data', data => {
-                        console.log(['TRANSCRIPT',(data && data.results && data.results[0] && data.results[0].alternatives && data.results[0].alternatives[0]  && data.results[0].alternatives[0].transcript) ?  data.results[0].alternatives[0].transcript : "NOTRANSCRIPT"])
-                        detector.pause()
-                        detector.destroy()
-                        if (data && data.results && data.results[0] && data.results[0].alternatives && data.results[0].alternatives[0]  && data.results[0].alternatives[0].transcript && data.results[0].alternatives[0].transcript.trim()) {
-                            connection.sendUTF(data.results[0].alternatives[0].transcript)
-                        }
-                    });
-                    // audio to stream - pushed to when audio packet arrives
-                    audioIn = new Readable()
-                    audioIn._read = () => {} // _read is required but you can noop it
-                    audioIn.pipe(detector)	
-                    connection.sendUTF(JSON.stringify({'ready':true}))
-                }
-                
             }
             else if (message.type === 'binary') {
                 console.log('Received Binary Message of ' + message.binaryData.length + ' bytes');
