@@ -88,7 +88,7 @@ function startWebSocketAsr(server) {
           console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected.');
           return;
         }
-
+        var audioIn = null
         var connection = request.accept('asr-audio', request.origin);
         console.log((new Date()) + ' Connection accepted.');
         connection.on('message', function(message) {
@@ -130,7 +130,7 @@ function startWebSocketAsr(server) {
                         }
                     });
                     // audio to stream - pushed to when audio packet arrives
-                    var audioIn = new Readable()
+                    audioIn = new Readable()
                     audioIn._read = () => {} // _read is required but you can noop it
                     audioIn.pipe(detector)	
                     connection.sendUTF(JSON.stringify({'ready':true}))
