@@ -133,6 +133,7 @@ function startWebSocketAsr(server) {
                     var audioIn = new Readable()
                     audioIn._read = () => {} // _read is required but you can noop it
                     audioIn.pipe(detector)	
+                    connection.sendUTF(JSON.stringify({'ready':true}))
                 }
                 
             }
