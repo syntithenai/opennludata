@@ -10,7 +10,7 @@ export default  function SkillSettingsPage (props) {
     var currentSkill = skillsEditor.currentSkill
     
     return <>{currentSkill && <div>
-             <Link to={"/skills/skill/"+currentSkill.title} ><Button variant="success" style={{float:'right'}} >Back to Skill</Button></Link>
+             <Link to={"/skills/skill/"+currentSkill.title} ><Button variant="warning" style={{float:'right'}} >Back to Skill</Button></Link>
              
             
              <h1>Settings</h1>

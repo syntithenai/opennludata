@@ -156,15 +156,23 @@ function exportJSON(skill) {
                 //console.log(['API loaded stories',allForms,allActions,allApis,usedUtterances,usedForms,usedActions])
                 
                 function doForm(key) {
-                    //console.log(['API DO FORM',key])
+                    console.log(['API DO FORM',key,allForms[key]])
                     if (key && allForms[key]  && !finalForms[key]) {
                         var form = allForms[key]
                         finalForms[key] = form
                         if (form.finished) {
                             doAction(form.finished)
                         }
-                        if (form.ask) {
-                            usedUtterances[form.ask] = 1
+                        if (form.validate) {
+                            doAction(form.validate)
+                        }
+                        if (Array.isArray(form.slots)) {
+                            form.slots.map(function(slot) { 
+                                if (slot.text) {
+                                    usedUtterances[slot.text] = 1
+                                }
+                            })
+                            
                         }
                     }
                 }

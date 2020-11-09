@@ -3,7 +3,7 @@ import React from 'react'
 export default function MicrophoneComponent(props) {
     var mergedStyle = {position:'relative', backgroundColor:(props.color ? props.color : 'grey') , border: '2px solid black', borderRadius: '1em', height: '2em', width: '2em', textDecoration: 'none', outline: 'none'}
     if (props.style)  mergedStyle = Object.assign(mergedStyle,props.style)
-    console.log(mergedStyle)
+    //console.log(mergedStyle)
     return  <button  id='microphone_button'  onClick={function(e) {
             e.preventDefault() }}   style={mergedStyle} >
         <div style={{position: 'relative'}}>

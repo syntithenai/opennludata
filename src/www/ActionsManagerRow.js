@@ -163,6 +163,9 @@ export default function ActionsManagerRow(props) {
                     {<div style={{marginTop:'0.5em', borderTop:'1px solid grey', clear:'both'}}>
                         <span style={{marginRight:'0.5em', float:'left'}}>Responses</span> 
                         <Button style={{marginRight:'0.5em', float:'left'}} variant="success" onClick={function(e) {addListItemData('responses',{text:''});  }}>Use Response</Button>
+                        
+                        
+                        
                         {Array.isArray(item.responses) && item.responses.map(function(button,buttonKey) {
                             return <div  style={{marginTop:'0.5em', clear:'both'}} key={buttonKey}>
                             
@@ -217,6 +220,10 @@ export default function ActionsManagerRow(props) {
                                 <Button variant="success" style={{marginLeft:'0.5em'}} onClick={function(e) {
                                     insertAtCaret("response('"+button.text+"').then(function() {\n\n})")
                                 }}>Insert at Cursor</Button>
+                                
+
+                                
+                                
                             </div>
                                 
                         })}
@@ -379,7 +386,12 @@ export default function ActionsManagerRow(props) {
                     </div> }
                     
                     
-                    <div style={{clear:'both', marginRight:'0.5em'}}>Code</div> 
+                    <div style={{clear:'both', marginRight:'0.5em'}}>Code
+                    <Button variant="success" style={{float:'right'}} onClick={function(e) {
+                                    insertAtCaret("resolve(output,slots)")
+                                }}>Insert Resolve at Cursor</Button>
+                    
+                    </div> 
                         
                       <div style={{}}>  
                           <AceEditor

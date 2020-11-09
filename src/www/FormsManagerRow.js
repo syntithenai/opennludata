@@ -182,6 +182,51 @@ export default function FormsManagerRow(props) {
                         onAddition={onTagAddition.bind(this)} /> 
                         </span>
                     </label>
+                    
+                    
+                    
+                     <span style={{float:'left'}}>
+                        <label><span style={{float:'left', marginRight:'1em', marginLeft:'1em' }}>Validate Action</span>
+                            <span style={{float:'left'}}><Autosuggest
+                            suggestions={actionSuggestions.map(function(suggestion) {return {tag: suggestion}})}
+                            shouldRenderSuggestions={function() {return true}}
+                            onSuggestionsFetchRequested={onActionSuggestionsFetchRequested}
+                            onSuggestionsClearRequested={onActionSuggestionsClearRequested}
+                            getSuggestionValue={function (suggestion)  { return suggestion.tag}}
+                            renderSuggestion={renderSuggestion}
+                            onSuggestionSelected={function(event, { suggestion, suggestionValue, suggestionIndex, sectionIndex, method }) {
+                                if (item) {
+                                    updateExampleField('validate',suggestionValue)
+                                }
+                            }}
+                            inputProps={{
+                                style:{width:'30em', display:'inline', float:'left'},
+                              value: item && item.validate ? item.validate : '',
+                              onChange: function(e) {
+                                  if (item) {
+                                    updateExampleField('validate',e.target.value)
+                                  }
+                                }
+                            }}
+                        /></span></label></span>
+                        
+                        <span style={{float:'left'}}>{(item && item.validate && props.lookups.actionsLookups.indexOf(item.validate) === -1) && (
+                            <span >{item.validate && <Button 
+                                style={{marginLeft:'1em'}} 
+                                onClick={function(e) {
+                                    addAction(item.validate).then(function() {
+                                        console.log('NOW UPD')
+                                            setTimeout(props.updateFunctions.updateActions,500)
+                                    })
+                                }} variant="success">
+                                    Save New
+                            </Button>}</span>
+                        )}
+                        
+                        {(item && item.validate && props.lookups.actionsLookups.indexOf(item.validate)  !== -1) && <Link to={'/actions/filter/'+item.validate+ ((props.fromSkill && props.fromSkill.trim()) ? '/fromskill/' + props.fromSkill : '') + '/fromform/'+item.value } ><Button style={{marginLeft:'1em'}} variant="primary">Edit</Button></Link>}
+                        
+                        </span>
+                        
                      
                      
                     <span >
@@ -227,7 +272,8 @@ export default function FormsManagerRow(props) {
                             <span >{item && <Button 
                                 style={{marginLeft:'1em'}} 
                                 onClick={function(e) {
-                                    addAction({name:item.finished}).then(function() {
+                                    addAction(item.finished).then(function() {
+                                        console.log('NOW UPD')
                                             setTimeout(props.updateFunctions.updateActions,500)
                                     })
                                 }} variant="success">
@@ -304,12 +350,9 @@ export default function FormsManagerRow(props) {
                                             Save New
                                     </Button>}</span>
                                 )}
-                                
-                                
-                                {(button && button.text && props.lookups.utterancesLookups.indexOf(button.text)  !== -1) && <Link to={'/utterances/filter/'+button.text+ ((props.fromSkill && props.fromSkill.trim()) ? '/fromskill/' + props.fromSkill : '') + '/fromform/'+item.value } ><Button style={{marginLeft:'1em'}} variant="primary">Edit</Button></Link>}
-                                
                                 </span>
                                 
+                               {(item && item.finished && props.lookups.utterancesLookups.indexOf(button.text)  !== -1) && <Link to={'/utterances/filter/'+button.text+ ((props.fromSkill && props.fromSkill.trim()) ? '/fromskill/' + props.fromSkill : '') + '/fromform/'+item.value } ><Button style={{marginLeft:'1em'}} variant="primary">Edit</Button></Link>}
                                 
                                 
                                 

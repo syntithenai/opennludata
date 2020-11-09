@@ -64,7 +64,7 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists, in
             //return true;
             var matchText = true
             if (searchFilter && searchFilter.trim().length >0) {
-                if ((item.value && item.value.toLowerCase().indexOf(searchFilter.toLowerCase()) !== -1) || (item.synonym && item.synonym.toLowerCase().indexOf(searchFilter.toLowerCase()) !== -1 ) ) {
+                if ((item && item.value  && item.value.toLowerCase && item.value.toLowerCase().indexOf(searchFilter.toLowerCase()) !== -1) || (item && item.synonym && item.synonym.toLowerCase && item.synonym.toLowerCase().indexOf(searchFilter.toLowerCase()) !== -1 ) ) {
                     matchText = true
                 } else {
                     matchText = false
@@ -92,7 +92,7 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists, in
         })
         var itemKeys = {}
         filteredItems.map(function(item) {if (item.id) itemKeys[item.id] = true; return null})
-        filteredItems.sort(function(a,b) { return (a.value ? a.value.toLowerCase() : '') < (b.value ? b.value.toLowerCase() : '') ? true : false})
+        filteredItems.sort(function(a,b) { return (a && a.value && a.value.toLowerCase ? a.value.toLowerCase() : '') < (b && b.value && b.value.toLowerCase  ? b.value.toLowerCase() : '') ? true : false})
         setFilteredItems(filteredItems)
         setFilteredItemsKeys(itemKeys)
         updateLists(filteredItems)

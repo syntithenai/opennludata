@@ -854,6 +854,10 @@ function App() {
                                 (props) => <ActionsManager {...props}   lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}   setPageMessage={setPageMessage}  updateFunctions={updateFunctions}  />}
                                       
                             />
+                            <Route exact path='/actions/filter/:filter/fromform/:fromform' render={
+                                (props) => <ActionsManager {...props}   lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}   setPageMessage={setPageMessage}  updateFunctions={updateFunctions}  />}
+                                      
+                            />
                             <Route exact path='/actions/list/:listId/filter/:filter/fromskill/:fromskill' render={
                                 (props) => <ActionsManager {...props}   lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}   setPageMessage={setPageMessage}  updateFunctions={updateFunctions}  />}
                                       

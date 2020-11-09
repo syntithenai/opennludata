@@ -40,7 +40,7 @@ export default function useSkillsEditor(props) {
        storeName   : "examples",
      });
     const token = props.user && props.user.token && props.user.token.access_token ? props.user.token.access_token : ''
-    console.log(['SETOKE',token])
+    //console.log(['SETOKE',token])
     const axiosClient = props.getAxiosClient(token)
     const {saveItem, deleteItem, searchItems} = useRestEndpoint(axiosClient,process.env.REACT_APP_restBaseUrl)
 
