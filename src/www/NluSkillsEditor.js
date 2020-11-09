@@ -1,4 +1,4 @@
-import React,{useEffect} from 'react';
+import React,{useEffect, useState} from 'react';
 import './App.css';
 import {Link} from 'react-router-dom'
 import {Button, Dropdown, ButtonGroup} from 'react-bootstrap'
@@ -7,15 +7,17 @@ import exportFormats from './export/index'
 import PublishPage from './PublishPage'
 import { saveAs } from 'file-saver';
 import NluSkillEditorComponent from './components/NluSkillEditorComponent'
-import {uniquifyArray} from './utils'
 import useSkillsEditor from './useSkillsEditor'
 import useImportMergeFunctions from './useImportMergeFunctions'
 import ChatPage from './ChatPage'
-
+import {generateObjectId, uniquifyArray} from './utils'
+     
+import localforage from 'localforage'
 
 export default  function NluSkillsEditor(props) {
 
     const {mergeIntents, updateIntents} = useImportMergeFunctions()
+    const [newSkillName, setNewSkillName] = useState('')
     
     const skillsEditor = useSkillsEditor(Object.assign({},props,{user:props.user, lookups: props.lookups, updateFunctions: props.updateFunctions}))
     
@@ -26,6 +28,28 @@ export default  function NluSkillsEditor(props) {
        listsForEntity, skillMatches, skillUpdatedMatches, setSkillMatches, setSkillUpdatedMatches, setSkill, forceReload
      } = skillsEditor
    
+    
+    function addIntent(intentName,skillId) {
+         //console.log(['ADD intent',intentName,skillId])
+         return new Promise(function(resolve,reject) {
+             //if (intentName && intentName.trim()) {
+                     var examplesStorage = localforage.createInstance({
+                       name: "nlutool",
+                       storeName   : "examples",
+                     });
+                     examplesStorage.getItem('alldata', function (err,examplesInStorage) {
+                         if (err) throw new Error(err)
+                         var examples = Array.isArray(examplesInStorage) ? examplesInStorage : []
+                         examples.unshift({id:generateObjectId(), example:'', intent:intentName.trim(), skills:[skillId]})
+                         examplesStorage.setItem('alldata',examples)
+                         resolve()
+                     })
+                
+           //} else {
+               //resolve()
+           //}
+        })
+    }
     
      
      function tagDuplicates() {
@@ -146,13 +170,24 @@ export default  function NluSkillsEditor(props) {
            
           
             
-            {currentSkill && !props.publish && <NluSkillEditorComponent history={props.history} user={props.user} lookups={props.lookups} updateFunctions={props.updateFunctions} {...skillsEditor  } />}
+            {currentSkill && !props.publish && <NluSkillEditorComponent addIntent={addIntent} history={props.history} user={props.user} lookups={props.lookups} updateFunctions={props.updateFunctions} {...skillsEditor  } />}
             {!currentSkill && <div>
                 <h1>Skills</h1>
                 {skillsList.length > 0 && skillsList}
                 {skillsList.length <= 0 && <div>
                     You dont have any skills yet. Import some <Link to='/sources'><Button>Sources</Button></Link> or <Link to='/search'><Button>Search</Button></Link> the community archive.
                 </div>}
+                <br/><br/>
+                <input style={{marginLeft:'3em'}}  value={newSkillName} onChange={function(e) {setNewSkillName(e.target.value)  }} />
+                &nbsp;
+                
+                <Button variant={newSkillName ? "success" : "secondary"} onClick={function() {
+                        if (newSkillName) {
+                                addIntent('',newSkillName).then(function() {
+                                  setNewSkillName('')
+                                  props.history.push('/skills/skill/'+newSkillName)
+                                })
+                            }}}>New Skill</Button>
             </div>}
              
              {(currentSkill && props.publish ) && <PublishPage {...props} setCurrentSkill={setCurrentSkill} listsForEntity={listsForEntity} forceReload={forceReload}  user={props.user} setMongoId={setMongoId} currentSkill={currentSkill} saveItem={saveItem} deleteItem={deleteItem} />}

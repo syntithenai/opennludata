@@ -28,28 +28,6 @@ export default function NluSkillEditorComponent(props) {
     const [newIntentName, setNewIntentName] = useState('')
     const [suggestions, setSuggestions] = useState([])
     
-    function addIntent(intentName,skillId) {
-         //console.log(['ADD intent',intentName,skillId])
-         return new Promise(function(resolve,reject) {
-             //if (intentName && intentName.trim()) {
-                     var examplesStorage = localforage.createInstance({
-                       name: "nlutool",
-                       storeName   : "examples",
-                     });
-                     examplesStorage.getItem('alldata', function (err,examplesInStorage) {
-                         if (err) throw new Error(err)
-                         var examples = Array.isArray(examplesInStorage) ? examplesInStorage : []
-                         examples.unshift({id:generateObjectId(), example:'', intent:intentName.trim(), skills:[skillId]})
-                         examplesStorage.setItem('alldata',examples)
-                         resolve()
-                     })
-                
-           //} else {
-               //resolve()
-           //}
-        })
-    }
-    
     //function addAction(actionName,skillId) {
          //console.log(['ADD action',actionName,skillId])
          //return new Promise(function(resolve,reject) {
@@ -182,7 +160,7 @@ export default function NluSkillEditorComponent(props) {
                                   onChange: function(e) {setNewIntentName(e.target.value)}
                                 }}
                             />&nbsp;<Button  style={{display:'inline'}}  variant="success" onClick={function() {
-                                addIntent(newIntentName,props.skillFilterValue).then(function() {
+                                props.addIntent(newIntentName,props.skillFilterValue).then(function() {
                                   var intentExt = newIntentName && newIntentName.trim() ? '/intent/'+newIntentName : ''
                                   setNewIntentName('')
                                   props.history.push('/examples/skill/'+props.skillFilterValue+intentExt)
