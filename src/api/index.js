@@ -50,7 +50,7 @@ function getUserFromAccessToken(bearerToken,secret) {
 
 function startWebSocketAsr(server) {
     console.log('START WEBSOCKT')
-    console.log([config])
+    //console.log([config])
     wsServer = new WebSocketServer({
         httpServer: server,
         // You should not use autoAcceptConnections for production
@@ -62,7 +62,7 @@ function startWebSocketAsr(server) {
     });
      
     function originIsAllowed(origin) {
-        return true
+        //return true
         if (config.websocketAsr  && config.websocketAsr.googleServiceCredentialsFile && Array.isArray(config.websocketAsr.allowedOrigins)) {
             if (config.websocketAsr.allowedOrigins.indexOf(origin) !== -1) {
                 return true
@@ -73,15 +73,15 @@ function startWebSocketAsr(server) {
     }
     
     wsServer.on('connect', function(request) {
-        console.log(['WS connect',request])
+        console.log(['WS connect'])
     })
     
     wsServer.on('close', function(request) {
-        console.log(['WS close',request])
+        console.log(['WS close'])
     })
      
     wsServer.on('request', function(request) {
-          console.log(['WS request',request])
+          console.log(['WS request'])
         if (!originIsAllowed(request.origin)) {
           
           // Make sure we only accept requests from an allowed origin
