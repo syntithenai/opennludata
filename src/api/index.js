@@ -76,13 +76,14 @@ function startWebSocketAsr(server) {
         console.log(['WS connect',request])
     })
     
-    wsServer.on('WS close', function(request) {
-        
+    wsServer.on('close', function(request) {
+        console.log(['WS close',request])
     })
      
     wsServer.on('request', function(request) {
+          console.log(['WS request',request])
         if (!originIsAllowed(request.origin)) {
-            console.log(['WS request denied',request])
+          
           // Make sure we only accept requests from an allowed origin
           request.reject();
           console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected.');
@@ -111,7 +112,7 @@ function startWebSocketAsr(server) {
             detector.pause()
             detector.destroy()
             if (data && data.results && data.results[0] && data.results[0].alternatives && data.results[0].alternatives[0]  && data.results[0].alternatives[0].transcript && data.results[0].alternatives[0].transcript.trim()) {
-                connection.sendUTF(data.results[0].alternatives[0].transcript)
+                connection.sendUTF(JSON.stringify({transcript: data.results[0].alternatives[0].transcript})
             }
         });
         // audio to stream - pushed to when audio packet arrives
@@ -135,9 +136,15 @@ function startWebSocketAsr(server) {
         });
         connection.on('close', function(reasonCode, description) {
             console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
+            detector.pause()
+            detector.destroy()
+            
         });
         connection.on('error', function(reasonCode, description) {
             console.log([(new Date()) + ' Peer ' + connection.remoteAddress + ' error.',description]);
+            detector.pause()
+            detector.destroy()
+            
         });
     });
 
