@@ -112,7 +112,7 @@ function startWebSocketAsr(server) {
             detector.pause()
             detector.destroy()
             if (data && data.results && data.results[0] && data.results[0].alternatives && data.results[0].alternatives[0]  && data.results[0].alternatives[0].transcript && data.results[0].alternatives[0].transcript.trim()) {
-                connection.sendUTF(JSON.stringify({transcript: data.results[0].alternatives[0].transcript})
+                connection.sendUTF(JSON.stringify({transcript: data.results[0].alternatives[0].transcript}))
             }
         });
         // audio to stream - pushed to when audio packet arrives
