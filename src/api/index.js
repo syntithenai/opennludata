@@ -26,6 +26,9 @@ var Readable = stream.Readable;
 var silenceTimeout = null
 var maxTimeout = null
  
+var connection = null
+var detector = null 
+ 
 //console.log("PRECONNECT")    
 try {
     //mongoose.connect(config.databaseConnection+config.database, {useNewUrlParser: true})
@@ -142,7 +145,7 @@ function startWebSocketAsr(server) {
         };
 
         // Stream the audio to the Google Cloud Speech API
-        const detector = client
+        detector = client
           .streamingRecognize(speechRequest)
           .on('error', console.log)
           .on('data', data => {
@@ -158,7 +161,7 @@ function startWebSocketAsr(server) {
         audioIn._read = () => {} // _read is required but you can noop it
         audioIn.pipe(detector)	
 
-        var connection = request.accept('asr-audio', request.origin);
+        connection = request.accept('asr-audio', request.origin);
         console.log((new Date()) + ' Connection accepted.');
         connection.on('message', function(message) {
             //console.log(['Received Message: ',message]);
