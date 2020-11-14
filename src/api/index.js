@@ -88,6 +88,12 @@ function clearSilenceTimeout() {
     silenceTimeout = null
 }
 
+function clearTimeouts() {
+    clearSilenceTimeout()
+    clearMaxTimeout()
+}
+
+
 function startWebSocketAsr(server) {
     console.log('START WEBSOCKT')
     //console.log([config])
@@ -118,6 +124,7 @@ function startWebSocketAsr(server) {
     
     wsServer.on('close', function(request) {
         console.log(['WS close'])
+        clearTimeouts()
     })
      
     wsServer.on('request', function(request) {
@@ -129,7 +136,9 @@ function startWebSocketAsr(server) {
           console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected.');
           return;
         }
+        clearTimeouts()
         createSilenceTimeout()
+        createMaxTimeout()
         // Creates a speech recognition client
         const client = new speech.SpeechClient();
         const encoding = 'LINEAR16';
@@ -181,13 +190,14 @@ function startWebSocketAsr(server) {
             console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
             detector.pause()
             detector.destroy()
+            clearTimeouts()
             
         });
         connection.on('error', function(reasonCode, description) {
             console.log([(new Date()) + ' Peer ' + connection.remoteAddress + ' error.',description]);
             detector.pause()
             detector.destroy()
-            
+            clearTimeouts()
         });
     });
 
