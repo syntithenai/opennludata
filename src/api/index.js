@@ -23,7 +23,8 @@ const speech = require('@google-cloud/speech');
 
 var stream = require('stream') 
 var Readable = stream.Readable;
-
+var silenceTimeout = null
+var maxTimeout = null
  
 //console.log("PRECONNECT")    
 try {
@@ -46,6 +47,42 @@ function getUserFromAccessToken(bearerToken,secret) {
             resolve(false,decoded.user)
         });
    })
+}
+
+function createMaxTimeout() {
+    maxTimeout = setTimeout(function() {
+        console.log('SERVER MAX TIMEOUT')
+        if (detector) {
+            detector.pause()
+            detector.destroy()
+        }
+        if (connection) {
+            connection.close()
+        }
+    },14000)
+}
+
+function clearMaxTimeout() {
+    if (maxTimeout) clearTimeout(maxTimeout)
+    maxTimeout = null
+}
+
+function createSilenceTimeout() {
+    silenceTimeout = setTimeout(function() {
+        console.log('SERVER SILENCE TIMEOUT')
+        if (detector) {
+            detector.pause()
+            detector.destroy()
+        }
+        if (connection) {
+            connection.close()
+        }
+    },3000)
+}
+
+function clearSilenceTimeout() {
+    if (silenceTimeout) clearTimeout(silenceTimeout)
+    silenceTimeout = null
 }
 
 function startWebSocketAsr(server) {
@@ -89,6 +126,7 @@ function startWebSocketAsr(server) {
           console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected.');
           return;
         }
+        createSilenceTimeout()
         // Creates a speech recognition client
         const client = new speech.SpeechClient();
         const encoding = 'LINEAR16';
@@ -129,6 +167,8 @@ function startWebSocketAsr(server) {
                 //connection.sendUTF(message.utf8Data);
             }
             else if (message.type === 'binary') {
+                clearSilenceTimeout()
+                createSilenceTimeout()
                 console.log('Received Binary Message of ' + message.binaryData.length + ' bytes');
                 //connection.sendBytes(message.binaryData);
                 audioIn.push(message.binaryData)

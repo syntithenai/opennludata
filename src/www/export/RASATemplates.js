@@ -10,23 +10,18 @@ pipeline:
     analyzer: "char_wb"
     min_ngram: 1
     max_ngram: 4
-  - name: ResponseSelector
-    epochs: 100
   - name: DIETClassifier
     epochs: 100
   - name: EntitySynonymMapper
+  - name: ResponseSelector
+    epochs: 100
 
 policies:
-  - name: FormPolicy
   - name: MemoizationPolicy
+  - name: RulePolicy
   - name: TEDPolicy
     max_history: 5
     epochs: 100
-  - name: MappingPolicy
-  - name: "FallbackPolicy"
-    nlu_threshold: 0.5
-    core_threshold: 0.3
-    fallback_action_name: "action_default_fallback"
     `,
     credentials: `
 # This file contains the credentials for the voice & chat platforms
@@ -62,8 +57,48 @@ rest:
  
     `,
     endpoint: `
+# This file contains the different endpoints your bot can use.
+
+# Server where the models are pulled from.
+# https://rasa.com/docs/rasa/model-storage#fetching-models-from-a-server
+
+#models:
+#  url: http://my-server.com/models/default_core@latest
+#  wait_time_between_pulls:  10   # [optional](default: 100)
+
+# Server which runs your custom actions.
+# https://rasa.com/docs/rasa/custom-actions
+
 #action_endpoint:
-#  url: http://localhost:5055/webhook
+#  url: "http://localhost:5055/webhook"
+
+# Tracker store which is used to store the conversations.
+# By default the conversations are stored in memory.
+# https://rasa.com/docs/rasa/tracker-stores
+
+#tracker_store:
+#    type: redis
+#    url: <host of the redis instance, e.g. localhost>
+#    port: <port of your redis instance, usually 6379>
+#    db: <number of your database within redis, e.g. 0>
+#    password: <password used for authentication>
+#    use_ssl: <whether or not the communication is encrypted, default false>
+
+#tracker_store:
+#    type: mongod
+#    url: <url to your mongo instance, e.g. mongodb://localhost:27017>
+#    db: <name of the db within your mongo instance, e.g. rasa>
+#    username: <username used for authentication>
+#    password: <password used for authentication>
+
+# Event broker which all conversation events should be streamed to.
+# https://rasa.com/docs/rasa/event-brokers
+
+#event_broker:
+#  url: localhost
+#  username: username
+#  password: password
+#  queue: queue
 
     `,
     actions:  `
@@ -98,24 +133,6 @@ class `+className+`(Action):
     `
     }
     ,
-    domain: `
-session_config:
-  carry_over_slots_to_new_session: true
-  session_expiration_time: 5    
-
-`,
-    stories:`
-## greet + location/price + cuisine + num people    <!-- name of the story - just for debugging -->
-* greet
-   - action_ask_howcanhelp
-* inform{"location": "rome", "price": "cheap"}  <!-- user utterance, in format intent{entities} -->
-   - action_on_it
-   - action_ask_cuisine
-* inform{"cuisine": "spanish"}
-   - action_ask_numpeople        <!-- action that the bot should execute -->
-* inform{"people": "six"}
-   - action_ack_dosearch    
-`,
     session:`
 session_config:
   carry_over_slots_to_new_session: true

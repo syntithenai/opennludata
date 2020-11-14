@@ -25,8 +25,8 @@ const UtterancesManagerSearchBar = function(props) {
                 {props.lookups.selectedUtteranceTally <= 0 && <Button size="lg" onClick={function(e) {props.selectAll(e) }} variant="secondary"  ><img style={{height:'1em'}} src={checkImage} alt="Select" /></Button> }
                 
                 
-           </span>}   
-            {<span style={{marginLeft:'0.4em'}}><SearchInput searchFilter={props.searchFilter} setSearchFilter={props.setSearchFilter} /></span>}   
+           </span>}  
+            <span style={{marginLeft:'0.4em'}}><SearchInput searchFilter={props.searchFilter} setSearchFilter={props.setSearchFilter} /></span>
             {<Dropdown style={{marginLeft:'0.5em'}}  as={ButtonGroup}>
                   <Dropdown.Toggle split   id="dropdown-split-basic" ></Dropdown.Toggle>
                   <Button  >{'List'+(props.listFilterValue ? ' - '+ props.listFilterValue : '')} </Button>

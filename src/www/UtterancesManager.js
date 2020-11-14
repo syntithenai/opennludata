@@ -117,8 +117,8 @@ export default  function UtterancesManager(props) {
   
     return <div>
        
-                   
-        {<UtterancesManagerSearchBar {...props} fromSkill={fromSkill} fromAction={fromAction} fromForm={fromForm} searchFilter={searchFilter} setSearchFilter={setSearchFilter} listFilterValue={listFilterValue} setListFilterValue={setListFilterValue} resetSelection={resetSelection} selectAll={selectAll} createEmptyItem={createEmptyItem} sort={sort}  />}
+                
+        <UtterancesManagerSearchBar {...props} fromSkill={fromSkill} fromAction={fromAction} fromForm={fromForm} searchFilter={searchFilter} setSearchFilter={setSearchFilter} listFilterValue={listFilterValue} setListFilterValue={setListFilterValue} resetSelection={resetSelection} selectAll={selectAll} createEmptyItem={createEmptyItem} sort={sort}  />
          
          
          {renderEditor(props)}

@@ -21,7 +21,7 @@ export default function RegexpsManagerRow(props) {
        return item && <div style={style} className={splitNumber % 2 ? 'ListItemOdd' : 'ListItemEven'}>
                <div style={{position:'relative', width: '100%', textAlign:'left',  borderTop: '2px solid black'}}>
                    
-                   <div style={{float:'right'}} > 
+                   <div style={{float:'right'}} >
                         <Button  variant="danger"  size="sm" style={{float:'right', fontWeight:'bold', borderRadius:'15px', marginTop:'0.2em'}} onClick={function(e) {if (window.confirm('Really delete')) {props.deleteItem(splitNumber,(item.id ? item.id : ''))}}} >X</Button>
                
                     </div>

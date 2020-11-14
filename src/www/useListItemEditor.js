@@ -21,7 +21,11 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists, in
         var root = history.location.pathname.split("/")
         var parts=['/'+root[1]]
         if (value) parts.push('/list/'+value)
-        if (searchFilter) parts.push('/filter/'+searchFilter)
+        if (searchFilter) {
+            parts.push('/filter/'+searchFilter)
+        } else {
+            parts.push('/filter/ ')
+        }
         if (fromSkill) parts.push('/fromskill/'+fromSkill)
         history.push(parts.join(''))
     }
@@ -31,7 +35,11 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists, in
         var root = history.location.pathname.split("/")
         var parts=['/'+root[1]]
         if (listFilterValue) parts.push('/list/'+listFilterValue)
-        if (value) parts.push('/filter/'+value)
+        if (value) {
+            parts.push('/filter/'+value)
+        } else {
+            parts.push('/filter/ ')
+        }
         if (fromSkill) parts.push('/fromskill/'+fromSkill)
         history.push(parts.join(''))
     }
@@ -41,7 +49,11 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists, in
         var root = history.location.pathname.split("/")
         var parts=['/'+root[1]]
         if (listFilterValue) parts.push('/list/'+listFilterValue)
-        if (searchFilter) parts.push('/filter/'+searchFilter)
+        if (searchFilter) {
+            parts.push('/filter/'+searchFilter)
+        } else {
+            parts.push('/filter/ ')
+        }
         if (value) parts.push('/fromskill/'+value)
         history.push(parts.join(''))
     }
@@ -64,7 +76,7 @@ function useListItemEditor(database, databaseTable, databaseKey, updateLists, in
             //return true;
             var matchText = true
             if (searchFilter && searchFilter.trim().length >0) {
-                if ((item && item.value  && item.value.toLowerCase && item.value.toLowerCase().indexOf(searchFilter.toLowerCase()) !== -1) || (item && item.synonym && item.synonym.toLowerCase && item.synonym.toLowerCase().indexOf(searchFilter.toLowerCase()) !== -1 ) ) {
+                if ((item && item.value  && item.value.toLowerCase && item.value.toLowerCase().indexOf(searchFilter.trim().toLowerCase()) !== -1) || (item && item.synonym && item.synonym.toLowerCase && item.synonym.toLowerCase().indexOf(searchFilter.trim().toLowerCase()) !== -1 ) ) {
                     matchText = true
                 } else {
                     matchText = false

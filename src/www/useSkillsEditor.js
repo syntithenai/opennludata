@@ -811,11 +811,29 @@ export default function useSkillsEditor(props) {
         forceReload()
         //console.log(['SET STORIES skill',currentSkill])
     }
+    
+    function setConfigValue(key,value) {
+        var skill = currentSkill
+        var config = currentSkill && typeof currentSkill.config==="object"  ? currentSkill.config : {}
+        config[key] = value
+        skill.config = config
+        setCurrentSkill(skill)
+        forceReload()
+    }
+    
+    function setRasaValue(key,value) {
+        var skill = currentSkill
+        var rasa = currentSkill && typeof currentSkill.rasa==="object"  ? currentSkill.rasa : {}
+        rasa[key] = value
+        skill.rasa = rasa
+        setCurrentSkill(skill)
+        forceReload()
+    }
    
     function forceReload(skill) {
         var thisSkill = skill && skill.id ? skill : (currentSkill && currentSkill.id ? currentSkill : {})
         setListsForEntity(JSON.stringify([thisSkill._id,thisSkill.entitiesListsData,thisSkill.utterancesListsData,thisSkill.rasa,
-        thisSkill.jovo,thisSkill.mycroft,thisSkill.entities,thisSkill.utterances,thisSkill.utterancesLists, thisSkill.regexps, thisSkill.tags,thisSkill.rules,thisSkill.stories]))  
+        thisSkill.jovo,thisSkill.mycroft,thisSkill.entities,thisSkill.utterances,thisSkill.utterancesLists, thisSkill.regexps, thisSkill.tags,thisSkill.rules,thisSkill.stories,thisSkill.config]))  
     }
         
     //addRegexpUtteranceTags,
@@ -825,7 +843,7 @@ export default function useSkillsEditor(props) {
      removeUtterance, addUtterance,  addUtteranceList, removeUtteranceList, skillKeys, addSkillTag, removeSkillTag,
      newSlot, newSlotValue,    setNewSlotValue,  slots: props.slots, setRASASlotAutofill, setRASASlotType, deleteSlot ,
      setRASAActions, setRASASession , setRASAEndpoint , setRASACredentials  ,setRASAStories ,setRASAConfig, duplicates,
-     filteredItems, currentIntent, listsForEntity, listsManager, collatedTags, skillMatches, skillUpdatedMatches,setSkillMatches, setSkillUpdatedMatches, setSkill, setStories, forceReload
+     filteredItems, currentIntent, listsForEntity, listsManager, collatedTags, skillMatches, skillUpdatedMatches,setSkillMatches, setSkillUpdatedMatches, setSkill, setStories, forceReload, setRasaValue, setConfigValue
      }
     
 }

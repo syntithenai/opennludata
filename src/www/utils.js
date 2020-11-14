@@ -174,6 +174,9 @@ function concatText(text,words) {
             return example
         }
     }
+    
+    
+    
     /**
      *  create array by splitting on newline and fullstop
      */
