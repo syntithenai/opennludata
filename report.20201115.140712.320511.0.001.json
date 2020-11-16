@@ -1,0 +1,624 @@
+
+{
+  "header": {
+    "reportVersion": 1,
+    "event": "Allocation failed - JavaScript heap out of memory",
+    "trigger": "FatalError",
+    "filename": "report.20201115.140712.320511.0.001.json",
+    "dumpEventTime": "2020-11-15T14:07:12Z",
+    "dumpEventTimeStamp": "1605409632842",
+    "processId": 320511,
+    "cwd": "/var/lib/docker/projectshome/opennludata",
+    "commandLine": [
+      "node",
+      "/var/lib/docker/projectshome/opennludata/node_modules/react-scripts/scripts/start.js"
+    ],
+    "nodejsVersion": "v12.16.1",
+    "glibcVersionRuntime": "2.31",
+    "glibcVersionCompiler": "2.17",
+    "wordSize": 64,
+    "arch": "x64",
+    "platform": "linux",
+    "componentVersions": {
+      "node": "12.16.1",
+      "v8": "7.8.279.23-node.31",
+      "uv": "1.34.0",
+      "zlib": "1.2.11",
+      "brotli": "1.0.7",
+      "ares": "1.15.0",
+      "modules": "72",
+      "nghttp2": "1.40.0",
+      "napi": "5",
+      "llhttp": "2.0.4",
+      "http_parser": "2.9.3",
+      "openssl": "1.1.1d",
+      "cldr": "35.1",
+      "icu": "64.2",
+      "tz": "2019c",
+      "unicode": "12.1"
+    },
+    "release": {
+      "name": "node",
+      "lts": "Erbium",
+      "headersUrl": "https://nodejs.org/download/release/v12.16.1/node-v12.16.1-headers.tar.gz",
+      "sourceUrl": "https://nodejs.org/download/release/v12.16.1/node-v12.16.1.tar.gz"
+    },
+    "osName": "Linux",
+    "osRelease": "5.4.0-53-generic",
+    "osVersion": "#59-Ubuntu SMP Wed Oct 21 09:38:44 UTC 2020",
+    "osMachine": "x86_64",
+    "cpus": [
+      {
+        "model": "Intel(R) Core(TM) i7-6700HQ CPU @ 2.60GHz",
+        "speed": 2742,
+        "user": 12502200,
+        "nice": 21400,
+        "sys": 4559500,
+        "idle": 131048300,
+        "irq": 0
+      },
+      {
+        "model": "Intel(R) Core(TM) i7-6700HQ CPU @ 2.60GHz",
+        "speed": 2766,
+        "user": 12492200,
+        "nice": 8700,
+        "sys": 4572000,
+        "idle": 131257100,
+        "irq": 0
+      },
+      {
+        "model": "Intel(R) Core(TM) i7-6700HQ CPU @ 2.60GHz",
+        "speed": 2783,
+        "user": 11741200,
+        "nice": 7900,
+        "sys": 5450000,
+        "idle": 130907300,
+        "irq": 0
+      },
+      {
+        "model": "Intel(R) Core(TM) i7-6700HQ CPU @ 2.60GHz",
+        "speed": 2789,
+        "user": 12698900,
+        "nice": 12200,
+        "sys": 4575400,
+        "idle": 131242100,
+        "irq": 0
+      },
+      {
+        "model": "Intel(R) Core(TM) i7-6700HQ CPU @ 2.60GHz",
+        "speed": 2778,
+        "user": 12018100,
+        "nice": 30700,
+        "sys": 4465200,
+        "idle": 132099700,
+        "irq": 0
+      },
+      {
+        "model": "Intel(R) Core(TM) i7-6700HQ CPU @ 2.60GHz",
+        "speed": 2780,
+        "user": 11744600,
+        "nice": 15800,
+        "sys": 4357600,
+        "idle": 132503900,
+        "irq": 0
+      },
+      {
+        "model": "Intel(R) Core(TM) i7-6700HQ CPU @ 2.60GHz",
+        "speed": 2799,
+        "user": 12206900,
+        "nice": 9500,
+        "sys": 4405800,
+        "idle": 132089900,
+        "irq": 0
+      },
+      {
+        "model": "Intel(R) Core(TM) i7-6700HQ CPU @ 2.60GHz",
+        "speed": 2761,
+        "user": 11991100,
+        "nice": 9100,
+        "sys": 4364200,
+        "idle": 129819600,
+        "irq": 0
+      }
+    ],
+    "networkInterfaces": [
+      {
+        "name": "lo",
+        "internal": true,
+        "mac": "00:00:00:00:00:00",
+        "address": "127.0.0.1",
+        "netmask": "255.0.0.0",
+        "family": "IPv4"
+      },
+      {
+        "name": "wlp2s0",
+        "internal": false,
+        "mac": "9c:b6:d0:60:b2:09",
+        "address": "192.168.1.10",
+        "netmask": "255.255.255.0",
+        "family": "IPv4"
+      },
+      {
+        "name": "flannel.1",
+        "internal": false,
+        "mac": "52:d5:f4:05:b7:b1",
+        "address": "10.42.0.0",
+        "netmask": "255.255.255.255",
+        "family": "IPv4"
+      },
+      {
+        "name": "br-730e1fb0a44d",
+        "internal": false,
+        "mac": "02:42:e7:a6:ea:2b",
+        "address": "172.24.0.1",
+        "netmask": "255.255.0.0",
+        "family": "IPv4"
+      },
+      {
+        "name": "cni0",
+        "internal": false,
+        "mac": "d6:d7:1c:98:16:1e",
+        "address": "10.42.0.1",
+        "netmask": "255.255.255.0",
+        "family": "IPv4"
+      },
+      {
+        "name": "lo",
+        "internal": true,
+        "mac": "00:00:00:00:00:00",
+        "address": "::1",
+        "netmask": "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
+        "family": "IPv6",
+        "scopeid": 0
+      },
+      {
+        "name": "wlp2s0",
+        "internal": false,
+        "mac": "9c:b6:d0:60:b2:09",
+        "address": "fe80::524e:cd04:df1b:902b",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 3
+      },
+      {
+        "name": "flannel.1",
+        "internal": false,
+        "mac": "52:d5:f4:05:b7:b1",
+        "address": "fe80::50d5:f4ff:fe05:b7b1",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 4
+      },
+      {
+        "name": "br-730e1fb0a44d",
+        "internal": false,
+        "mac": "02:42:e7:a6:ea:2b",
+        "address": "fe80::42:e7ff:fea6:ea2b",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 9
+      },
+      {
+        "name": "veth0094c64",
+        "internal": false,
+        "mac": "8e:6a:8f:57:58:8a",
+        "address": "fe80::8c6a:8fff:fe57:588a",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 16
+      },
+      {
+        "name": "cni0",
+        "internal": false,
+        "mac": "d6:d7:1c:98:16:1e",
+        "address": "fe80::d4d7:1cff:fe98:161e",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 17
+      },
+      {
+        "name": "veth477b852b",
+        "internal": false,
+        "mac": "06:6d:50:ed:ca:47",
+        "address": "fe80::46d:50ff:feed:ca47",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 21
+      },
+      {
+        "name": "veth2533bd89",
+        "internal": false,
+        "mac": "0e:8b:48:0a:31:53",
+        "address": "fe80::c8b:48ff:fe0a:3153",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 26
+      },
+      {
+        "name": "vetheae5dd01",
+        "internal": false,
+        "mac": "f2:a8:8d:42:9d:cd",
+        "address": "fe80::f0a8:8dff:fe42:9dcd",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 28
+      },
+      {
+        "name": "veth06e9f3ab",
+        "internal": false,
+        "mac": "22:85:22:a5:81:a9",
+        "address": "fe80::2085:22ff:fea5:81a9",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 29
+      },
+      {
+        "name": "veth1d13e445",
+        "internal": false,
+        "mac": "12:de:20:62:3f:2f",
+        "address": "fe80::10de:20ff:fe62:3f2f",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 33
+      },
+      {
+        "name": "vethefa772c5",
+        "internal": false,
+        "mac": "06:64:54:86:d5:0f",
+        "address": "fe80::464:54ff:fe86:d50f",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 34
+      },
+      {
+        "name": "vethf8228af6",
+        "internal": false,
+        "mac": "9a:36:34:81:7b:c9",
+        "address": "fe80::9836:34ff:fe81:7bc9",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 35
+      },
+      {
+        "name": "veth6adb1974",
+        "internal": false,
+        "mac": "9a:38:d3:f9:84:9e",
+        "address": "fe80::9838:d3ff:fef9:849e",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 36
+      },
+      {
+        "name": "vethb37ada54",
+        "internal": false,
+        "mac": "ea:73:80:69:0a:83",
+        "address": "fe80::e873:80ff:fe69:a83",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 41
+      },
+      {
+        "name": "vethbcba6785",
+        "internal": false,
+        "mac": "8e:81:16:e4:56:3f",
+        "address": "fe80::8c81:16ff:fee4:563f",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 43
+      }
+    ],
+    "host": "hermod"
+  },
+  "javascriptStack": {
+    "message": "No stack.",
+    "stack": [
+      "Unavailable."
+    ]
+  },
+  "nativeStack": [
+    {
+      "pc": "0x0000000000b278f5",
+      "symbol": "report::TriggerNodeReport(v8::Isolate*, node::Environment*, char const*, char const*, std::string const&, v8::Local<v8::String>) [node]"
+    },
+    {
+      "pc": "0x00000000009f13ec",
+      "symbol": "node::OnFatalError(char const*, char const*) [node]"
+    },
+    {
+      "pc": "0x0000000000b5da9e",
+      "symbol": "v8::Utils::ReportOOMFailure(v8::internal::Isolate*, char const*, bool) [node]"
+    },
+    {
+      "pc": "0x0000000000b5de19",
+      "symbol": "v8::internal::V8::FatalProcessOutOfMemory(v8::internal::Isolate*, char const*, bool) [node]"
+    },
+    {
+      "pc": "0x0000000000d0a765",
+      "symbol": " [node]"
+    },
+    {
+      "pc": "0x0000000000d0adf6",
+      "symbol": "v8::internal::Heap::RecomputeLimits(v8::internal::GarbageCollector) [node]"
+    },
+    {
+      "pc": "0x0000000000d1760a",
+      "symbol": "v8::internal::Heap::PerformGarbageCollection(v8::internal::GarbageCollector, v8::GCCallbackFlags) [node]"
+    },
+    {
+      "pc": "0x0000000000d18515",
+      "symbol": "v8::internal::Heap::CollectGarbage(v8::internal::AllocationSpace, v8::internal::GarbageCollectionReason, v8::GCCallbackFlags) [node]"
+    },
+    {
+      "pc": "0x0000000000d1afcc",
+      "symbol": "v8::internal::Heap::AllocateRawWithRetryOrFail(int, v8::internal::AllocationType, v8::internal::AllocationOrigin, v8::internal::AllocationAlignment) [node]"
+    },
+    {
+      "pc": "0x0000000000ce19bb",
+      "symbol": "v8::internal::Factory::NewFillerObject(int, bool, v8::internal::AllocationType, v8::internal::AllocationOrigin) [node]"
+    },
+    {
+      "pc": "0x00000000010246ce",
+      "symbol": "v8::internal::Runtime_AllocateInYoungGeneration(int, unsigned long*, v8::internal::Isolate*) [node]"
+    },
+    {
+      "pc": "0x00000000013a71b9",
+      "symbol": " [node]"
+    }
+  ],
+  "javascriptHeap": {
+    "totalMemory": 2165329920,
+    "totalCommittedMemory": 2163235560,
+    "usedMemory": 1989609288,
+    "availableMemory": 102297576,
+    "memoryLimit": 2197815296,
+    "heapSpaces": {
+      "read_only_space": {
+        "memorySize": 262144,
+        "committedMemory": 33088,
+        "capacity": 32808,
+        "used": 32808,
+        "available": 0
+      },
+      "new_space": {
+        "memorySize": 33554432,
+        "committedMemory": 32506680,
+        "capacity": 16759296,
+        "used": 1441808,
+        "available": 15317488
+      },
+      "old_space": {
+        "memorySize": 1867661312,
+        "committedMemory": 1866890888,
+        "capacity": 1764384120,
+        "used": 1726648704,
+        "available": 37735416
+      },
+      "code_space": {
+        "memorySize": 2527232,
+        "committedMemory": 2480640,
+        "capacity": 2107008,
+        "used": 2107008,
+        "available": 0
+      },
+      "map_space": {
+        "memorySize": 5246976,
+        "committedMemory": 5246440,
+        "capacity": 3617360,
+        "used": 3617360,
+        "available": 0
+      },
+      "large_object_space": {
+        "memorySize": 255455232,
+        "committedMemory": 255455232,
+        "capacity": 255217056,
+        "used": 255217056,
+        "available": 0
+      },
+      "code_large_object_space": {
+        "memorySize": 622592,
+        "committedMemory": 622592,
+        "capacity": 544544,
+        "used": 544544,
+        "available": 0
+      },
+      "new_large_object_space": {
+        "memorySize": 0,
+        "committedMemory": 0,
+        "capacity": 16759296,
+        "used": 0,
+        "available": 16759296
+      }
+    }
+  },
+  "resourceUsage": {
+    "userCpuSeconds": 393.572,
+    "kernelCpuSeconds": 25.6925,
+    "cpuConsumptionPercent": 191.445,
+    "maxRss": 2423484416,
+    "pageFaults": {
+      "IORequired": 7,
+      "IONotRequired": 2791699
+    },
+    "fsActivity": {
+      "reads": 1664,
+      "writes": 48
+    }
+  },
+  "uvthreadResourceUsage": {
+    "userCpuSeconds": 199.62,
+    "kernelCpuSeconds": 8.41282,
+    "cpuConsumptionPercent": 94.992,
+    "fsActivity": {
+      "reads": 1664,
+      "writes": 16
+    }
+  },
+  "libuv": [
+  ],
+  "environmentVariables": {
+    "HTTPS": "true",
+    "SHELL": "/bin/bash",
+    "SESSION_MANAGER": "local/hermod:@/tmp/.ICE-unix/2989,unix/hermod:/tmp/.ICE-unix/2989",
+    "QT_ACCESSIBILITY": "1",
+    "COLORTERM": "truecolor",
+    "XDG_CONFIG_DIRS": "/etc/xdg/xdg-ubuntu:/etc/xdg",
+    "XDG_MENU_PREFIX": "gnome-",
+    "GNOME_DESKTOP_SESSION_ID": "this-is-deprecated",
+    "LANGUAGE": "en_AU:en",
+    "MANDATORY_PATH": "/usr/share/gconf/ubuntu.mandatory.path",
+    "GNOME_SHELL_SESSION_MODE": "ubuntu",
+    "SSH_AUTH_SOCK": "/run/user/1000/keyring/ssh",
+    "XMODIFIERS": "@im=ibus",
+    "DESKTOP_SESSION": "ubuntu",
+    "SSH_AGENT_PID": "2952",
+    "GTK_MODULES": "gail:atk-bridge",
+    "PWD": "/projectshome/opennludata",
+    "XDG_SESSION_DESKTOP": "ubuntu",
+    "LOGNAME": "stever",
+    "XDG_SESSION_TYPE": "x11",
+    "GPG_AGENT_INFO": "/run/user/1000/gnupg/S.gpg-agent:0:1",
+    "_": "./node_modules/.bin/react-scripts",
+    "XAUTHORITY": "/run/user/1000/gdm/Xauthority",
+    "GJS_DEBUG_TOPICS": "JS ERROR;JS LOG",
+    "WINDOWPATH": "2",
+    "HOME": "/home/stever",
+    "USERNAME": "stever",
+    "IM_CONFIG_PHASE": "1",
+    "LANG": "en_AU.UTF-8",
+    "LS_COLORS": "rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:",
+    "XDG_CURRENT_DESKTOP": "ubuntu:GNOME",
+    "VTE_VERSION": "6003",
+    "GNOME_TERMINAL_SCREEN": "/org/gnome/Terminal/screen/44629172_0174_4474_88a4_a6d5188c0182",
+    "INVOCATION_ID": "b868957c27e54a81878feec722b67b3e",
+    "MANAGERPID": "2271",
+    "GJS_DEBUG_OUTPUT": "stderr",
+    "LESSCLOSE": "/usr/bin/lesspipe %s %s",
+    "XDG_SESSION_CLASS": "user",
+    "TERM": "xterm-256color",
+    "DEFAULTS_PATH": "/usr/share/gconf/ubuntu.default.path",
+    "LESSOPEN": "| /usr/bin/lesspipe %s",
+    "USER": "stever",
+    "GNOME_TERMINAL_SERVICE": ":1.99",
+    "DISPLAY": ":1",
+    "SHLVL": "2",
+    "QT_IM_MODULE": "ibus",
+    "XDG_RUNTIME_DIR": "/run/user/1000",
+    "JOURNAL_STREAM": "9:53016",
+    "XDG_DATA_DIRS": "/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop",
+    "PATH": "/home/stever/.local/node-v12.16.1-linux-x64/bin/:/home/stever/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin",
+    "GDMSESSION": "ubuntu",
+    "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/1000/bus",
+    "OLDPWD": "/home/stever",
+    "BABEL_ENV": "development",
+    "NODE_ENV": "development",
+    "websocketAsrAllowedOrigins": "https://opennludata.org:80,https://localhost:3000",
+    "websocketAsrGoogleServiceCredentialsFile": "google-service-creds-opennlu.json",
+    "REACT_APP_authServer": "/api/login",
+    "REACT_APP_authServerHostname": "https://auth.opennludata.org:5000",
+    "authServer": "https://auth.opennludata.org:5000/api/login",
+    "authServerPort": "5000",
+    "loginSuccessRedirect": "https://auth.opennludata.org:5000/profile",
+    "loginFailRedirect": "https://auth.opennludata.org:5000/login",
+    "REACT_APP_restBaseUrl": "https://auth.opennludata.org:5000/api/v1/",
+    "REACT_APP_restPublicBaseUrl": "https://auth.opennludata.org:5000/public/api/v1/",
+    "BROWSER": "none",
+    "proxyDev": "TRUE",
+    "skipWWW": "false",
+    "NODE_TLS_REJECT_UNAUTHORIZED": "0",
+    "sslKeyFile": "./key.pem",
+    "sslCertFile": "./cert.pem",
+    "sslPassPhrase": "",
+    "GITHUB_API_TOKEN": "7473f20e8fdb40edaf5c65068aa662d530c1d5eb",
+    "github_data_owner": "syntithenai",
+    "github_data_repo": "opennludata",
+    "github_data_base": "master",
+    "github_data_head": "master",
+    "github_data_filePath": "docs/static/media/skills/",
+    "REACT_APP_githubSkillsUrl": "/static/media/skills/",
+    "sessionSalt": "some random something",
+    "encryptedPasswords": "TRUE",
+    "csrfCheck": "TRUE",
+    "userFields": "",
+    "jwtIssuer": "thedemo",
+    "jwtAccessTokenSecret": "another secret random",
+    "jwtRefreshTokenSecret": "a random secret",
+    "jwtAccessTokenExpirySeconds": "",
+    "jwtRefreshTokenExpirySeconds": "",
+    "MONGO_ROOT_USERNAME": "hermod",
+    "MONGO_ROOT_PASSWORD": "hermod",
+    "database": "loginsystem",
+    "databaseConnection": "mongodb://loginsystem:loginsystem@localhost:27017/",
+    "sendGridApiKey": "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",
+    "mailFrom": "loginsystem@syntithenai.com",
+    "googleClientId": "707484414203-p03gstk93f5biqm2g5tcpqfuvho0h1at.apps.googleusercontent.com",
+    "googleClientSecret": "kHKNMis_98M8zVA-dhFdESrH",
+    "twitterConsumerKey": "hyaGxWj1oUzeSbXXOghG4pxpD",
+    "twitterConsumerSecret": "jwX1HMsPAEz1YuLFgSCUcrvL7PNAhkezKYY5ceQAzUNcvdVpk7",
+    "facebookAppId": "756720111772721",
+    "facebookAppSecret": "03663e32ea77e25e4605f90f2786de35",
+    "githubClientId": "c9d69dc1f36c0ddef76a",
+    "githubClientSecret": "5ea544c7609c9b91487c94fc52776e955ad22264",
+    "amazonClientId": "amzn1.application-oa2-client.6e25b0986bae457d8eb4bf88e52fba5f",
+    "amazonClientSecret": "8935546b28052a017fac3bbc9f213fb882f7e71112bda29975549145e274cf0b",
+    "clientId": "test",
+    "clientSecret": "testpass",
+    "clientName": "Test Client",
+    "clientWebsite": "https://localhost",
+    "clientPrivacyPage": "https://localhost/privacy",
+    "clientImage": "",
+    "NODE_PATH": ""
+  },
+  "userLimits": {
+    "core_file_size_blocks": {
+      "soft": 0,
+      "hard": "unlimited"
+    },
+    "data_seg_size_kbytes": {
+      "soft": "unlimited",
+      "hard": "unlimited"
+    },
+    "file_size_blocks": {
+      "soft": "unlimited",
+      "hard": "unlimited"
+    },
+    "max_locked_memory_bytes": {
+      "soft": 67108864,
+      "hard": 67108864
+    },
+    "max_memory_size_kbytes": {
+      "soft": "unlimited",
+      "hard": "unlimited"
+    },
+    "open_files": {
+      "soft": 1048576,
+      "hard": 1048576
+    },
+    "stack_size_bytes": {
+      "soft": 8388608,
+      "hard": "unlimited"
+    },
+    "cpu_time_seconds": {
+      "soft": "unlimited",
+      "hard": "unlimited"
+    },
+    "max_user_processes": {
+      "soft": 63636,
+      "hard": 63636
+    },
+    "virtual_memory_kbytes": {
+      "soft": "unlimited",
+      "hard": "unlimited"
+    }
+  },
+  "sharedObjects": [
+    "linux-vdso.so.1",
+    "/lib/x86_64-linux-gnu/libdl.so.2",
+    "/usr/lib/x86_64-linux-gnu/libstdc++.so.6",
+    "/lib/x86_64-linux-gnu/libm.so.6",
+    "/lib/x86_64-linux-gnu/libgcc_s.so.1",
+    "/lib/x86_64-linux-gnu/libpthread.so.0",
+    "/lib/x86_64-linux-gnu/libc.so.6",
+    "/lib64/ld-linux-x86-64.so.2",
+    "/lib/x86_64-linux-gnu/libnss_files.so.2"
+  ]
+}
