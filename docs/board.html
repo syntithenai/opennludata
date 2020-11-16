@@ -23,15 +23,13 @@
 
  <script>
   
-    var castReceiverManager = cast.framework.CastReceiverContext.getInstance()
-    var customMessageBus = castReceiverManager.getCastMessageBus("urn:x-cast:chatui");
+    const context = cast.framework.CastReceiverContext.getInstance();
+    context.addCustomMessageListener('urn:x-cast:chatui', function(customEvent) {
+      console.log(['CC MSG',customEvent])
+    });
 
-    customMessageBus.onMessage = onReceiveMessage;
-    castReceiverManager.start();
+    context.start();
   
-    var onReceiveMessage = function(e) {
-        console.log(['CC MSG',e])
-    }
   </script>
 
 
