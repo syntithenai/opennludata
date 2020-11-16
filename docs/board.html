@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
   <script src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
 
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -21,7 +22,8 @@
 
 
  <script>
-    var castReceiverManager = cast.receiver.CastReceiverManager.getInstance();
+  
+    var castReceiverManager = cast.framework.CastReceiverContext.getInstance()
     var customMessageBus = castReceiverManager.getCastMessageBus("urn:x-cast:chatui");
 
     customMessageBus.onMessage = onReceiveMessage;
