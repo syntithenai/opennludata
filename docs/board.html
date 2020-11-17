@@ -2002,10 +2002,10 @@ if (typeof define !== 'undefined')
     });
     
     function handleMessage(e) {
-        console.log(['LOG Message received in frame',e.data])
+        console.log(['LOG Message received in frame',e])
         var data = {}
         try {
-            data = e.data ? JSON.parse(e.data) : {}
+            data = e && e.data ? JSON.parse(e.data) : {}
             var appData = data.appData ? data.appData : {}
             if (appData.fen) {
                 if (board) board.position(appData.fen,false)
