@@ -26,6 +26,25 @@
     const context = cast.framework.CastReceiverContext.getInstance();
     context.addCustomMessageListener('urn:x-cast:chatui', function(customEvent) {
       console.log(['CC MSG',customEvent])
+      function handleMessage(e) {
+        //if ( e.origin === 'http://www.example.com' ) {
+            console.log(['LOG Message received in frame',e.data])
+            var data = {}
+            try {
+                data = e.data ? JSON.parse(e.data) : {}
+                var appData = data.appData ? data.appData : {}
+                if (appData.fen) {
+                    if (board) board.position(appData.fen,false)
+                } else if (appData.reset === true) {
+                    if (board) board.start(false)
+                }
+                
+            } catch (e) {
+                
+            }
+        //}
+        }
+        handleMessage(e)
     });
 
     context.start();
@@ -1983,22 +2002,22 @@ if (typeof define !== 'undefined')
     });
     
     function handleMessage(e) {
-        //if ( e.origin === 'http://www.example.com' ) {
-            console.log(['LOG Message received in frame',e.data])
-            var data = {}
-            try {
-                data = e.data ? JSON.parse(e.data) : {}
-                if (data.fen) {
-                    if (board) board.position(data.fen,false)
-                } else if (data.reset === true) {
-                    if (board) board.start(false)
-                }
-                
-            } catch (e) {
-                
+        console.log(['LOG Message received in frame',e.data])
+        var data = {}
+        try {
+            data = e.data ? JSON.parse(e.data) : {}
+            var appData = data.appData ? data.appData : {}
+            if (appData.fen) {
+                if (board) board.position(appData.fen,false)
+            } else if (appData.reset === true) {
+                if (board) board.start(false)
             }
-        //}
+            
+        } catch (e) {
+            
+        }
     }
+        
     // Assign handler to message event
     if ( window.addEventListener ) {
         window.addEventListener('message', handleMessage, false);
