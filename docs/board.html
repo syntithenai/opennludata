@@ -2007,14 +2007,15 @@ if (typeof define !== 'undefined')
         try {
             data = e && e.data ? JSON.parse(e.data) : {}
             var appData = data.appData ? data.appData : {}
-            if (appData.fen) {
-                if (board) board.position(appData.fen,false)
-            } else if (appData.reset === true) {
-                if (board) board.start(false)
-            }
+            //if (appData.fen) {
+                //if (board) board.position(appData.fen,false)
+            //} else if (appData.reset === true) {
+                //if (board) board.start(false)
+            //}
+            console.log(['APPDATA',appData])
             
-        } catch (e) {
-            
+        } catch (err) {
+            console.log(er)
         }
     }
         
