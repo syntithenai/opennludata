@@ -142,7 +142,7 @@ export default function NluSkillEditorComponent(props) {
                             
                            
                             
-                            
+                             
                             <span style={{marginLeft:'1em'}} >
                             <Autosuggest 
                                 suggestions={Object.keys(props.collatedItems).sort().map(function(suggestion) {return {tag: suggestion}})}

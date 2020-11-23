@@ -61,12 +61,12 @@ export default  function UtterancesManager(props) {
         }
         //console.log(['UT SIZE',buttonOffset,item])
         if (window.innerWidth < 430) {
-               size = 450
+               size = 490
         // medium screen tablet
         } else if (window.innerWidth <= 768) {
-               size = 220
+               size = 260
         } else {
-            size = 120
+            size = 170 
         }
         //console.log(['UT SIZE',buttonOffset,size,item])
         return size + buttonOffset

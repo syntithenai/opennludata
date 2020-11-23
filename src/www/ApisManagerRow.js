@@ -1,4 +1,5 @@
 /* global window */
+
 import React, {useState, useEffect} from 'react';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -18,7 +19,7 @@ import localforage from 'localforage'
 import Autosuggest from 'react-autosuggest'
 import { Link  } from 'react-router-dom'
 
-import {Button, Dropdown, ButtonGroup, Modal } from 'react-bootstrap'
+import {Tab,Tabs, Button, Dropdown, ButtonGroup, Modal } from 'react-bootstrap'
 import {generateObjectId, uniquifyArray} from './utils'
 
 
@@ -32,8 +33,9 @@ export default function ApisManagerRow(props) {
         const [formSuggestions, setFormSuggestions] = useState([])
         const [apiSuggestions, setApiSuggestions] = useState([])
         const [selectionState,setSelectionState] = useState({start:{row:0,column:0}, end:{row:0,column:0}})
-    
-      const [showModalEditor,setShowModalEditor] = useState(null)
+        
+        
+        const [showModalEditor,setShowModalEditor] = useState(null)
       
     function insertAtCaret(text) {
          if (selectionState && selectionState.start && selectionState.end) { 
@@ -164,9 +166,11 @@ export default function ApisManagerRow(props) {
                     
                        {<div style={{marginTop:'0.5em', borderTop:'1px solid grey', clear:'both'}}>
                         <span style={{marginRight:'0.5em', float:'left'}}>Responses</span> 
-                        <Button style={{marginRight:'0.5em', float:'left'}} variant="success" onClick={function(e) {addListItemData('responses',{text:''});  }}>Use Response</Button>
+                        <Button style={{marginRight:'0.5em', float:'right'}} variant="success" onClick={function(e) {addListItemData('responses',{text:''},true);  }}>Use Response</Button>
+                        
+                        <Tabs variant="pills" defaultActiveKey="0" id="apiresponsesstabs">
                         {Array.isArray(item.responses) && item.responses.map(function(button,buttonKey) {
-                            return <div  style={{marginTop:'0.5em', clear:'both'}} key={buttonKey}>
+                            return <Tab key={buttonKey} eventKey={buttonKey} title={((button && button.text && props.lookups.utterancesLookups.indexOf(button.text) === -1) ? '* ' : '') + (button.text && button.text.trim() ? button.text : 'empty')}><div  style={{marginTop:'0.5em', clear:'both'}}>
                             
                                 <span style={{float:'left'}} >
                                 <Button style={{marginRight:'0.3em'}} variant="danger" onClick={function(e) {deleteListItemData('responses', buttonKey)}} > X </Button>
@@ -220,15 +224,19 @@ export default function ApisManagerRow(props) {
                                     insertAtCaret("response('"+button.text+"').then(function() {\n\n})")
                                 }}>Insert at Cursor</Button>
                             </div>
-                                
+                              </Tab>   
                         })}
-                    </div> }
-                    
+                    </Tabs></div>  
+                    }
+                     
                     {<div style={{marginTop:'0.5em', borderTop:'1px solid grey', clear:'both'}}>
                         <span style={{marginRight:'0.5em', float:'left'}}>Forms</span> 
-                        <Button style={{marginRight:'0.5em', float:'left'}} variant="success" onClick={function(e) {addListItemData('forms',{text:''});  }}>Use Form</Button>
+                        <Button style={{marginRight:'0.5em', float:'right'}} variant="success" onClick={function(e) {addListItemData('forms',{text:''},true);  }}>Use Form</Button>
+                        <Tabs variant="pills" defaultActiveKey="0" id="apiformstabs">
+                        
                         {Array.isArray(item.forms) && item.forms.map(function(button,buttonKey) {
-                            return <div  style={{marginTop:'0.5em', clear:'both'}} key={buttonKey}>
+                            return <Tab key={buttonKey} eventKey={buttonKey} title={((button && button.text && props.lookups.formsLookups.indexOf(button.text) === -1) ? '* ' : '') + (button.text && button.text.trim() ? button.text : 'empty') }>
+                            <div  style={{marginTop:'0.5em', clear:'both'}} key={buttonKey}>
                             
                                 <span style={{float:'left'}} >
                                 <Button style={{marginRight:'0.3em'}} variant="danger" onClick={function(e) {deleteListItemData('forms', buttonKey)}} > X </Button>
@@ -282,35 +290,25 @@ export default function ApisManagerRow(props) {
                                     insertAtCaret("form('"+button.text+"')")
                                 }}>Insert at Cursor</Button>
                             </div>
-                                
+                            </Tab>
                         })}
+                        </Tabs>
                     </div> }
-                    
+                   
                     
                     
                     {<div style={{marginTop:'0.5em', borderTop:'1px solid grey', clear:'both'}}>
                         <span style={{marginRight:'0.5em', float:'left'}}>Apis</span> 
-                        <Button style={{marginRight:'0.5em', float:'left'}} variant="success" onClick={function(e) {addListItemData('apis',{text:'',functionCall:''})} }>Use Api</Button>
+                        <Button style={{marginRight:'0.5em', float:'right'}} variant="success" onClick={function(e) {addListItemData('apis',{text:'',functionCall:''},true)} }>Use Api</Button>
+                        
+                        <Tabs variant="pills" defaultActiveKey="0" id="apiapistabs">
                         {Array.isArray(item.apis) && item.apis.map(function(button,buttonKey) {
-                            //console.log(['APIBUTTON',button,props.lookups.apisCompleteLookups])
-                            // instantiate api to discover available functions
-                            var apiInstance = null
-                            var apiFunctions = {}
-                            props.lookups.apisCompleteLookups.map(function(apiComplete) {
-                              if (apiComplete.value === button.text) {
-                                try {
-                                    apiInstance = new Function('intent','history','slots','config','handleBotMessage','utils', 'window','slot','reset','restart','back','listen','nolisten','form', apiComplete.synonym.trim())
-                                    if (typeof apiInstance === 'function') {
-                                        apiFunctions = apiInstance([],{},{}) 
-                                    }
-
-                                } catch (e) {
-                                    console.log(e)
-                                }
-     
-                              }  
-                            } )                          
-                            return <div  style={{marginTop:'0.5em', clear:'both'}} key={buttonKey}>
+                            var apiFunctions = []
+                            if (button && button.text && props.apiFunctions && props.apiFunctions.hasOwnProperty(button.text) && Array.isArray(props.apiFunctions[button.text])) {
+                                apiFunctions = props.apiFunctions[button.text]
+                            }                          
+                            return <Tab key={buttonKey} eventKey={buttonKey} title={(button.text && button.text.trim() ? button.text : 'empty')}>
+                            <div  style={{marginTop:'0.5em', clear:'both'}} key={buttonKey}>
                             
                                 <span style={{float:'left'}} >
                                 <Button style={{marginRight:'0.3em'}} variant="danger" onClick={function(e) {deleteListItemData('apis', buttonKey)}} > X </Button>
@@ -336,7 +334,7 @@ export default function ApisManagerRow(props) {
                                 
                                 </span>
                                 
-                                
+                                  
                                 <span style={{float:'left'}}>
                                     <select value={button ? button.functionCall : ''} onChange={function(e) {
                                           if (button) {
@@ -347,7 +345,7 @@ export default function ApisManagerRow(props) {
                                           }
                                         }} >
                                         <option key={'empty'} value={''} >{'   '}</option>
-                                        {apiFunctions && Object.keys(apiFunctions).sort(function(a,b) {if (a<b) return -1 ; else return 1 }).map(function(suggestion) {
+                                        {apiFunctions && apiFunctions.sort(function(a,b) {if (a<b) return -1 ; else return 1 }).map(function(suggestion) {
                                             return <option key={suggestion} value={suggestion} >{suggestion}</option>
                                         })}
                                     
@@ -377,11 +375,16 @@ export default function ApisManagerRow(props) {
                                   </Dropdown.Menu>
                                 </Dropdown>}
                             </div>
-                                
+                           </Tab>     
                         })}
+                        </Tabs>
                     </div> }
                     
-                    <div style={{clear:'both', marginRight:'0.5em'}}>Definition</div> 
+                    <div style={{clear:'both', marginRight:'0.5em'}}>
+                    Code
+                    {props.codeError && <b style={{marginLeft:'1em'}} >{props.codeError}</b>}
+                    
+                    </div> 
                         
                       <div style={{borderBottom: '1px solid black'}}>  
                           <AceEditor

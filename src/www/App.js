@@ -19,7 +19,7 @@ import NluSkillsEditor from './NluSkillsEditor'
 //import SearchPage from './SearchPage'
 import ImportReviewPage from './ImportReviewPage'
 import SkillSearchPage from './SkillSearchPage'
-import ChatPage from './ChatPage'
+import ChatPageWithLoader from './ChatPageWithLoader'
 import SkillSettingsPage from './SkillSettingsPage'
 
 import {Button} from 'react-bootstrap'
@@ -139,7 +139,7 @@ function App() {
     
     function loadSkills() {
         return axios.get( '/static/skills/' +'index.js?no_cache=1&t='+parseInt(Math.random() * 1000000000000)).then(function(res) {
-          console.log(['LOaD SKILSS githubskill',res.data])  
+          //console.log(['LOaD SKILSS githubskill',res.data])  
           var tags={}
           if (res.data) {
               Object.values(res.data).map(function(skill) {
@@ -174,54 +174,56 @@ function App() {
 
     function updateApis() {
         //console.log('UPDATE apis')
-        var storage = localforage.createInstance({
-           name: "nlutool",
-           storeName   : "apis",
-         });
-         storage.getItem('alldata', function (err,utterances) {
-                 var tally = 0;
-                 var selectedTally = 0;
-                //var utteranceLists={}
-                var utteranceIndex={}
-                var utteranceCompleteIndex={}
-                var utteranceTags={}
-                ////console.log(['UPDATE UTTERANCES',err,utterances])
-                if (Array.isArray(utterances)) {
-                    utterances.map(function(utterance,i) {
-                        ////console.log(['UPDATE regexp',utterance])
-                         if (utterance.isSelected) {
-                             selectedTally += 1
-                        }
-                        tally += 1;
-                         if (utterance.value) {
-                             utteranceIndex[utterance.value]=true
-                             utteranceCompleteIndex[utterance.value]={value: utterance.value, synonym: utterance.synonym}
-                         }
-                         //if (utterance.synonym) {
-                             //utterance.synonym.split("\n").map(function(synonym) {
-                                 //utteranceLists[synonym] = true
-                                 //return null
-                             //})
-                         //} 
-                         if (utterance.tags && utterance.tags.length > 0) {
-                               utterance.tags.map(function(tag) {
-                                  utteranceTags[tag] = true  
-                                  return null
-                               })
-                         }
-                         return null
-                    })
-                    setApiTally(tally)
-                    setSelectedApiTally(selectedTally)
-                    setApisLookups(Object.keys(utteranceIndex))
-                    setApisCompleteLookups(Object.values(utteranceCompleteIndex))
-                    setApiTagsLookups(Object.keys(utteranceTags))
-                    //setApiListsLookups(Object.keys(utteranceLists))
-                }
-                //console.log(['UPDATED APIS',utteranceIndex])
-                    
-              });
-            //});
+        return new Promise(function(resolve,reject) {
+            var storage = localforage.createInstance({
+               name: "nlutool",
+               storeName   : "apis",
+             });
+             storage.getItem('alldata', function (err,utterances) {
+                     var tally = 0;
+                     var selectedTally = 0;
+                    //var utteranceLists={}
+                    var utteranceIndex={}
+                    var utteranceCompleteIndex={}
+                    var utteranceTags={}
+                    ////console.log(['UPDATE UTTERANCES',err,utterances])
+                    if (Array.isArray(utterances)) {
+                        utterances.map(function(utterance,i) {
+                            ////console.log(['UPDATE regexp',utterance])
+                             if (utterance.isSelected) {
+                                 selectedTally += 1
+                            }
+                            tally += 1;
+                             if (utterance.value) {
+                                 utteranceIndex[utterance.value]=true
+                                 utteranceCompleteIndex[utterance.value]={value: utterance.value, synonym: utterance.synonym}
+                             }
+                             //if (utterance.synonym) {
+                                 //utterance.synonym.split("\n").map(function(synonym) {
+                                     //utteranceLists[synonym] = true
+                                     //return null
+                                 //})
+                             //} 
+                             if (utterance.tags && utterance.tags.length > 0) {
+                                   utterance.tags.map(function(tag) {
+                                      utteranceTags[tag] = true  
+                                      return null
+                                   })
+                             }
+                             return null
+                        })
+                        setApiTally(tally)
+                        setSelectedApiTally(selectedTally)
+                        setApisLookups(Object.keys(utteranceIndex))
+                        setApisCompleteLookups(Object.values(utteranceCompleteIndex))
+                        setApiTagsLookups(Object.keys(utteranceTags))
+                        resolve(Object.values(utteranceCompleteIndex))
+                        //setApiListsLookups(Object.keys(utteranceLists))
+                    }
+                    //console.log(['UPDATED APIS',utteranceIndex])
+                        
+                  });
+        });
   
     }
     
@@ -640,10 +642,10 @@ function App() {
                             <Route exact path='/skills/skill/:skillId/publish' render={(props) => <NluSkillsEditor {...props} doLogin={doLogin}   user={user}   lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}   publish={true}  getAxiosClient={getAxiosClient} />} 
                             />
                             
-                            <Route exact path='/skills/:skillId/chat' render={(props) => <ChatPage {...props} isFullScreen={true} doLogin={doLogin}  user={user}    lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}  publish={true}   getAxiosClient={getAxiosClient} />} 
+                            <Route exact path='/skills/:skillId/chat' render={(props) => <ChatPageWithLoader {...props} isFullScreen={true} doLogin={doLogin}  user={user}    lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}  publish={true}   getAxiosClient={getAxiosClient} />} 
                             />
                             
-                            <Route exact path='/skills/skill/:skillId/chat' render={(props) => <ChatPage {...props}  isFullScreen={true}  doLogin={doLogin}   user={user}   lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}   publish={true}  getAxiosClient={getAxiosClient} />} 
+                            <Route exact path='/skills/skill/:skillId/chat' render={(props) => <ChatPageWithLoader {...props}  isFullScreen={true}  doLogin={doLogin}   user={user}   lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  setPageMessage={setPageMessage}   publish={true}  getAxiosClient={getAxiosClient} />} 
                             />
                             
                             <Route exact path='/skills/:skillId/settings' render={(props) => <SkillSettingsPage {...props} lookups={lookups}  startWaiting={startWaiting} stopWaiting={stopWaiting} updateFunctions={updateFunctions}  getAxiosClient={getAxiosClient} />} 
@@ -812,6 +814,10 @@ function App() {
                             />
                             
                             <Route exact path='/apis/list/:listId/fromaction/fromskill/:fromskill/:fromaction' render={
+                                (props) => <ApisManager {...props}   lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}   setPageMessage={setPageMessage}  updateFunctions={updateFunctions}  />}
+                                      
+                            />
+                            <Route exact path='/apis/filter/:filter/fromskill/:fromskill' render={
                                 (props) => <ApisManager {...props}   lookups={lookups}    startWaiting={startWaiting} stopWaiting={stopWaiting}   setPageMessage={setPageMessage}  updateFunctions={updateFunctions}  />}
                                       
                             />

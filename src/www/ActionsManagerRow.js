@@ -1,7 +1,7 @@
 /* global window */
 import { Link  } from 'react-router-dom'
 
-import {Button, Dropdown, ButtonGroup } from 'react-bootstrap'
+import {Tabs, Tab, Button, Dropdown, ButtonGroup } from 'react-bootstrap'
 import React, {useState, useEffect} from 'react';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -33,7 +33,114 @@ export default function ActionsManagerRow(props) {
     const [apiSuggestions, setApiSuggestions] = useState([])
     const [selectionState,setSelectionState] = useState({start:{row:0,column:0}, end:{row:0,column:0}})
     
-  
+    const [codeError, setCodeError] = useState(null)
+    //var apiFunctionUpdateTimeout = null
+    
+    ////useEffect(() => createActionSyntaxTimeout(),[])
+    
+    //function checkActionSyntax(action) {
+        //setCodeError(null)
+        //console.log('checkActionSyntax')
+        //console.log(['checkActionSyntax utterances',action,action.value])
+        //try {
+            //if (action && action.synonym) {
+                //console.log(['RUN ACTION CODE',action.synonym])
+                //var actionFunction = new Function('props','intent','history','slots','config','handleBotMessage','utils', 'window','slot','reset','restart','back','listen','nolisten','form',`
+                //var apis={}
+                //return new Promise(function(resolve,reject) {
+                    //var output = []; 
+                    ////var slots = {};
+                    //console.log(['RUNACT',window])
+                    //function response(utterance,forceSlots,appData) {
+                    ////console.log(['API RESPOSNE',utterance,slots,config.utterances,utterance])
+                        //return new Promise(function(iresolve,ireject) {
+                            //if (config.utterances[utterance])  {
+                                //var useSlots = {}
+                                //if (slots) Object.keys(slots).map(function(slot) {useSlots[slot] = slots[slot]})
+                                //if (forceSlots) Object.keys(forceSlots).map(function(slot) {useSlots[slot] = forceSlots[slot]})
+                                ////console.log(['API RESPOSNE merge slots',
+                                ////slots ? JSON.parse(JSON.stringify(slots)) : null,
+                                ////forceSlots ? JSON.parse(JSON.stringify(forceSlots)) : null, 
+                                ////useSlots ? JSON.parse(JSON.stringify(useSlots)) : null
+                                ////])
+                                
+                                //var templates = utils.replaceMarkersInUtterance(config.utterances[utterance],useSlots)
+                                ////console.log(['API RESPOSNE have utt',templates,handleBotMessage])
+                                //output.push(templates)
+                                //if (handleBotMessage) {
+                                    ////console.log(['API HAN RESPOSNE hbm',JSON.parse(JSON.stringify([utterance,templates,slots])) ])
+                                    //handleBotMessage(templates,false,appData).then(function() {
+                                        ////console.log(['API RESPOSNE hbm DONE',slots,output])
+                                        //iresolve()
+                                    //})
+                                //} else {
+                                    //iresolve()
+                                //}
+                            //} else {
+                            ////console.log(['API RESPOSNE NO utt'])
+                                //iresolve()
+                            //}
+                        //})
+                    //}
+                    
+                    //function api(apiKey) {
+                        //console.log(['CALLAPI',apiKey,props.lookups.apiComplete,window])
+                        //var final = {}
+                        //if (apiKey && apiKey.trim() && props.lookups && props.lookups.apiComplete && props.lookups.apiComplete.hasOwnProperty(apiKey) && props.lookups.apiComplete[apiKey].synonym && props.lookups.apiComplete[apiKey].synonym.trim()) {
+                            //var apiInstance = null 
+                            //if (apis[apiKey]) {
+                                //apiInstance = apis[apiKey]
+                            //} else {
+                                ////try {
+                                    //apiInstance = new Function('intent','history','slots','config','utils','window','slot','response','api','reset','restart','back','listen','nolisten','form', props.lookups.apiComplete[apiKey].synonym.trim())
+                                    
+                                ////} catch (e) {
+                                    ////console.log(e)
+                                ////}
+                            //}
+                            //var final = {}
+                            ////try {
+                                //if (typeof apiInstance === 'function') {
+                                    //final = apiInstance(intent,history,slots,config,utils, window,slot,response,api,reset,restart,back,listen,nolisten,form) 
+                                //}
+                            ////} catch (e) {
+                                ////console.log(e)
+                            ////}
+                        //}
+                        //return final
+                    //}
+                   //`+action.synonym+`
+                    //console.log('checkActionSyntax DONE',action.synonym)
+                //})
+            //`);
+                //console.log(['RUN ACTION CODE fn',actionFunction])
+            //actionFunction(props,{},[],{},{},{},{},window,function() {},function() {},function() {},function() {},function() {},function() {},function() {}).then(function() {
+                //console.log(['RUN ACTION CODE OK'])
+            //}).catch(function(e) {
+                //setCodeError(e.toString())
+            //})
+          //}
+            
+        //} catch (e) {
+            //console.log(['RUN ACTION CODE ERR',e.toString(),e])
+            //setCodeError(e.toString())
+        //}
+    //}
+     
+    //// update picklists to trigger syntax check on 1s delay
+    //function createActionSyntaxTimeout() {
+        //console.log(['item change',props.item])
+        //if (apiFunctionUpdateTimeout) clearTimeout(apiFunctionUpdateTimeout) 
+        //apiFunctionUpdateTimeout = setTimeout(function() {
+            //console.log(['update api',props.item])
+            //checkActionSyntax(props.item)
+        //},1000)
+    //}
+    //useEffect(() => {
+        //checkActionSyntax(props.item)
+    //},[])
+    ////
+     
     function insertAtCaret(text) {
          if (selectionState && selectionState.start && selectionState.end) { 
             var lines = item && item.synonym ? item.synonym.split("\n") : []
@@ -162,12 +269,12 @@ export default function ActionsManagerRow(props) {
                      
                     {<div style={{marginTop:'0.5em', borderTop:'1px solid grey', clear:'both'}}>
                         <span style={{marginRight:'0.5em', float:'left'}}>Responses</span> 
-                        <Button style={{marginRight:'0.5em', float:'left'}} variant="success" onClick={function(e) {addListItemData('responses',{text:''});  }}>Use Response</Button>
+                        <Button style={{marginRight:'0.5em', float:'right'}} variant="success" onClick={function(e) {addListItemData('responses',{text:''},true);  }}>Use Response</Button>
                         
                         
-                        
+                        <Tabs variant="pills" defaultActiveKey="0" id="apiresponsesstabs">
                         {Array.isArray(item.responses) && item.responses.map(function(button,buttonKey) {
-                            return <div  style={{marginTop:'0.5em', clear:'both'}} key={buttonKey}>
+                            return <Tab key={buttonKey} eventKey={buttonKey} title={((button && button.text && props.lookups.utterancesLookups.indexOf(button.text) === -1) ? '* ' : '') + (button.text && button.text.trim() ? button.text : 'empty')}><div  style={{marginTop:'0.5em', clear:'both'}} key={buttonKey}>
                             
                                 <span style={{float:'left'}} >
                                 <Button style={{marginRight:'0.3em'}} variant="danger" onClick={function(e) {deleteListItemData('responses', buttonKey)}} > X </Button>
@@ -225,15 +332,19 @@ export default function ActionsManagerRow(props) {
                                 
                                 
                             </div>
-                                
+                           </Tab>     
                         })}
+                        </Tabs>
                     </div> }
                     
                     {<div style={{marginTop:'0.5em', borderTop:'1px solid grey', clear:'both'}}>
                         <span style={{marginRight:'0.5em', float:'left'}}>Forms</span> 
-                        <Button style={{marginRight:'0.5em', float:'left'}} variant="success" onClick={function(e) {addListItemData('forms',{text:''});  }}>Use Form</Button>
+                        <Button style={{marginRight:'0.5em', float:'right'}} variant="success" onClick={function(e) {addListItemData('forms',{text:''},true);  }}>Use Form</Button>
+                        <Tabs variant="pills" defaultActiveKey="0" id="apiformstabs">
+                        
                         {Array.isArray(item.forms) && item.forms.map(function(button,buttonKey) {
-                            return <div  style={{marginTop:'0.5em', clear:'both'}} key={buttonKey}>
+                            return <Tab key={buttonKey} eventKey={buttonKey} title={((button && button.text && props.lookups.formsLookups.indexOf(button.text) === -1) ? '* ' : '') + (button.text && button.text.trim() ? button.text : 'empty') }>
+                            <div  style={{marginTop:'0.5em', clear:'both'}} key={buttonKey}>
                             
                                 <span style={{float:'left'}} >
                                 <Button style={{marginRight:'0.3em'}} variant="danger" onClick={function(e) {deleteListItemData('forms', buttonKey)}} > X </Button>
@@ -287,34 +398,29 @@ export default function ActionsManagerRow(props) {
                                     insertAtCaret("form('"+button.text+"')")
                                 }}>Insert at Cursor</Button>
                             </div>
-                                
+                           </Tab>     
                         })}
+                        </Tabs>
                     </div> }
                     
                     
                     
                     {<div style={{marginTop:'0.5em', borderTop:'1px solid grey', clear:'both'}}>
                         <span style={{marginRight:'0.5em', float:'left'}}>Apis</span> 
-                        <Button style={{marginRight:'0.5em', float:'left'}} variant="success" onClick={function(e) {addListItemData('apis',{text:'',functionCall:''})} }>Use Api</Button>
+                        <Button style={{marginRight:'0.5em', float:'right'}} variant="success" onClick={function(e) {addListItemData('apis',{text:'',functionCall:''},true)} }>Use Api</Button>
+                        
+                        <Tabs variant="pills" defaultActiveKey="0" id="apiapistabs">
                         {Array.isArray(item.apis) && item.apis.map(function(button,buttonKey) {
+                       
                             //console.log(['APIBUTTON',button,props.lookups.apisCompleteLookups])
                             // instantiate api to discover available functions
-                            var apiInstance = null
-                            var apiFunctions = {}
-                            props.lookups.apisCompleteLookups.map(function(apiComplete) {
-                              if (apiComplete.value === button.text) {
-                                try {
-                                    apiInstance = new Function('intent','history','slots','config','handleBotMessage','utils', 'window','slot','reset','restart','back','listen','nolisten','form', apiComplete.synonym.trim())
-                                    if (typeof apiInstance === 'function') {
-                                        apiFunctions = apiInstance([],{},{}) 
-                                    }
-                                } catch (e) {
-                                    console.log(e)
-                                }
-     
-                              }  
-                            } )                          
-                            return <div  style={{marginTop:'0.5em', clear:'both'}} key={buttonKey}>
+                            //var apiInstance = null
+                            var apiFunctions = []
+                            if (button && button.text && props.apiFunctions && props.apiFunctions.hasOwnProperty(button.text) && props.apiFunctions[button.text]) {
+                                apiFunctions = props.apiFunctions[button.text]
+                            } 
+                                                  
+                            return <Tab key={buttonKey} eventKey={buttonKey} title={(button.text && button.text.trim() ? button.text : 'empty')}><div  style={{marginTop:'0.5em', clear:'both'}} key={buttonKey}>
                             
                                 <span style={{float:'left'}} >
                                 <Button style={{marginRight:'0.3em'}} variant="danger" onClick={function(e) {deleteListItemData('apis', buttonKey)}} > X </Button>
@@ -340,7 +446,6 @@ export default function ActionsManagerRow(props) {
                                 
                                 </span>
                                 
-                                
                                 <span style={{float:'left'}}>
                                     <select value={button ? button.functionCall : ''} onChange={function(e) {
                                           if (button) {
@@ -351,7 +456,7 @@ export default function ActionsManagerRow(props) {
                                           }
                                         }} >
                                         <option key={'blank'} value={''} >{'   '}</option>
-                                        {apiFunctions && Object.keys(apiFunctions).sort(function(a,b) {if (a<b) return -1 ; else return 1 }).map(function(suggestion) {
+                                        {apiFunctions && apiFunctions.sort(function(a,b) {if (a<b) return -1 ; else return 1 }).map(function(suggestion) {
                                             return <option key={suggestion} value={suggestion} >{suggestion}</option>
                                         })}
                                     
@@ -364,8 +469,21 @@ export default function ActionsManagerRow(props) {
                                 
                                 {<Dropdown variant="success" style={{marginLeft:'0.5em'}}  as={ButtonGroup}>
                                   <Dropdown.Toggle  variant="success"  split   id="dropdown-split-basic" ></Dropdown.Toggle>
-                                  <Button  variant="success"   >{'Insert at Cursor'} </Button>
+                                  <Button  variant="success"    >{'Insert at Cursor'} </Button>
                                   <Dropdown.Menu  variant="success" >
+                                      
+                                       <Dropdown.Item  variant="success" key={'API Constructor'} value={'API Constructor'} onClick={function(e) {
+                                          insertAtCaret("api('"+button.text+"')")  
+                                      }}  ><b>API Constructor</b></Dropdown.Item>
+                                      
+                                      {button.functionCall && <Dropdown.Item  variant="success" key={'Function Call'} value={'Function Call'} onClick={function(e) {
+                                          insertAtCaret("api('"+button.text+"')."+button.functionCall+"()")  
+                                      }}  ><b>Function Call</b></Dropdown.Item>}
+
+                                      {button.functionCall && <Dropdown.Item  variant="success" key={'Async Function Call'} value={'Async Function Call'} onClick={function(e) {
+                                          insertAtCaret("api('"+button.text+"')."+button.functionCall+"().then(function(result) {})")  
+                                      }}  ><b>Async Function Call</b></Dropdown.Item>}
+
                                       
                                       {button.functionCall && <Dropdown.Item  variant="success" key={'Slot'} value={'Slot'} onClick={function(e) {
                                           insertAtCaret("api('"+button.text+"')."+button.functionCall+"().then(function(result) {slot('slotName',result)})")  
@@ -373,24 +491,24 @@ export default function ActionsManagerRow(props) {
                                       {button.functionCall && <Dropdown.Item  variant="success" key={'Utterance'} value={'Utterance'} onClick={function(e) {
                                           insertAtCaret("api('"+button.text+"')."+button.functionCall+"().then(function(result) {response(result).then(function() {\n\n})})")  
                                       }}  ><b>Utterance</b></Dropdown.Item>}
-                                      <Dropdown.Item  variant="success" key={'Constructor'} value={'Constructor'} onClick={function(e) {
-                                          insertAtCaret("api('"+button.text+"')")  
-                                      }}  ><b>Constructor</b></Dropdown.Item>
+                                      
+                                     
                                       
                                       
                                   </Dropdown.Menu>
                                 </Dropdown>}
                             </div>
-                                
+                             </Tab>   
                         })}
+                        </Tabs>
                     </div> }
                     
                     
-                    <div style={{clear:'both', marginRight:'0.5em'}}>Code
-                    <Button variant="success" style={{float:'right'}} onClick={function(e) {
+                    <div >Code
+                    <Button style={{clear:'both', marginLeft:'1em'}} variant="success" onClick={function(e) {
                                     insertAtCaret("resolve(output,slots)")
                                 }}>Insert Resolve at Cursor</Button>
-                    
+                    {codeError && <b style={{marginLeft:'1em'}} >{codeError}</b>}
                     </div> 
                         
                       <div style={{}}>  

@@ -44,10 +44,18 @@ export default  function FormsManager(props) {
         } else {
             baseSize = 305
         }
-        var numResponses = item.responses ? item.responses.length : 0
-        var numApis = item.apis ? item.apis.length : 0
+        var numSlots = item.slots ? item.slots.length : 0
+        var numCaptures = 0
+        if (item && item.slots && Array.isArray(item.slots)) {
+            item.slots.map(function(slot) {
+               if (slot && Array.isArray(slot.capturefrom)) {
+                  numCaptures = numCaptures +  slot.capturefrom.length
+               }
+            })
+        }
+            // && item.slots.length > 0 && Array.isArray(item.slots[0].capturefrom) ? item.slots[0].capturefrom.length : 0
         //console.log('action seiz',item.apis,item.responses, index, item,baseSize,numResponses)
-        return baseSize + numResponses * 70 + numApis * 70
+        return baseSize + numSlots * 70 + numCaptures * 70
     }
     
     

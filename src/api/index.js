@@ -424,7 +424,7 @@ loginSystem(config).then(function(login) {
     //app.use('/static', express.static(path.join(__dirname, 'loginpages','build','static')))
 
     //app.use('/login/*', express.static(path.join(__dirname, 'loginpages','build')))
-    var loginWWW = path.dirname(require.resolve('react-express-oauth-login-system'))
+    var loginWWW = '../../react-express-oauth-login-system' //path.dirname(require.resolve('react-express-oauth-login-system'))
     var staticPath = __dirname.split("/")
     staticPath.pop()
     staticPath.pop()

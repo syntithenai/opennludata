@@ -5,8 +5,8 @@ import {Link, useParams, useHistory} from 'react-router-dom'
 import fireImage from '../images/singingman.svg'
 import waitingImage from '../images/waiting.gif'
 import ReactGA from 'react-ga';
-import GitHubButton from 'react-github-btn'
-
+//import GitHubButton from 'react-github-btn'
+const GitHubButton = function(props) { return null }
 ReactGA.initialize('UA-3712973-4');
 
 export default function NavbarComponent(props) {
@@ -14,7 +14,8 @@ export default function NavbarComponent(props) {
     ReactGA.pageview(props.history.location.pathname);
     var astyle={paddingLeft:'0.3em'}
     const currentPage = props.history && props.history.location && props.history.location.pathname ? props.history.location.pathname : '/'
-    var getSkillLink = function(skillId) {return '/fromskill/'+skillId}
+    var getSkillLink = function(skillId) {return ''} 
+    // '/fromskill/'+skillId}
     const pages = {
         '/': {name: 'NLU Tool',show: false},
         '/search': {name: 'Search',show: true},//link:'https://github.com/syntithenai/opennludata/wiki'

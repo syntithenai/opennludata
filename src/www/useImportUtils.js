@@ -207,10 +207,12 @@ function generateIntentSplits(text, intent) {
  * eg synonym_value value value or value value value
  */
 function generateEntitySplits(text, entity) {
+    console.log(['GEN ent splits',text,entity])
     const splits = splitSentences(text)
+    console.log(['GEN ent splits',splits])
     var newSplits=[]
     splits.map(function(text,i) {
-        if (text && text.trim().length > 0) {
+        if (text && text.trim && text.trim().length > 0) {
             var parts = extractSynonym(text.trim())
             parts[1].map(function(alternative) {
                 newSplits.push({'id':generateObjectId(), 'value':alternative, synonym:parts[0], "tags":entity? [entity] : []})
@@ -219,6 +221,7 @@ function generateEntitySplits(text, entity) {
         }
         return null
     })
+    console.log(['GEN final splits',newSplits])
     return newSplits.sort(sortExampleSplits)
 }
 

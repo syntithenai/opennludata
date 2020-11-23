@@ -14,11 +14,15 @@ function useListItemRow(item, saveItem, splitNumber, style, lastSelected, setLas
     },[item, JSON.stringify(item.tags)])
 
 
-    function addListItemData(type,data) {
+    function addListItemData(type,data,prepend) {
         //console.log(['add',type,data])
         var newItem = item
         var list = Array.isArray(item[type]) ? item[type] : []
-        list.push(data)
+        if (prepend)   {
+            list.unshift(data)
+        } else {
+            list.push(data)
+        }
         newItem[type] = list
         saveItem(newItem,splitNumber)
     }

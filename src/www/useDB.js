@@ -74,7 +74,7 @@ export default function useDB(database, databaseTable) {
     
 
     function loadAll() {
-        console.log(['LOAD ALL '])
+        //console.log(['LOAD ALL '])
         localforageStorage.keys().then(function(keys) {
             var ipromises = []
             keys.map(function(key) {
@@ -86,7 +86,7 @@ export default function useDB(database, databaseTable) {
                 return null
             })
             Promise.all(ipromises).then(function(res) {
-                console.log(['LOADED ALL ',res])
+                //console.log(['LOADED ALL ',res])
                 res = res.sort(function(a,b) {if (a.updated_date < b.updated_date) return 1; else return -1})
                 dispatch({ type: "replaceall", items: res });
             })
@@ -97,7 +97,7 @@ export default function useDB(database, databaseTable) {
     // save or create
     function saveItem(item,index) {
         if (item) {
-            console.log(['SAVEDB',item,index])
+            //console.log(['SAVEDB',item,index])
             // update sources and save text in seperate localstorage
             // ensure id
             var isNewItem = false;
@@ -142,7 +142,7 @@ export default function useDB(database, databaseTable) {
 
 
     function setItemsWrap(items) {
-        console.log(['SAVEDB set items',items])
+        //console.log(['SAVEDB set items',items])
         localforageStorage.clear().then(function() {
             dispatch({ type: "replaceall", items: items})
             if (items) {

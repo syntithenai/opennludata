@@ -202,7 +202,7 @@ export default function useImportFunctions(sendPageMessage) {
     
         
     function importTextEntities(item, entity = '') {
-         //console.log(['text',item.data])
+         console.log(['text',item.data])
          return generateEntitySplits(item.data, entity)
     }
     
@@ -392,12 +392,13 @@ export default function useImportFunctions(sendPageMessage) {
 
     function importEntities(item) {
           return new Promise(function(resolve, reject) {
-             //console.log(['import entities',item])
+             console.log(['import entities',item])
              if (item) {
                   if (item.fileType === 'text') {
                         resolve({entities:importTextEntities(item, item.title)})
                   } else if (item.fileType.endsWith('.json')) {
                         importJsonEntities(item).then(function(entities) {
+                            console.log(['imported entities',entities])
                             resolve({entities:entities})  
                         })
                   } else {

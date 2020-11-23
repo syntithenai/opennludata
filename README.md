@@ -146,3 +146,6 @@ Search for skills in the community repository
 - api help text per function
 - chromecast chat client
 
+## BUGS
+
+- skill entities editor sometimes no show placeholder text so invisible for selection of entity lists

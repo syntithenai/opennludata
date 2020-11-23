@@ -403,7 +403,7 @@ export default function useImportMergeFunctions() {
                     }
                     // index by value
                     allLists.map(function(listItem) {
-                        if (listItem && listItem.value && listItem.value.trim().length > 0)  {
+                        if (listItem && listItem.value && listItem.value.trim && listItem.value.trim().length > 0)  {
                             allListsIndex[listItem.value] = listItem
                         }
                         return null

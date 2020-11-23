@@ -4,12 +4,15 @@ import {Link} from 'react-router-dom'
 import {Button, Dropdown, ButtonGroup} from 'react-bootstrap'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import exportFormats from './export/index'
+import {exportJSON} from './export/exportJSON'
+
 import PublishPage from './PublishPage'
 import { saveAs } from 'file-saver';
 import NluSkillEditorComponent from './components/NluSkillEditorComponent'
 import useSkillsEditor from './useSkillsEditor'
 import useImportMergeFunctions from './useImportMergeFunctions'
 import ChatPage from './ChatPage'
+//import {ChatPage} from 'chatui'
 import {generateObjectId, uniquifyArray} from './utils'
      
 import localforage from 'localforage'
@@ -21,6 +24,10 @@ export default  function NluSkillsEditor(props) {
     
     const skillsEditor = useSkillsEditor(Object.assign({},props,{user:props.user, lookups: props.lookups, updateFunctions: props.updateFunctions}))
     
+    const [exportedSkill,setExportedSkill] = useState(null)
+    
+    
+    
     const {
     currentSkill, setCurrentSkill, skillFilterValue, setSkillFilterValue,
       skillKeys, setRules,setStories,
@@ -28,6 +35,15 @@ export default  function NluSkillsEditor(props) {
        listsForEntity, skillMatches, skillUpdatedMatches, setSkillMatches, setSkillUpdatedMatches, setSkill, forceReload
      } = skillsEditor
    
+    
+    useEffect(() => {
+        if (currentSkill && !exportedSkill) {
+            exportJSON(currentSkill).then(function(exported) {
+              setExportedSkill(exported)  
+            })
+        }
+    },[currentSkill])
+    
     
     function addIntent(intentName,skillId) {
          //console.log(['ADD intent',intentName,skillId])
@@ -109,7 +125,7 @@ export default  function NluSkillsEditor(props) {
             
     return <div>
         { (currentSkill && props.lookups.isBigScreen && !props.publish) && <div style={{width:'30%', minHeight:'800px', float:'right', borderLeft:'2px solid black'}}>
-        <ChatPage {...props}   user={props.user} currentSkill={currentSkill}    lookups={props.lookups}  startWaiting={props.startWaiting} stopWaiting={props.stopWaiting} updateFunctions={props.updateFunctions}  setPageMessage={props.setPageMessage}  publish={true}   getAxiosClient={props.getAxiosClient} hideBackLink={true} />
+        <ChatPage {...props}   user={props.user} currentSkill={exportedSkill}    lookups={props.lookups}  startWaiting={props.startWaiting} stopWaiting={props.stopWaiting} updateFunctions={props.updateFunctions}  setPageMessage={props.setPageMessage}  publish={true}   getAxiosClient={props.getAxiosClient} hideBackLink={true} showTrain={true} showFullscreen={true} />
                          
         </div>}
         <div style={{width:width, float:'left', marginRight:'3px'}}>
@@ -147,6 +163,10 @@ export default  function NluSkillsEditor(props) {
                             //console.log(['TRIGGER DL',title,zipBody])
                             if (exportFormat.name==='JSON') {
                                 saveAs(zipBody, title+'.json')
+                            } else if (exportFormat.name==='nlp.js') {
+                                saveAs(
+                                new Blob([JSON.stringify(zipBody, null, 2)], {type : 'application/json'})
+                                , title+'.json')
                             } else if (exportFormat.name==='RASA YML') {
                                 //console.log(zipBody,title)
                                 saveAs(zipBody, title+'.zip')

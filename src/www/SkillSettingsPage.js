@@ -29,6 +29,19 @@ export default  function SkillSettingsPage (props) {
         }
     } 
     
+    function handleSideAppFileSelection(ev, results) {
+        ev.preventDefault()
+        if (results) {
+            results.forEach(result => {
+                const [e, file] = result;
+                const reader = new FileReader();
+                reader.onload = (function(item) { return function(e) { skillsEditor.setConfigValue('sideApp',e.target.result)}; })();
+                reader.readAsDataURL(file)
+            
+            });
+            
+        }
+    } 
     
     
     return <>{currentSkill && <div>
@@ -36,7 +49,17 @@ export default  function SkillSettingsPage (props) {
              
             
              <h1>Settings</h1>
-             <Tabs defaultActiveKey="display" id="skill-settings">
+             <Tabs defaultActiveKey="meta" id="skill-settings">
+                <Tab eventKey="meta" title="Main">
+                     <Form>
+                      
+                      <Form.Group controlId="formMeta">
+                        <Form.Label>Locale</Form.Label>
+                        <Form.Control type="text"  placeholder="" value={currentSkill && currentSkill.config && currentSkill.config.locale  && currentSkill.config.locale.trim() ? currentSkill.config.locale : 'en-US'} onChange={function(e) {skillsEditor.setConfigValue('locale',e.target.value)} }  />
+                      </Form.Group>
+                      </Form>
+                </Tab>
+
                 <Tab eventKey="display" title="Display">
                      <Form>
                       
@@ -47,7 +70,7 @@ export default  function SkillSettingsPage (props) {
                       
                       <Form.Group controlId="formChatHistory">
                         <Form.Label>Maximum lines of chat history to show</Form.Label>
-                        <Form.Control type="email" placeholder=""  value={currentSkill && currentSkill.config && currentSkill.config.chatHistory ? currentSkill.config.chatHistory : ''} onChange={function(e) {skillsEditor.setConfigValue('chatHistory',e.target.value)} }  />
+                        <Form.Control type="text" placeholder=""  value={currentSkill && currentSkill.config && currentSkill.config.chatHistory ? currentSkill.config.chatHistory : ''} onChange={function(e) {skillsEditor.setConfigValue('chatHistory',e.target.value)} }  />
                         <Form.Text className="text-muted">
                           Enter a number larger than zero.
                         </Form.Text>
@@ -61,7 +84,7 @@ export default  function SkillSettingsPage (props) {
                                          onChange={handleLogoFileSelection}>
                           <Button style={{ marginRight:'0.5em'}} >Select files</Button>
                         </FileReaderInput>
-                        {(currentSkill.config && currentSkill.config.logo) && <img style={{width:'100px'}} src={currentSkill.config.logo} />}
+                        {(currentSkill && currentSkill.config && currentSkill.config.logo) && <img style={{width:'100px'}} src={currentSkill.config.logo} />}
                       </form>
                       
                         <Form.Text className="text-muted">
@@ -69,8 +92,35 @@ export default  function SkillSettingsPage (props) {
                         </Form.Text>
                       </Form.Group>
                       
+                      <Form.Group controlId="formSideApp">
+                        <Form.Label>Select a side app</Form.Label>
+                        
+                        <form onSubmit={function(e) {e.preventDefault()}} >
+                        <FileReaderInput multiple as="binary" id="my-file-input"
+                                         onChange={handleSideAppFileSelection}>
+                          <Button style={{ marginRight:'0.5em'}} >Select a file</Button>
+                        </FileReaderInput>
+                        {(currentSkill && currentSkill.config && currentSkill.config.sideApp) && <b>{currentSkill.config.sideApp}</b>}
+                        
+                        <Form.Check type="checkbox" label="Show chat before side app?" checked={currentSkill && currentSkill.config && currentSkill.config.sideAppAfterChat}
+                            onChange={function(e) {skillsEditor.setConfigValue('sideAppAfterChat',!(currentSkill && currentSkill.config && currentSkill.config.sideAppAfterChat))  }} />
+                            
+                        <Form.Check type="checkbox" label="Enable chromecast sideapp?" checked={currentSkill && currentSkill.config && currentSkill.config.enableChromeCastSideApp}
+                            onChange={function(e) {skillsEditor.setConfigValue('enableChromeCastSideApp',!(currentSkill && currentSkill.config &&  currentSkill.config.enableChromeCastSideApp))  }} />
+                        
+                        
+                      </form>
+                      
+                      <label>From URL <Form.Control type="text" style={{width: "30em"}} placeholder="" value={currentSkill && currentSkill.config && currentSkill.config.sideAppUrl ? currentSkill.config.sideAppUrl : ''} onChange={function(e) {skillsEditor.setConfigValue('sideAppUrl',e.target.value)}}  /></label>
+                      
+                      
+                        <Form.Text className="text-muted">
+                          Hosted at your own url or upload a single HTML file for integrated hosting of a custom UI for your skill.
+                        </Form.Text>
+                      </Form.Group>
+                      
                       <Form.Group controlId="formHeaderColor">
-                        <Form.Label>Chat Header Color<br/><hr style={{width:'14em', height:'2em', backgroundColor : ((currentSkill.config && currentSkill.config.color) ? currentSkill.config.color : '') }} /></Form.Label>
+                        <Form.Label>Chat Header Color<br/><hr style={{width:'14em', height:'2em', backgroundColor : ((currentSkill && currentSkill.config && currentSkill.config.color) ? currentSkill.config.color : '') }} /></Form.Label>
                         
                         <SketchPicker disableAlpha={true}  color={currentSkill && currentSkill.config ? currentSkill.config.color : ''}  onChangeComplete={function(color) {skillsEditor.setConfigValue('color',color.hex)}} />
                       </Form.Group>

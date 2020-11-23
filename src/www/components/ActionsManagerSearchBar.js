@@ -24,7 +24,7 @@ const ActionsManagerSearchBar = function(props) {
                 {props.lookups.selectedActionTally <= 0 && <Button size="lg" onClick={function(e) { props.selectAll(e) }} variant="secondary"  ><img style={{height:'1em'}} src={checkImage} alt="Select" /></Button> }
                 
            </span>}   
-            {<span style={{marginLeft:'0.4em'}}><SearchInput searchFilter={props.searchFilter} setSearchFilter={props.setSearchFilter} /></span>}   
+            
             {<Dropdown style={{marginLeft:'0.5em'}}  as={ButtonGroup}>
                   <Dropdown.Toggle split   id="dropdown-split-basic" ></Dropdown.Toggle>
                   <Button  >{'Tag'+(props.listFilterValue ? ' - '+ props.listFilterValue : '')} </Button>
@@ -33,7 +33,7 @@ const ActionsManagerSearchBar = function(props) {
                   </Dropdown.Menu>
                 </Dropdown>}
               <Button  style={{marginLeft:'1em'}} variant="success" onClick={function(e) {props.createEmptyItem(props.listFilterValue,'resolve(output,slots)')}} >New Action</Button>
-              <Button  style={{marginLeft:'1em'}} variant="primary" onClick={function(e) {props.sort(function(a,b) { if (a.value < b.value) return -1; else return 1;})}} >Sort</Button>
+            
               
               {(props.fromSkill && !props.fromForm) && <Link to={'/skills/skill/'+props.fromSkill}><Button  style={{marginLeft:'1em', float:'right'}} variant="warning"  >Back to Skill</Button></Link>}
               

@@ -13,7 +13,44 @@
       user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
     -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <script src="https://apis.google.com/js/api.js"></script>
+       
+   <script>        
+    var initializeCastApi = function() {
+        window.cast = cast
+      cast.framework.CastContext.getInstance().setOptions({
+        receiverApplicationId: "B564251A",
+        autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
+      });
+    var context = cast.framework.CastContext.getInstance();
+    context.addEventListener(
+      cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
+      function(event) {
+        switch (event.sessionState) {
+          case cast.framework.SessionState.SESSION_STARTED:
+            console.log('CastSession started');
+            break;
+          case cast.framework.SessionState.SESSION_RESUMED:
+            console.log('CastSession resumed');
+            break;
+          case cast.framework.SessionState.SESSION_ENDED:
+            console.log('CastSession disconnected');
+            break;
+        }
+    });    
+ 
+};
+        
+
+window['__onGCastApiAvailable'] = function(isAvailable) {
+  if (isAvailable) {
+    initializeCastApi();
+    console.log('CAST INITED')
+    
+    //session.sendMessage("urn:x-cast:chatui", 'send message', function() {console.log('MESSAGE SENT')}, function() {console.log('MESSAGE FAIL')});
+  }
+};
+</script> 
+<script src="https://apis.google.com/js/api.js"></script>
     <script type="text/javascript" src="/mespeak.js"></script>
     <script type="text/javascript">
       //window.mespeak = mespeak
@@ -68,5 +105,8 @@
       To begin the development, run `npm start` or `yarn start`.
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
+    <script src="//www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
+      <script>
   </body>
+  
 </html>
