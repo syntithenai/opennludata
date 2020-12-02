@@ -1,6 +1,6 @@
 /* global window */
 import React, {useState, useEffect} from 'react';
-import {ListGroup, Button, Accordion, Card, AccordionContext, Form, Row, Col, Container} from 'react-bootstrap'
+import {Tabs, Tab, ListGroup, Button, Accordion, Card, AccordionContext, Form, Row, Col, Container} from 'react-bootstrap'
 import { Link  } from 'react-router-dom'
 import DropDownComponent from './components/DropDownComponent'
 import DropDownSelectorComponent from './components/DropDownSelectorComponent'
@@ -23,7 +23,46 @@ function StoriesEditor(props) {
     const [ruleFilter, setRuleFilter] = useState('')
     const [newRuleName, setNewRuleName] = useState('')
     const [suggestions, setSuggestions] = useState([])
+    const [intentOptions, setIntentOptions] = useState([])
+    const [utteranceOptions, setUtteranceOptions] = useState([])
     
+    useEffect(() => {
+        if (Array.isArray(props.intents)) {
+            var groupedIntents = {}
+            var nonGroupedIntents = {}
+            props.intents.map(function(intent) {
+                var parts = intent.split("/")
+                if (parts.length > 1) {
+                    groupedIntents[parts[0]] = 1
+                } else if (parts[0] && parts[0].trim()) {
+                    nonGroupedIntents[parts[0]] = 1
+                }
+                return null
+            })
+            var final = ['welcome','fallback'].concat(Object.keys(nonGroupedIntents))
+            setIntentOptions(final)
+        }
+        
+        
+       if (Array.isArray(props.lookups.utterancesLookups)) {
+            var grouped = {}
+            var nonGrouped = {}
+            props.lookups.utterancesLookups.map(function(utt) {
+                var parts = utt.split("/")
+                if (parts.length > 1) {
+                    grouped[parts[0]] = 1
+                } else if (parts[0] && parts[0].trim()) {
+                    nonGrouped[parts[0]] = 1
+                }
+                return null
+            })
+            var final = [].concat(Object.keys(nonGrouped))
+           // console.log(['col rule utt options',grouped,final])
+            setUtteranceOptions(final)
+        }
+        
+        
+    },[])
     //console.log(['USE EFFECT RULES',props])
     useEffect(() => {
         var newRules = []
@@ -250,21 +289,14 @@ function StoriesEditor(props) {
     var newOptions={'New empty story':1}
     
     if (newRuleName && newRuleName.trim())  {
-        if (Array.isArray(props.rules)) props.rules.map(function(rule) { console.log(rule) ;newOptions['From rule '+rule.rule] = 1; return null })
+        if (Array.isArray(props.rules)) props.rules.map(function(rule) { newOptions['From rule '+rule.rule] = 1; return null })
         if (props.stories) Object.values(props.stories).map(function(rule) { newOptions['From story '+rule.story] = 1; return null })
     }
     
-   // console.log(['OPTIONS',newOptions,props.rules,props.stories])
     return (
         <div>
-        
-        {false && <> <br/>rul {JSON.stringify(rules)}
-        <br/>int{JSON.stringify(props.intents)}
-        <br/>ent{JSON.stringify(props.entities)}
-        <br/>UTT{JSON.stringify(props.lookups)}
-        <br/>sugg{JSON.stringify(props.lookups)}
-        
-        </>}
+         
+       
             <label style={{float:'left'}}>
               <input type='text' value={newRuleName} onChange={function(e) {setNewRuleName(e.target.value)}} />
             </label>
@@ -278,6 +310,9 @@ function StoriesEditor(props) {
             <input style={{marginLeft:'2em'}}  type='text' value={ruleFilter} onChange={function(e) {setRuleFilter(e.target.value)}} placeholder={'Filter stories'} /><Button variant="danger" onClick={function() {setRuleFilter('')}} >X</Button>
             
             {Array.isArray(rules) && <div><form onSubmit={function(e) {e.preventDefault(); return false}} >
+                
+                <Tabs style={{marginLeft: 0, width:'100%' }} defaultActiveKey="stories_0" id="platform-stories">
+                
                 {rules.map(function(rule,key) {
                     
                     
@@ -288,6 +323,7 @@ function StoriesEditor(props) {
                         
                         var steps = (Array.isArray(rule.steps) && rule.steps.length > 0) ? rule.steps : []
                        return (
+                        <Tab  key={key}  eventKey={"stories_"+key} title={rule && rule.name ? rule.name: 'unnamed story'}>
                        <div key={key} style={{clear:'both'}}>
                        <hr style={{clear:'both', width:'100%'}} />
                        <Button style={{float:'right', width:'10em', marginBottom:'0.5em'}} size="sm" variant="danger" onClick={function(e) {deleteRule(key)}} > Delete Story </Button>
@@ -311,7 +347,7 @@ function StoriesEditor(props) {
                                 var clickCreate = null
                                 if (ruleStepType === "utter") {
                                     createNewLabel = createNewLabel + 'Utterance '
-                                    suggestions = props.lookups.utterancesLookups ? props.lookups.utterancesLookups.filter(function(a) {if (a.indexOf(ruleStepName) !== -1) {return true} else return false }).sort() : []
+                                    suggestions = utteranceOptions
                                     clickCreate = function(e) {
                                         props.createUtterance({name:ruleStepName}).then(function() {
                                                 setTimeout(props.updateFunctions.updateUtterances,500)
@@ -341,7 +377,7 @@ function StoriesEditor(props) {
                                 }
                                 if (ruleStepType === "intent") {
                                     createNewLabel = createNewLabel + 'Intent '
-                                    suggestions = props.intents ? props.intents.filter(function(a) {if (a.indexOf(ruleStepName) !== -1) {return true} else return false }).sort() : []
+                                    suggestions = intentOptions
                                     //clickCreate = function(e) {
                                         //props.createAction({name:ruleStepName}).then(function() {
                                                 //setTimeout(props.updateFunctions.updateActions,500)
@@ -432,10 +468,10 @@ function StoriesEditor(props) {
                         </div>
                         
                        </div>
-                        )
+                        </Tab>)
                     }
                 })}
-             </form> </div>}
+             </Tabs></form> </div>}
         </div>
     )
 }

@@ -112,7 +112,7 @@ function ChatPage(props) {
     function handleMessage(e) {
         //if ( e.origin === 'http://www.example.com' ) {
             if (e && e.data && e.data.source && e.data.source.indexOf('react')!==0)  {
-                console.log(['LOG Message received in parent',e])
+                //console.log(['LOG Message received in parent',e])
                 var data = {}
                 try {
                     data = e.data ? JSON.parse(e.data) : {}
@@ -421,27 +421,20 @@ function ChatPage(props) {
    
 
     function restartVoiceNow(startVoice) {
-        //console.log(['RESTART VOICE',startVoice,wc,microphoneState,client]) 
-        //  RESTART VOICE recognition?
-        // ??? by referencing microphoneState, the client is populated else null ?????#$%^&*(
-        if (microphoneState > 0) {
-            //console.log(['MICSTATE',microphoneState])
-        }
-        // ???
-        if (client) {
-            if (startVoice) {
-                //console.log(['RESTART VOICE start']) 
-                client.stopHotword()
-                client.startMicrophone()
-            } else {
-                //console.log(['RESTART VOICE hw']) 
-                client.stopMicrophone()
-                client.startHotword()
+        //console.log(['RESTART VOICE start',startVoice,localStorage.getItem('auto_microphone'),client]) 
+        if (localStorage.getItem('auto_microphone') === "YES") {
+            if (client) {
+                if (startVoice) {
+                    //console.log(['RESTART VOICE start']) 
+                    //client.stopHotword()
+                    client.startMicrophone()
+                } 
+                //else {
+                    ////console.log(['RESTART VOICE hw']) 
+                    //client.stopMicrophone()
+                    //client.startHotword()
+                //}
             }
-            //console.log('REST')
-            
-        } else {
-            //console.log('RESTNOT')
         }
     }
     
@@ -481,13 +474,13 @@ function ChatPage(props) {
                 // hotword => start microphone
                 } else if (microphoneState === 2) {
                     //console.log(['TOGGLEVOIC hw 2 act'])
-                    useClient.stopHotword()
+                    //useClient.stopHotword()
                     useClient.startMicrophone()
                 } else if (microphoneState === 1) {
                     useClient.stopMicrophone()
                     useClient.startHotword()
                 } else if (microphoneState === 0) {
-                    useClient.stopHotword()
+                    useClient.startHotword()
                     useClient.startMicrophone()
                 }
             }

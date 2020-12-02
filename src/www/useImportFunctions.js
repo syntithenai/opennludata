@@ -4,25 +4,199 @@ import {useHistory} from 'react-router-dom'
 import {generateObjectId, cleanEntity, cleanIntent, cleanUtterance, cleanRegexp} from './utils'
 const yaml = require('js-yaml');
 const path = require('path');
+                   
+var balanced = require('balanced-match');
 
 export default function useImportFunctions(sendPageMessage) {
     
     const {mergeEntities, mergeIntents, mergeUtterances, mergeRegexps, mergeForms, mergeActions, mergeApis, mergeSkill} = useImportMergeFunctions()
-    const {unzip, splitSentences, generateIntentSplits, generateEntitySplits, generateUtteranceSplits, generateMycroftUtteranceSplits, generateIntentSplitsForMycroft, cleanListItem, extractSynonym, sortListSplits, sortExampleSplits, detectFileType, generateSplitsFromJovoJson, generateSplitsFromRasaJson, generateSplitsFromRasaMd, generateSplitsFromRasaYml} = useImportUtils()
+    const {unzip, splitSentences, generateIntentSplits, generateEntitySplits, generateUtteranceSplits, generateMycroftUtteranceSplits, generateIntentSplitsForMycroft, cleanListItem, extractSynonym, sortListSplits, sortExampleSplits, detectFileType, generateSplitsFromJovoJson, generateSplitsFromRasaJson, generateSplitsFromRasaMd, generateSplitsFromRasaYml, titleFromFilename} = useImportUtils()
     const history = useHistory()
     /* ONCLICK FUNCTIONS */   
+    
+    function importNLPJS(data) {
+        //console.log(['imp nlpjs',data])
+        return new Promise(function( resolve, reject) {
+            // name, locale, data, entities
+            var item = {}
+            try {
+                item = JSON.parse(data.data)
+            } catch (e) {}
+            //console.log(['IMPSKILL',item])
+            var skill = {title: titleFromFilename(data), config:{locale: item && item.locale ? item.locale : 'en-US', contextData: item.contextData ? item.contextData : {}}}
+            
+            var entities={}
+            var intents=[]
+            var responses={}
+            var regexps=[]
+            var entityValues=[]
+            var entityCollation = {}
+            // entities
+            if (item.entities) {
+                //console.log(['IMPORT ',item.entities])
+                Object.keys(item.entities).map(function(entityName) {
+                    entities[entityName] = {lists: [], values: [], regexps: [], trims: []}
+                    entities[entityName].lists.push(entityName)
+                    if (typeof item.entities[entityName] === "string") {
+                        //console.log(['IMPORT regex  ',item.entities[entityName]])
+                        entities[entityName].regexps.push({expression: item.entities[entityName] })
+                    } else {
+                        //console.log(['IMPORT OBJ ',item.entities[entityName].options,item.entities[entityName].regex,,item.entities[entityName].trim])
+                        if (item.entities[entityName].options) {
+                            Object.keys(item.entities[entityName].options).map(function(synonym) {
+                                if (Array.isArray(item.entities[entityName].options[synonym])) {
+                                     item.entities[entityName].options[synonym].map(function(value) {
+                                        entityValues.push({value: value, synonym: synonym, tags:[entityName]})  
+                                        entityCollation[entityName] = Array.isArray(entityCollation[entityName]) ? entityCollation[entityName] : []
+                                        entityCollation[entityName].push(value)
+                                    })
+                                }
+                            })
+                        }
+                        if (item.entities[entityName].regex) {
+                            
+                            if (typeof item.entities[entityName].regex === "string") {
+                                //console.log(['IMPORT OBJ regex string ',item.entities[entityName].regex])
+                                entities[entityName].regexps.push({expression: item.entities[entityName].regex })
+                                //regexps.push({entity: entityName, synonym: item.entities[entityName].regex, name: entityName })
+                            } else if (Array.isArray(item.entities[entityName].regex)) {
+                                item.entities[entityName].regex.map(function(reg) {
+                                    console.log(['IMPORT OBJ regex in array ',reg])
+                                    entities[entityName].regexps.push({expression: reg })
+                                })
+                            }
+                        }
+                        if (Array.isArray(item.entities[entityName].trim)) {
+                            //console.log(['IMPORT trim array ',item.entities[entityName].trim])
+                            entities[entityName].trims = item.entities[entityName].trim
+                        }
+                    }
+                })
+            }
+            //console.log(['NLPJS ENTS',entities, entityValues, regexps,entityCollation])
+            // intents and responses
+            var responseSelectors = {}
+            if (Array.isArray(item.data)) {
+                item.data.map(function(dataItem) {
+                    if (dataItem && dataItem.intent && Array.isArray(dataItem.utterances)) {
+                        var intentName = dataItem.intent
+                        var titleParts = dataItem.intent.split("/")
+                        if (titleParts.length > 1) {
+                            responseSelectors[titleParts[0]] = 1
+                        }
+                        var dotTitleParts = dataItem.intent.split(".")
+                        if (dotTitleParts.length > 1) {
+                            responseSelectors[dotTitleParts[0]] = 1
+                            intentName = dotTitleParts[0] + "/" + dotTitleParts.slice(1).join(".")
+                        }
+                        dataItem.utterances.map(function(utteranceItem) {
+                            var exampleEntities = []
+                            var latestText = utteranceItem
+                            var b = balanced('@',' ',latestText)
+                            var limit = 2
+                            //console.log(['START',latestText])
+                            while (latestText.indexOf('@') !== -1 && limit) {
+                                var start = latestText.indexOf('@')
+                                //console.log(start)
+                                if (start >=0) {
+                                    var tmpEnd = latestText.indexOf(' ',start)
+                                    tmpEnd = tmpEnd > 0 ? tmpEnd : latestText.length
+                                    var entity = latestText.slice(start,tmpEnd ).replace(",",'','g').replace("?",'','g').replace("@",'','g')
+                                    var value = entityCollation && Array.isArray(entityCollation[entity]) ? entityCollation[entity][parseInt(Math.random() * entityCollation[entity].length)] : entity
+                                    //var value = entity
+                                    var end = start + value.length
+                                    latestText = latestText.slice(0,start) + value + ' '+ latestText.slice(tmpEnd+1).trim()
+                                    //console.log(['LOOP',latestText])
+                                    var entity = { entity: entity, value:value, start: start, end: end , type:entity}
+                                    exampleEntities.push(entity)
+                                    //console.log(entity)
+                                    
+
+                                }
+                                limit --
+                                //var end = 0
+                                //var entity = ''
+                                    //var endParts = latestText.slice(start).split(' ')
+                                    //entity = endParts[0].replace(",",'','g').replace("?",'','g')
+                                    //end = start + entity.length
+                                    //latestText = latestText.slice(0,start) + value + 
+                                //}
+                                
+                            }
+                            
+                            //var parts = utteranceItem.split(' ')
+                            //parts.map(function(part,key) {
+                                //if (part.trim().indexOf('@') === 0) {
+                                    //var entityName = part.trim().slice(1)
+                                    //var entityValue = '@'+entityName.trim() // TODO from random entity
+                                    
+                                    //var start = parts.slice(0,key-1).join(' ').length
+                                    //var end = start + entityName.length + 1
+                                    //exampleEntities.push({entity: entityName, value: entityValue, start: start, end: end})
+                                //}
+                            //})
+                            var exampleText = utteranceItem
+                            intents.push({intent: intentName, example:latestText, entities: exampleEntities})
+                        })
+                        //console.log(['III',intents])
+                    }
+                    if (dataItem && Array.isArray(dataItem.answers)) {
+                        var intentName = dataItem.intent
+                        var titleParts = dataItem.intent.split("/")
+                        if (titleParts.length > 1) {
+                            responseSelectors[titleParts[0]] = 1
+                        }
+                        var dotTitleParts = dataItem.intent.split(".")
+                        if (dotTitleParts.length > 1) {
+                            responseSelectors[dotTitleParts[0]] = 1
+                            intentName = dotTitleParts[0] + "/" + dotTitleParts.slice(1).join(".")
+                        }
+                        responses[intentName] = responses[intentName] ? responses[intentName] : {value: intentName, synonym: []}
+                        dataItem.answers.map(function(answerItem) {
+                            // replace {} with {{}}  in response
+                            var res = new RegExp("{{", 'g');
+                            var ree = new RegExp("}}", 'g');
+                            var responseText = answerItem.replace(res,"{",'g').replace(ree,"}",'g').replace("{ ","{",'g').replace(" }","}",'g').replace("{ ","{",'g').replace(" }","}",'g')
+                            responses[intentName].synonym.push(responseText)
+                        })
+                        responses[intentName].synonym = responses[intentName].synonym.join("\n")
+                    }
+                })
+            }
+            skill.intents = intents
+            skill.utterances = Object.values(responses)
+            skill.regexps = regexps
+            skill.regexpsData = regexps.map(function(r) {
+              return {value: r.name, synonym: r.synonym, tags:[r.entity]}  
+            })
+            //console.log(['MERGE',data,{entities: data.entitiesMeta}])
+            //mergeSkill(Object.assign({},data,{entities: data.entitiesMeta}))
+            skill.entitiesMeta = entities
+            skill.entities = entityValues
+            // rules from response selectors in intents and utterances
+            skill.rules = Object.keys(responseSelectors).map(function(rs) {
+                return {
+                    rule:'response selector '+rs ,
+                    steps: ['intent '+rs,'utter '+rs]
+                }
+            })
+            
+            
+            //console.log(['import have skill',JSON.stringify(skill)])
+            resolve(skill)
+        })
+    }
     
 
     /**
      * Import complete skill without review phase
      */
-    
     function importSkillJson(item) {
         return new Promise(function( resolve, reject) {
             var data = {}
             try {
                 data = JSON.parse(item.data)
-                console.log(['IMPSKILL',data])
+                //console.log(['IMPSKILL',data])
                 var promises = []
                 var intentEntities = []
                     
@@ -82,15 +256,15 @@ export default function useImportFunctions(sendPageMessage) {
                         promises.push(mergeUtterances(utterances))
                     }
                     // create regexps
-                    if (data.regexps) {
-                        var regexps = data.regexps.map(function(utterance) {
-                            if (utterance) {
-                                return {value: utterance.name, synonym: utterance.synonym}
-                            }
-                            return {}
-                        })
-                        promises.push(mergeRegexps(regexps))
-                    }
+                    //if (data.regexps) {
+                        //var regexps = data.regexps.map(function(utterance) {
+                            //if (utterance) {
+                                //return {value: utterance.name, synonym: utterance.synonym}
+                            //}
+                            //return {}
+                        //})
+                        //promises.push(mergeRegexps(regexps))
+                    //}
                     // create forms
                     if (data.forms) {
                         var forms = Object.values(data.forms).map(function(form) {
@@ -142,7 +316,7 @@ export default function useImportFunctions(sendPageMessage) {
                   switch(item.fileType) {
                     case 'opennlu.skill':
                         importSkillJson(item).then(function(skill) {
-                            console.log(['IMPORT SKILL JSON COMPLETE NOW SAVE SKILL',skill])
+                            //console.log(['IMPORT SKILL JSON COMPLETE NOW SAVE SKILL',skill])
                             //resolve(skill)  
                             if (skill.title && skill.intents && Object.keys(skill.intents).length > 0) {
                                 setTimeout(function() {
@@ -154,6 +328,11 @@ export default function useImportFunctions(sendPageMessage) {
                             if (sendPageMessage) sendPageMessage('Imported',2000)
                         })
                         break;
+                    case 'nlp.js':
+                        importNLPJS(item).then(function(skill) {
+                            resolve(skill)  
+                        })
+                        break;
                     case 'mycroft.zip':
                         importMycroft(item).then(function(skill) {
                             resolve(skill)  
@@ -161,14 +340,59 @@ export default function useImportFunctions(sendPageMessage) {
                         break;
                     case 'rasa.json':
                         const askill1 = generateSplitsFromRasaJson(item)
+                        //console.log(['json1',JSON.stringify(askill1.title)])
+                        var entitiesMeta={}
+                        askill1.regexps.map(function(regexp) {
+                            if (regexp.value && regexp.synonym) {
+                                entitiesMeta[regexp.value] = entitiesMeta[regexp.value] ? entitiesMeta[regexp.value] : {lists:[],values:[],regexps:[], trims:[]}
+                                regexp.synonym.split("/n").map(function(line) {
+                                   if (line && line.trim()) {
+                                       entitiesMeta[regexp.value].regexps.push({expression: line})
+                                   }  
+                                })
+                            }
+                        })
+                        //askill1.title = item && item.name ? item.name : ''
+                        askill1.entitiesMeta = entitiesMeta
+                        //askill1.title = item && item.title.split(".").slice(0,-1).join('.') ? item.title : ''
+                        //console.log(['json2',JSON.stringify(askill1.title)])
                         resolve(askill1)
                         break;
                     case 'rasa.markdown':
                         const askill2 = generateSplitsFromRasaMd(item)
+                        console.log(['askill2',askill2,item])
+                        var entitiesMeta={}
+                        askill2.regexps.map(function(regexp) {
+                            if (regexp.value && regexp.synonym) {
+                                entitiesMeta[regexp.value] = entitiesMeta[regexp.value] ? entitiesMeta[regexp.value] : {lists:[],values:[],regexps:[], trims:[]}
+                                regexp.synonym.split("/n").map(function(line) {
+                                   if (line && line.trim()) {
+                                       entitiesMeta[regexp.value].regexps.push({expression: line})
+                                   }  
+                                })
+                            }
+                        })
+                        askill2.entitiesMeta = entitiesMeta
+                        //askill2.title = item && item.title ? item.title.split(".").slice(0,-1).join('.') : ''
                         resolve(askill2)
                         break;
                     case 'rasa.yml':
                         const askill3 = generateSplitsFromRasaYml(item)
+                        
+                        var entitiesMeta={}
+                        
+                        askill3.regexps.map(function(regexp) {
+                            if (regexp.value && regexp.synonym) {
+                                entitiesMeta[regexp.value] = entitiesMeta[regexp.value] ? entitiesMeta[regexp.value] : {lists:[],values:[],regexps:[], trims:[]}
+                                regexp.synonym.split("/n").map(function(line) {
+                                   if (line && line.trim()) {
+                                       entitiesMeta[regexp.value].regexps.push({expression: line})
+                                   }  
+                                })
+                            }
+                        })
+                        askill3.entitiesMeta = entitiesMeta
+                        //askill3.title = item && item.title ? item.title.split(".").slice(0,-1).join('.') : ''
                         resolve(askill3)
                         break;
                     case 'jovo.json':
@@ -202,7 +426,7 @@ export default function useImportFunctions(sendPageMessage) {
     
         
     function importTextEntities(item, entity = '') {
-         console.log(['text',item.data])
+         //console.log(['text',item.data])
          return generateEntitySplits(item.data, entity)
     }
     
@@ -233,8 +457,7 @@ export default function useImportFunctions(sendPageMessage) {
             resolve([])
         })
     }
-    
-    
+ 
     function importJovo(item) {
         //console.log(['imp jovo',item])
         return new Promise(function( resolve, reject) {
@@ -291,10 +514,13 @@ export default function useImportFunctions(sendPageMessage) {
     }
     
     function importRASA(item) {
+        console.log(['import rasa',item])
         return new Promise(function( resolve, reject) {
             unzip(item.data,['*/config.yaml','*/credentials.yaml','*/endpoints.yaml','*/domain.yaml','*/config.yml','*/credentials.yml','*/endpoints.yml','*/domain.yml','*.md','*.json',"*.yml","*.yaml"]).then(function(files) {
-                ////console.log(['rasa',files])
-                var skill = {rasa: {}, entities:[], regexps: [], intents: []}
+                console.log(['rasa',files])
+                var title = item && item.title ? item.title.split(".").slice(0,-1).join('.') : ''
+                var skill = {title : title, 
+                        rasa: {}, entities:[], regexps: [], intents: []}
                 if (files) files.map(function(file) {
                     if (file.path) {
                         var pathParts = path.basename(item.title).split(".")
@@ -319,9 +545,10 @@ export default function useImportFunctions(sendPageMessage) {
                             skill.intents = [].concat(skill.intents,intentSkill.intents)
                             skill.regexps = [].concat(skill.regexps,intentSkill.regexps)
                             skill.entities = [].concat(skill.entities,intentSkill.entities)
-                        } else if ((file.path.endsWith('.yml') || file.path.endsWith('.yaml'))) {
+                        } else if ((file.path.endsWith('nlu.yml') || file.path.endsWith('.yaml'))) {
                             var intentSkill = generateSplitsFromRasaYml(file, files)
                             //console.log(['IMPORTED RASA yml',intentSkill,file]) 
+                            //console.log(['IMPORTED RASA yml reg',skill.regexps,intentSkill.regexps]) 
                             skill.intents = [].concat(skill.intents,intentSkill.intents)
                             skill.regexps = [].concat(skill.regexps,intentSkill.regexps)
                             skill.entities = [].concat(skill.entities,intentSkill.entities)
@@ -329,7 +556,36 @@ export default function useImportFunctions(sendPageMessage) {
                     }
                     //console.log(file) 
                 })
-                //console.log(['IMPORTED RASA',skill]) 
+                // map regexps into entities and expand synonyms
+                // save into skill.entitiesMeta
+                // ensure all regexps iterated regardeless of entities
+                
+                var entitiesMeta={}
+                //skill.entities.forEach(function(entity) {
+                    //if (entity && entity.value) {
+                        //entitiesMeta[entity.value] = entitiesMeta[entity.value] ? entitiesMeta[entity.value] : {lists:[],values:[],regexps:[], trims:[]}
+                        //entitiesMeta[entity.value].values.push(entity.value)
+                    //}
+                //})
+                //Object.keys(collated).map(function(entityKey) {
+                    //var entity = collated[entityKey]    
+                skill.regexps.map(function(regexp) {
+                    //entitiesMeta
+                    //skill.entities[entity].regexps = Array.isArray(skill.entities[entity].regexps) ? skill.entities[entity].regexps : []
+                    if (regexp.value && regexp.synonym) {
+                        entitiesMeta[regexp.value] = entitiesMeta[regexp.value] ? entitiesMeta[regexp.value] : {lists:[],values:[],regexps:[], trims:[]}
+                        regexp.synonym.split("/n").map(function(line) {
+                           if (line && line.trim()) {
+                               entitiesMeta[regexp.value].regexps.push({expression: line})
+                           }  
+                        })
+                    }
+                 
+                })
+                //})
+                skill.entitiesMeta = entitiesMeta
+                
+                //console.log(['IMPORTED RASA',skill,entitiesMeta,skill.entities]) 
                 resolve(skill)
             })
         })
@@ -366,7 +622,7 @@ export default function useImportFunctions(sendPageMessage) {
                            if (file.path.endsWith('.intent') && file.data) {
                                //console.log(file.path, file.data, generateIntentSplits(file.data, name))
                                var intent = cleanIntent(fileParts.length > 1 ? fileParts[fileParts.length -1].replace('.intent','') : '')
-                               intents = [].concat(generateIntentSplitsForMycroft(file.data, intent,skillName), intents)
+                               intents = [].concat(generateIntentSplitsForMycroft(file.data, intent,''), intents)
                            } else if (file.path.endsWith('.dialog')) {
                                var parts = file.path.split("/")
                                var fileName = parts[parts.length -1]
@@ -384,6 +640,8 @@ export default function useImportFunctions(sendPageMessage) {
                 skill.utterances = utterances
                 skill.intents = intents
                 skill.entities = entities
+                var title = item && item.title ? item.title.split(".").slice(0,-1).join('.') : ''
+                skill.title = title
                 //console.log(['MYIMNPO',skill])
                 resolve(skill)
             })
@@ -392,13 +650,13 @@ export default function useImportFunctions(sendPageMessage) {
 
     function importEntities(item) {
           return new Promise(function(resolve, reject) {
-             console.log(['import entities',item])
+             //console.log(['import entities',item])
              if (item) {
                   if (item.fileType === 'text') {
                         resolve({entities:importTextEntities(item, item.title)})
                   } else if (item.fileType.endsWith('.json')) {
                         importJsonEntities(item).then(function(entities) {
-                            console.log(['imported entities',entities])
+                            //console.log(['imported entities',entities])
                             resolve({entities:entities})  
                         })
                   } else {

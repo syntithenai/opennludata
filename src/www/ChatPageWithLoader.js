@@ -23,12 +23,12 @@ function ChatPageWithLoader(props) {
     useEffect(() => {
         if (props.currentSkill) {
             exportJSON(currentSkill).then(function(exported) {
-                console.log(['CHATLOADER',exported]); 
+                //console.log(['CHATLOADER',exported]); 
                 setCurrentExport(exported)
             })
         } else if (currentSkill) {
             exportJSON(currentSkill).then(function(exported) {
-                console.log(['CHATLOADER',exported]); 
+                //console.log(['CHATLOADER',exported]); 
                 setCurrentExport(exported)
             })
         }

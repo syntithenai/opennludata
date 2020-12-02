@@ -263,7 +263,7 @@ var WebsocketAsrClient = function(config) {
                 startHotword()
             };
             client.onopen = function() {
-                //console.log('WebSocket Client Connected');
+                console.log('WebSocket Client Connected send init');
                 //isConnected = true;
                 // init message sends current skill id to ASR server
                 if (client) client.send(JSON.stringify({init:config && config.skill ? config.skill : 'anonymous'}));

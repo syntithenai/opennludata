@@ -27,8 +27,8 @@ var PorcupineManager = (function (porcupineWorkerScript, webpack = false) {
         porcupineWorker.onmessage = function (e) {
             
             if (e.data.ready) {
-                console.log('WORKER MSG')
-                console.log(e.data)
+                //console.log('WORKER MSG')
+                //console.log(e.data)
                 readyCallback()
             } else { 
                 detectionCallback(e.data.keyword);

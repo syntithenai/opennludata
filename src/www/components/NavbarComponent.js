@@ -20,7 +20,7 @@ export default function NavbarComponent(props) {
         '/': {name: 'NLU Tool',show: false},
         '/search': {name: 'Search',show: true},//link:'https://github.com/syntithenai/opennludata/wiki'
         '/sources': {name: 'Import',show: true},
-        '/regexps/filter/ ': {name: 'RegExps',show: true, skillLink: getSkillLink },
+        //'/regexps/filter/ ': {name: 'RegExps',show: true, skillLink: getSkillLink },
         '/lists/filter/ ': {name: 'Entities',show: true, skillLink: getSkillLink },
         '/utterances/filter/ ': {name: 'Responses',show: true, skillLink: getSkillLink },
         '/examples': {name: 'Intents',show: true, skillLink: function(skillId) {return '/skill/'+skillId} },

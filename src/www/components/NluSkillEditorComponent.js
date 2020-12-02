@@ -1,18 +1,18 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {Link} from 'react-router-dom'
-import {Button, Badge , ListGroup , Tabs, Tab} from 'react-bootstrap'
+import {Fragment, Container, Row, Col, Button, Badge , ListGroup , Tabs, Tab} from 'react-bootstrap'
 //import useNluEditor from './useNluEditor'
 //import exportFormats from './export/index'
 ////import {exportJSON} from './export/exportJSON'
 //import useDB from './useDB'
-import {RASA, GoogleAssistant, Alexa} from '../utils'
+import {RASA, GoogleAssistant, Alexa, BuiltinTypes} from '../utils'
 import ReactTags from 'react-tag-autocomplete'
 import SuggestionComponent from './SuggestionComponent'
 import SkillRegexTagComponent from './SkillRegexTagComponent'
 import DropDownComponent from './DropDownComponent'
 import RASATemplates from '../export/RASATemplates'
 //import ExportPage from './ExportPage'
-//import PublishPage from './PublishPage'
+//import PublishPage from './PublishPage' 
 //import { saveAs } from 'file-saver';
 //import useRestEndpoint from './useRestEndpoint'
 import {generateObjectId, uniquifyArray} from '../utils'
@@ -27,7 +27,18 @@ export default function NluSkillEditorComponent(props) {
     
     const [newIntentName, setNewIntentName] = useState('')
     const [suggestions, setSuggestions] = useState([])
-    
+    useEffect(() => {
+        // check regexps on load
+        if (props.currentSkill && props.currentSkill.entities) {
+            Object.keys(props.currentSkill.entities).map(function(entityKey) {
+              if (props.currentSkill.entities[entityKey] && Array.isArray(props.currentSkill.entities[entityKey].regexps))  {
+                  props.currentSkill.entities[entityKey].regexps.map(function(regexp,rkey) {
+                      props.updateRegexp(entityKey,rkey,regexp)  
+                  })
+              }
+            })
+        }
+    },[])
     //function addAction(actionName,skillId) {
          //console.log(['ADD action',actionName,skillId])
          //return new Promise(function(resolve,reject) {
@@ -126,12 +137,12 @@ export default function NluSkillEditorComponent(props) {
                                     
                                     
                                     if (props.collatedItems[collatedIntent].length  === props.collatedCounts[collatedIntent]) {
-                                            return <Link key={collatedIntent} to={"/examples/skill/"+props.skillFilterValue+"/intent/"+collatedIntent} ><Button key={collatedIntent} variant={collatedIntent === useCurrentIntent ? "primary" : "outline-primary"} onClick={function() {props.setCurrentIntent(collatedIntent)}}>
+                                            return <Link key={collatedIntent} to={"/examples/skill/"+props.skillFilterValue+"/intent/"+collatedIntent.replace('/','_____')} ><Button key={collatedIntent} variant={collatedIntent === useCurrentIntent ? "primary" : "outline-primary"} >
                                                 <Badge variant={completionVariant} > {props.collatedItems[collatedIntent].length} </Badge>
                                                 &nbsp;{collatedIntent}
                                             </Button></Link>
                                     } else {
-                                        return <Link key={collatedIntent} to={"/examples/skill/"+props.skillFilterValue+"/intent/"+collatedIntent} ><Button variant={collatedIntent === useCurrentIntent ? "primary" : "outline-primary"} onClick={function() {props.setCurrentIntent(collatedIntent)}}>
+                                        return <Link key={collatedIntent} to={"/examples/skill/"+props.skillFilterValue+"/intent/"+collatedIntent.replace('/','_____')} ><Button variant={collatedIntent === useCurrentIntent ? "primary" : "outline-primary"} >
                                                 <Badge variant="danger" > {props.collatedItems[collatedIntent].length}/{props.collatedCounts[collatedIntent]} </Badge>
                                                 &nbsp;{collatedIntent}
                                             </Button></Link>
@@ -175,15 +186,18 @@ export default function NluSkillEditorComponent(props) {
                          
                                 const listTags = props.currentSkill && props.currentSkill.entities && props.currentSkill.entities[collatedEntity] && props.currentSkill.entities[collatedEntity].lists ? props.currentSkill.entities[collatedEntity].lists.map(function(listItem,listItemKey) {return {id:listItemKey, name:listItem} }) : []
                                 ////console.log(listTags)
-                                    return  <Tab eventKey={"entity-"+i} title={collatedEntity}  key={collatedEntity}>
-                                            
-                                              <div style={{float:'right'}} >
+                                    return <Tab eventKey={"entity-"+i} title={collatedEntity}  key={collatedEntity}>
+                                             <div style={{float:'right'}} >
+                                                 <DropDownComponent options={["",...BuiltinTypes.entityTypes]} title="Type" value={props.currentSkill.entities && props.currentSkill.entities[collatedEntity] &&  props.currentSkill.entities[collatedEntity].builtin ? props.currentSkill.entities[collatedEntity].builtin : ''}  selectItem={function(entityType) {
+                                                    props.setBuiltinEntityType(collatedEntity,entityType)
+                                                }} />&nbsp;&nbsp;
                                                 <DropDownComponent options={["",...Alexa.entityTypes]} title="Alexa" value={props.currentSkill.entities && props.currentSkill.entities[collatedEntity] && props.currentSkill.entities[collatedEntity].alexaType ? props.currentSkill.entities[collatedEntity].alexaType : ''} selectItem={function(entityType) {
                                                     props.setAlexaEntityType(collatedEntity,entityType)
                                                 }} />
                                                 &nbsp;&nbsp;<DropDownComponent options={["",...GoogleAssistant.entityTypes]} title="Google" value={props.currentSkill.entities && props.currentSkill.entities[collatedEntity] &&  props.currentSkill.entities[collatedEntity].googleType ? props.currentSkill.entities[collatedEntity].googleType : ''}  selectItem={function(entityType) {
                                                     props.setGoogleAssistantEntityType(collatedEntity,entityType)
                                                 }} />
+
                                             </div>
                                             
                                             <span style={{marginTop:'0.8em', float:'left', fontWeight:'bold'}}>Values</span>
@@ -204,29 +218,54 @@ export default function NluSkillEditorComponent(props) {
                                                 onAddition={function(tag) {props.addListToSkillEntity(collatedEntity, tag)}} /> </label>
                                             </span>
                                             
-                                                <div style={{clear:'both'}}><b>Regular Expressions</b></div>
-                                                <div style={{clear:'both'}}>
-                                                         <div style={{marginLeft:'1em'}}>
-                                                       <ListGroup style={{minWidth:'500px'}}>
-                                                        <ReactTags
-                                                        placeholderText="Select Regular Expression  "
-                                                        minQueryLength={0}
-                                                        maxSuggestionsLength={50}
-                                                        autoresize={true}
-                                                        allowNew={true}
-                                                        tags={props.currentSkill && props.currentSkill.regexps ? props.currentSkill.regexps.filter(function(tag) {if (tag.entity === collatedEntity) return true; else return false }).map(function(tag,i) {return {id: i, name: tag.name, intent: tag.intent ? tag.intent : '', entity: tag.entity ? tag.entity : '', synonym: tag.synonym}}):[]}
-                                                        
-                                                        onDelete={function(index) {props.removeRegexp(index)  }}
-                                                        onAddition={function(tag) {props.addRegexp(tag,collatedEntity); }} 
-                                                            tagComponent={function(iprops) {return <SkillRegexTagComponent {...iprops}   setRegexpEntity={props.setRegexpEntity} setRegexpIntent={props.setRegexpIntent}  lookups={props.lookups} skillFilterValue={props.skillFilterValue} />}}
-                                                            suggestionComponent={SuggestionComponent}
-                                                            suggestions={props.lookups.regexpsLookups ? props.lookups.regexpsCompleteLookups.map(function(tag,i) {return {id: i, name: tag.value, intent: tag.intent ? tag.intent : '', entity: tag.entity ? tag.entity : '', synonym: tag.synonym}}):[]}
-                                                        
-                                                        /></ListGroup>
+                                            <Container style={{clear:'both'}}>
+                                                <Row><Col>
+                                                <div ><b>Regular Expressions</b> <Button variant="success" onClick={function(e) {props.addRegexp(collatedEntity)}}  >New Regexp</Button>
+                                                {(props.regexpError && props.regexpError.trim()) && <div style={{fontWeight:'bold', color: 'red'}}>{props.regexpError}</div>}
                                                 </div>
-                                                        
+                                            <div >
+                                                {props.currentSkill.entities && props.currentSkill.entities[collatedEntity] &&  Array.isArray(props.currentSkill.entities[collatedEntity].regexps) && <>
+                                                        {props.currentSkill.entities[collatedEntity].regexps.map(function(regexp, rkey) {
+                                                            return <div key={rkey} style={{clear:'both'}}>
+                                                                <input type='text' placeholder='expression' value={regexp.expression ? regexp.expression : ''}   onChange={function(e) {
+                                                                    props.updateRegexp(collatedEntity,rkey,Object.assign(regexp,{expression:e.target.value}))}} />
+                                                                <Button variant="danger" onClick={function() {props.removeRegexp(collatedEntity,rkey)} } > X </Button>
+                                                            </div>
+                                                        })}
+                                                </>}
                                             </div>
                                             
+                                            </Col><Col>
+                                            <div ><b>Trims</b> <Button variant="success" onClick={function(e) {props.addTrim(collatedEntity)}}  >New Trim</Button></div>
+                                            <div >
+                                                {props.currentSkill.entities && props.currentSkill.entities[collatedEntity] &&  Array.isArray(props.currentSkill.entities[collatedEntity].trims) && <>
+                                                        {props.currentSkill.entities[collatedEntity].trims.map(function(trim, tkey) {
+                                                            return <div key={tkey} style={{clear:'both'}}>
+                                                                <select value={trim.type} onChange={function(e) {props.updateTrim(collatedEntity,tkey,Object.assign(trim,{type:e.target.value}))}} >
+                                                                    <option>before</option>
+                                                                    <option>after</option>
+                                                                    <option>between</option>
+                                                                    <option>beforeFirst</option>
+                                                                    <option>beforeLast</option>
+                                                                    <option>afterFirst</option>
+                                                                    <option>afterLast</option>
+                                                                </select>
+                                                                <input type='text' value={Array.isArray(trim.words) && trim.words.length > 0 ? trim.words[0] : ''}   onChange={function(e) {
+                                                                    var words = Array.isArray(trim.words) ? trim.words : []
+                                                                    words[0] = e.target.value
+                                                                    props.updateTrim(collatedEntity,tkey,Object.assign(trim,{words:words}))}} />
+                                                                {trim.type === "between" && <> and <input type='text' value={Array.isArray(trim.words) && trim.words.length > 1 ? trim.words[1] : ''}   onChange={function(e) {
+                                                                    var words = Array.isArray(trim.words) ? trim.words : []
+                                                                    words[1] = e.target.value
+                                                                    props.updateTrim(collatedEntity,tkey,Object.assign(trim,{words:words}))}} /></>}
+                                                                <Button variant="danger" onClick={function() {props.removeTrim(collatedEntity,tkey)} } > X </Button>
+                                                            </div>
+                                                        })}
+                                                </>}
+                                            </div>
+                                            
+                                            </Col></Row>
+                                            </Container>
                                            </Tab>
                                         
                                 //}
@@ -237,55 +276,31 @@ export default function NluSkillEditorComponent(props) {
                         </div>}
                         
                         
-                         <div style={{marginBottom:'1em', marginLeft:'0.4em', marginTop:'0.7em', borderTop: '2px solid black'}} >
+                         <div style={{marginBottom:'1em', marginTop:'0.7em', borderTop: '2px solid black'}} >
                                  <b style={{marginRight:'1em'}} >Slots</b>
-                                 <form onSubmit={function(e) {e.preventDefault(); props.newSlot(props.newSlotValue,slots)}} ><input value={props.newSlotValue} onChange={function(e) {props.setNewSlotValue(e.target.value)}} /><Button size="sm" onClick={function() {props.newSlot(props.newSlotValue,slots)}}>New Slot</Button>
+                                 <form onSubmit={function(e) {e.preventDefault(); props.newSlot(props.newSlotValue,slots)}} ><input value={props.newSlotValue} onChange={function(e) {props.setNewSlotValue(e.target.value)}} /><Button size="sm" variant="success" onClick={function() {props.newSlot(props.newSlotValue,slots)}}>New Slot</Button>
                                  </form>
-                                  <div style={{marginTop:'0.7em'}} >{Object.keys(slots).map(function(collatedEntity, i) { 
+                                  <div style={{marginTop:'0.7em'}} ><Container fluid><Row>{Object.keys(slots).map(function(collatedEntity, i) { 
                                       const listTags = props.currentSkill && props.currentSkill.entities && props.currentSkill.entities[collatedEntity] && props.currentSkill.entities[collatedEntity].lists ? props.currentSkill.entities[collatedEntity].lists.map(function(listItem,listItemKey) {return {id:listItemKey, name:listItem} }) : []
                                 
-                                        return <span style={{ height: '2em', margin:'1em', padding:'0.5em', border: '3px solid grey', borderRadius:'15px' }}  title={collatedEntity}  key={collatedEntity}>
+                                        return <Col md="4" sm="6" style={{marginTop:'0.5em', border:'1px solid black', backgroundColor:'lightgrey', marginLeft:'0.5em', borderRadius:'10px'}} key={collatedEntity}>
                                                         <span style={{height: '2em', marginTop:'0.5em'}} ><DropDownComponent options={Object.keys(RASA.slotTypes)} title={collatedEntity} value={props.currentSkill.rasa && props.currentSkill.rasa.slots && props.currentSkill.rasa.slots[collatedEntity] && props.currentSkill.rasa.slots[collatedEntity].slotType ? props.currentSkill.rasa.slots[collatedEntity].slotType : 'unfeaturized'} selectItem={function(entityType) {
                                                                 props.setRASASlotType(collatedEntity,entityType,slots)
-                                                            }} />&nbsp;&nbsp;{props.entitiesForSkill[collatedEntity] &&  <DropDownComponent 
+                                                            }} />&nbsp;&nbsp;{props.entitiesForSkill[collatedEntity] &&<DropDownComponent 
                                                                  options={RASA.autofillOptions} 
                                                                  title="autofill" 
                                                                  value={props.currentSkill.rasa && props.currentSkill.rasa.slots && props.currentSkill.entities[collatedEntity] && props.currentSkill.rasa.slots[collatedEntity] && props.currentSkill.rasa.slots[collatedEntity].slotAutofill && props.currentSkill.rasa.slots[collatedEntity].slotAutofill.trim().length > 0 ? props.currentSkill.rasa.slots[collatedEntity].slotAutofill : 'Yes'} selectItem={function(entityType) {
                                                                 props.setRASASlotAutofill(collatedEntity,entityType,slots)
                                                             }} />}{ !(props.entitiesForSkill && props.entitiesForSkill[collatedEntity]) && <Button variant="danger"  size="sm" style={{marginLeft:'0.5em',  fontWeight:'bold', borderRadius:'15px', marginTop:'0.2em'}} onClick={function(e) {props.deleteSlot(collatedEntity,slots)}}>X</Button>}
-                                                        </span></span>
+                                                        </span></Col>
                                             //}
                                             
-                                    })}</div>
+                                    })}</Row></Container></div>
                             </div>
 
                         
                        
                         
-                        {false &&
-                        
-                        <div style={{marginTop:'0.7em', marginLeft:'0.4em', borderTop: '2px solid black'}} >
-                            <div ><b>Regular Expressions</b></div>
-                          <div style={{clear:'both'}}>
-                                 <div style={{marginLeft:'1em'}}>
-                               <ListGroup style={{minWidth:'500px'}}>
-                                <ReactTags
-                                placeholderText="Select Regular Expression  "
-                                minQueryLength={0}
-                                maxSuggestionsLength={50}
-                                autoresize={true}
-                                allowNew={false}
-                                tags={props.currentSkill && props.currentSkill.regexps ? props.currentSkill.regexps.map(function(tag,i) {return {id: i, name: tag.name, intent: tag.intent ? tag.intent : '', entity: tag.entity ? tag.entity : '', synonym: tag.synonym}}):[]}
-                                tagComponent={function(iprops) {return <SkillRegexTagComponent {...iprops}   setRegexpEntity={props.setRegexpEntity} setRegexpIntent={props.setRegexpIntent}  lookups={props.lookups}  />}}
-                                suggestionComponent={SuggestionComponent}
-                                suggestions={props.lookups.regexpsLookups ? props.lookups.regexpsCompleteLookups.map(function(tag,i) {return {id: i, name: tag.value, intent: tag.intent ? tag.intent : '', entity: tag.entity ? tag.entity : '', synonym: tag.synonym}}):[]}
-                               
-                                onDelete={function(index) {props.removeRegexp(index)}}
-                                onAddition={function(tag) {props.addRegexp(tag)}} /></ListGroup>
-                                </div>
-                                
-                            </div>
-                        </div>}
       
                          <div style={{clear:'both', borderTop: '2px solid black'}}><b>Conversation Flow</b></div>
                         <Tabs defaultActiveKey="rules" id="platform-dialogflow">
@@ -326,41 +341,3 @@ export default function NluSkillEditorComponent(props) {
     }
     return []
 }
-
-                  
-//{false && <div style={{marginTop:'0.7em', marginLeft:'0.4em', borderTop: '2px solid black'}} >
-                        //<div ><b>Utterances</b></div>
-                      //<div style={{clear:'both'}}>
-                             //<div style={{marginLeft:'1em'}}>
-                            //<label>Utterances
-                            //<ReactTags
-                            //placeholderText="Use utterance "
-                            //minQueryLength={0}
-                            //maxSuggestionsLength={50}
-                            //autoresize={true}
-                            //allowNew={true}
-                            //tags={utteranceTags}
-                            //suggestionComponent={SuggestionComponent}
-                            //suggestions={props.lookups.utterancesLookups ? props.lookups.utterancesLookups.map(function(tag,i) {return {id: i, name: tag}}):[]}
-                            //onDelete={function(index) {props.removeUtterance(index)}}
-                            //onAddition={function(tag) {props.addUtterance(tag)}} /> </label>
-                            //</div>
-                            
-                             //<div style={{marginLeft:'1em'}}>
-                            //<label>Utterance Lists
-                            //<ReactTags
-                            //placeholderText="Use utterances from "
-                            //minQueryLength={0}
-                            //maxSuggestionsLength={50}
-                            //autoresize={true}
-                            //allowNew={false}
-                            //tags={utteranceListTags}
-                            //suggestionComponent={SuggestionComponent}
-                            //suggestions={props.lookups.utteranceTagsLookups ? props.lookups.utteranceTagsLookups.map(function(tag,i) {return {id: i, name: tag}}) : []}
-                            //onDelete={function(index) {props.removeUtteranceList(index)}}
-                            //onAddition={function(tag) {props.addUtteranceList(tag)}} /> </label>
-                            //</div>
-                            
-                            
-                        //</div>
-                //</div>}

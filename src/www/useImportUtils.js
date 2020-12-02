@@ -16,6 +16,8 @@ var balanced = require('balanced-match');
                 if (json && json.rasa_nlu_data && json.rasa_nlu_data.common_examples) {
                     resolve( {type: 'rasa.json'})
                 // JOVO JSON { "invocation": "my test app", "intents": [{"name": "HelloWorldIntent","phrases": ["hello","say hello"]}] } ,
+                } else if (json && json.name && json.locale && json.data) {
+                    resolve({type: 'nlp.js'})
                 } else if (json && json.title && json.intents && json.entities && json.id) {
                     resolve({type: 'opennlu.skill'})
                 } else if (json && json.invocation && json.intents) {
@@ -40,6 +42,7 @@ var balanced = require('balanced-match');
                         // rasa
                         if (zipEntry.name.indexOf('/domain.yml') !== -1) found['rasa_domain'] = true 
                         if (zipEntry.name.indexOf('/data/nlu.md') !== -1) found['rasa_data'] = true
+                        if (zipEntry.name.indexOf('/data/nlu.yml') !== -1) found['rasa_data'] = true
                         // jovo
                         if (zipEntry.name.indexOf('/project.js') !== -1) found['jovo_project'] = true
                         if (zipEntry.name.indexOf('/models/en-US.js') !== -1) found['jovo_lang'] = true
@@ -71,30 +74,30 @@ var balanced = require('balanced-match');
                       if (doc.version && parseFloat(doc.version) >=  2) {
                           //console.log('v2');
                           if (doc.nlu || doc.stories || doc.rules) {
-                              console.log('has element');
+                              //console.log('has element');
                               resolve({type:'rasa.yml'})
                           } else {
-                              console.log('fallback ');
+                              //console.log('fallback ');
                               if (item.data && item.data.indexOf('## intent:') !== -1) {
-                                  console.log('fallback md');
+                                  //console.log('fallback md');
                                     resolve({type: 'rasa.markdown'})
                                 } else {
-                                    console.log('fallback text');
+                                    //console.log('fallback text');
                                     resolve({type: 'text'})
                                 }
                           }
                       }  else {
-                          console.log('fallback ');
+                          //console.log('fallback ');
                           if (item.data && item.data.indexOf('## intent:') !== -1) {
-                              console.log('fallback md');
+                              //console.log('fallback md');
                                 resolve({type: 'rasa.markdown'})
                             } else {
-                                console.log('fallback text');
+                                //console.log('fallback text');
                                 resolve({type: 'text'})
                             }
                       }
                     } catch (e) {
-                        console.log('fallback catch');
+                        //console.log('fallback catch');
                       //console.log(e);
                         // plain text markdown ??
                         if (item.data && item.data.indexOf('## intent:') !== -1) {
@@ -119,8 +122,12 @@ var balanced = require('balanced-match');
 function unzip(content,pathFilters) {
     
     function matchRuleShort(str, rule) {
-      var escapeRegex = (str) => str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
-      return new RegExp("^" + rule.split("*").map(escapeRegex).join(".*") + "$").test(str);
+        if (str && str.replace && rule && rule.trim) {
+          var escapeRegex = (str) => str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+          return new RegExp("^" + rule.split("*").map(escapeRegex).join(".*") + "$").test(str);
+        } else {
+            return false
+        }
     }
     return new Promise (function( resolve, reject) {
         var zip = new JSZip();
@@ -207,9 +214,9 @@ function generateIntentSplits(text, intent) {
  * eg synonym_value value value or value value value
  */
 function generateEntitySplits(text, entity) {
-    console.log(['GEN ent splits',text,entity])
+    //console.log(['GEN ent splits',text,entity])
     const splits = splitSentences(text)
-    console.log(['GEN ent splits',splits])
+    //console.log(['GEN ent splits',splits])
     var newSplits=[]
     splits.map(function(text,i) {
         if (text && text.trim && text.trim().length > 0) {
@@ -252,6 +259,7 @@ function generateMycroftUtteranceSplits(text, utterance) {
         const splits = splitSentences(text)
         //splits.map(function(text,i) {
             if (text && text.trim().length > 0) {
+                //console.log(['mycroft splits',JSON.stringify(splits)])
                 newSplits.push({'id':generateObjectId(), 'value':cleanUtterance(utterance), synonym:splits.join("\n"), "tags":[]})
             }
             //return null
@@ -327,7 +335,7 @@ function sortExampleSplits(a,b) {
                 expandOptions(intentExample).map(function(line) {
                     var intent = extractEntities(line)
                     intent.intent = cleanIntent(intentLabel);
-                    intent.skills = (skillName && skillName.trim().length > 0) ? [skillName] : []
+                    //intent.skills = (skillName && skillName.trim().length > 0) ? [skillName] : []
                     intents.push(intent)
                 })
             })
@@ -358,6 +366,8 @@ function sortExampleSplits(a,b) {
         var allRegexps={}
         var allSynonyms={}
         var entitiesFromLookup={}
+        var title = titleFromFilename(item)
+        console.log(['rasa MD IMPORT',title, item, item.title])
                                            
         var items = []
         if (item.data) {
@@ -365,30 +375,35 @@ function sortExampleSplits(a,b) {
             item.data = item.data.replace(/<\!--.*?-->/g, "");
             
             item.data.split("##").map(function(intentData,intentKey) {
+                
                 var lines = intentData.split("\n")  
                 var headerLine = lines[0].trim()
                 var headerLineParts = headerLine.split(":")
                 var section = headerLineParts[0]
                 var dataLines = (lines.length > 1) ? lines.slice(1) : []
-                
+                //console.log([intentData,intentKey,lines,headerLine,section,dataLines])
                 if (section === "regex") {
                     var regexTitle = cleanRegexp(headerLine.slice(6).trim())
                     var synonyms=[]
                     for (var i in dataLines) {
-                        var value = dataLines[i].slice(1).trim() // remove leading -
-                        if (regexTitle && value) {
-                            synonyms.push(value)
+                        if (dataLines[i] && dataLines[i].slice) {
+                            var value = dataLines[i].slice(1).trim() // remove leading -
+                            if (regexTitle && value) {
+                                synonyms.push(value)
+                            }
                         }
                     }
                     allRegexps[regexTitle] = {id: generateObjectId(), value: regexTitle, synonym: synonyms.join("\n")}
                     
                 } else if (section === "synonym") {
                     var synonym = headerLine.slice(8).trim()
-                    for (var i in dataLines) {
-                        var value = dataLines[i].slice(1).trim() // remove leading -
-                        if (synonym && value) {
-                            allSynonyms[synonym] = Array.isArray(allSynonyms[synonym]) ? allSynonyms[synonym]  : []
-                            allSynonyms[synonym].push(value)
+                    for (var i=0; i < dataLines.length; i++) {
+                        if (dataLines[i] && dataLines[i].slice) {
+                            var value = dataLines[i].slice(1).trim() // remove leading -
+                            if (synonym && value) {
+                                allSynonyms[synonym] = Array.isArray(allSynonyms[synonym]) ? allSynonyms[synonym]  : []
+                                allSynonyms[synonym].push(value)
+                            }
                         }
                     }
                 } else if (section === "lookup") {
@@ -396,21 +411,11 @@ function sortExampleSplits(a,b) {
                     if (files) {
                         var entityType = headerLine.slice(7).trim()
                         for (var i in dataLines) {
-                            var path = dataLines[i].trim()
-                            // values in list
-                            if (path.indexOf("-") === 0) {
-                                var value = path.slice(1).trim()
-                                if (value && value.trim()) {
-                                    if (entitiesFromLookup[value]) {
-                                        entitiesFromLookup[value].tags = entitiesFromLookup[value].tags ? uniquifyArray(entitiesFromLookup[value].tags.push(entityType)) : []
-                                    } else {
-                                        entitiesFromLookup[value] = {tags:  [entityType]}
-                                    }
-                                }
-                            // values in file
-                            } else if (path && files[path]) {
-                                var entityLines = files[path].split("\n")
-                                entityLines.map(function(value) {
+                            if (dataLines[i] && dataLines[i].slice) {
+                                var path = dataLines[i].trim()
+                                // values in list
+                                if (path.indexOf("-") === 0) {
+                                    var value = path.slice(1).trim()
                                     if (value && value.trim()) {
                                         if (entitiesFromLookup[value]) {
                                             entitiesFromLookup[value].tags = entitiesFromLookup[value].tags ? uniquifyArray(entitiesFromLookup[value].tags.push(entityType)) : []
@@ -418,126 +423,140 @@ function sortExampleSplits(a,b) {
                                             entitiesFromLookup[value] = {tags:  [entityType]}
                                         }
                                     }
-                                })
-                            } 
+                                // values in file
+                                } else if (path && files[path]) {
+                                    var entityLines = files[path].split("\n")
+                                    entityLines.map(function(value) {
+                                        if (value && value.trim()) {
+                                            if (entitiesFromLookup[value]) {
+                                                entitiesFromLookup[value].tags = entitiesFromLookup[value].tags ? uniquifyArray(entitiesFromLookup[value].tags.push(entityType)) : []
+                                            } else {
+                                                entitiesFromLookup[value] = {tags:  [entityType]}
+                                            }
+                                        }
+                                    })
+                                } 
+                            }
                         }
                     }
                 } else if (section === "intent") {
                     var intent = headerLine.slice(7)
                     for (var i in dataLines) {
-                        try {
-                            var entities = {}
-                            var example = dataLines[i].slice(1).trim() // remove leading -
-                            var intentData = {intent: intent, example: example}
-                            if (example.length > 0) {
-                                //console.log(example)// extract entities
-                                var remainder = example
-                                var cleanString = example
-                                var parts = balanced('[', ']', remainder)
-                                //console.log(['PAREN',parts])
-                                var limit=15
-                                // loop while there are squre bracket markers in the example sentence
-                                // each iteration extracts entities and updates the example sentence
-                                while (limit > 0 && parts && parts !== undefined && typeof parts === "object") {
-                                    var entity = {}
-                                    
-                                    limit --
-                                    remainder = parts.post
-                                    entity.value = parts.body
-                                    entity.start = parts.start
-                                    entity.end = parts.end
-                                    //cleanString = cleanString.slice(0,entity.start) + entity.value + cleanString.slice(entity.end+1)
-                                    
-                                    // now look for the meta data in either () or {}
-                                    var remainderParts = balanced('(',')',parts.post)
-                                    var remainderJSONParts = balanced('{','}',parts.post)
-                                    //console.log(['PARENEND',entity, cleanString, remainderParts,remainderJSONParts])
-                                    
-                                    // if there is a metadata section in the remainder both json or () decide which to use first 
-                                    if ((remainderParts && remainderParts.body) && (remainderJSONParts && remainderJSONParts.body)) {
-                                       
-                                        // use the json if it starts first use first (there may be many more from other entities in remainder)
-                                        if (remainderJSONParts.start < remainderParts.start) {
+                        if (dataLines[i] && dataLines[i].slice) {
+                            try {
+                                var entities = {}
+                                var example = dataLines[i].slice(1).trim() // remove leading -
+                                var intentData = {intent: intent, example: example}
+                                if (example.length > 0) {
+                                    //console.log(example)// extract entities
+                                    var remainder = example
+                                    var cleanString = example
+                                    var parts = balanced('[', ']', remainder)
+                                    //console.log(['PAREN',parts])
+                                    var limit=15
+                                    // loop while there are squre bracket markers in the example sentence
+                                    // each iteration extracts entities and updates the example sentence
+                                    while (limit > 0 && parts && parts !== undefined && typeof parts === "object") {
+                                        var entity = {}
+                                        
+                                        limit --
+                                        remainder = parts.post
+                                        entity.value = parts.body
+                                        entity.start = parts.start
+                                        entity.end = parts.end
+                                        //cleanString = cleanString.slice(0,entity.start) + entity.value + cleanString.slice(entity.end+1)
+                                        
+                                        // now look for the meta data in either () or {}
+                                        var remainderParts = balanced('(',')',parts.post)
+                                        var remainderJSONParts = balanced('{','}',parts.post)
+                                        //console.log(['PARENEND',entity, cleanString, remainderParts,remainderJSONParts])
+                                        
+                                        // if there is a metadata section in the remainder both json or () decide which to use first 
+                                        if ((remainderParts && remainderParts.body) && (remainderJSONParts && remainderJSONParts.body)) {
+                                           
+                                            // use the json if it starts first use first (there may be many more from other entities in remainder)
+                                            if (remainderJSONParts.start < remainderParts.start) {
+                                                try {
+                                                    var entityTypeParts = JSON.parse("{"+remainderJSONParts.body+"}")
+                                                    //console.log(['etp',entityTypeParts])
+                                                    entity.type = cleanEntity(entityTypeParts.entity)
+                                                    if (entityTypeParts.value && entityTypeParts.value.length > 0) {
+                                                        allSynonyms[entityTypeParts.value] = allSynonyms[entityTypeParts.value] ? allSynonyms[entityTypeParts.value] : []
+                                                        allSynonyms[entityTypeParts.value].push(entity.value)
+                                                        entity.synonym = entityTypeParts.value
+                                                    }
+                                                    //entity.type = entityTypeParts.entityTypes
+                                                    //if (entityTypeParts.synonym && entityTypeParts.synonym.length > 0) {
+                                                        //allSynonyms[entityTypeParts.synonym] = allSynonyms[entityTypeParts.synonym] ? allSynonyms[entityTypeParts.synonym] : []
+                                                        //allSynonyms[entityTypeParts.synonym].push(entity.value)
+                                                        //entity.synonym = entityTypeParts.synonym
+                                                    //}
+                                                } catch (e) {}
+                                                cleanString = parts.pre + entity.value + parts.post.slice(0,remainderJSONParts.start) + parts.post.slice(remainderJSONParts.end+1)
+                                                //cleanString = cleanString.slice(0,remainderJSONParts.start) + cleanString.slice(remainderJSONParts.end+1)
+                                           
+                                            // otherwise the () starts first
+                                            } else {
+                                                var entityTypeParts = remainderParts.body.split(":")
+                                                entity.type = cleanEntity(entityTypeParts[0])
+                                                if (entityTypeParts.length > 1 && entityTypeParts[1].length > 0) {
+                                                    allSynonyms[entityTypeParts[1]] = allSynonyms[entityTypeParts[1]] ? allSynonyms[entityTypeParts[1]] : []
+                                                    allSynonyms[entityTypeParts[1]].push(entity.value)
+                                                    entity.synonym = entityTypeParts[1]
+                                                }
+                                               cleanString = parts.pre + entity.value + parts.post.slice(0,remainderParts.start) + parts.post.slice(remainderParts.end+1)
+                                                //cleanString = cleanString.slice(0,remainderParts.start) + cleanString.slice(remainderParts.end+1)
+                                            } 
+                                        
+                                        // if there is a json meta data section
+                                        } else if (remainderJSONParts && remainderJSONParts.body) {
                                             try {
                                                 var entityTypeParts = JSON.parse("{"+remainderJSONParts.body+"}")
-                                                //console.log(['etp',entityTypeParts])
+                                                //console.log(['JS ent parts',entityTypeParts])
                                                 entity.type = cleanEntity(entityTypeParts.entity)
                                                 if (entityTypeParts.value && entityTypeParts.value.length > 0) {
                                                     allSynonyms[entityTypeParts.value] = allSynonyms[entityTypeParts.value] ? allSynonyms[entityTypeParts.value] : []
                                                     allSynonyms[entityTypeParts.value].push(entity.value)
                                                     entity.synonym = entityTypeParts.value
                                                 }
-                                                //entity.type = entityTypeParts.entityTypes
-                                                //if (entityTypeParts.synonym && entityTypeParts.synonym.length > 0) {
-                                                    //allSynonyms[entityTypeParts.synonym] = allSynonyms[entityTypeParts.synonym] ? allSynonyms[entityTypeParts.synonym] : []
-                                                    //allSynonyms[entityTypeParts.synonym].push(entity.value)
-                                                    //entity.synonym = entityTypeParts.synonym
-                                                //}
                                             } catch (e) {}
-                                            cleanString = parts.pre + entity.value + parts.post.slice(0,remainderJSONParts.start) + parts.post.slice(remainderJSONParts.end+1)
                                             //cleanString = cleanString.slice(0,remainderJSONParts.start) + cleanString.slice(remainderJSONParts.end+1)
-                                       
-                                        // otherwise the () starts first
-                                        } else {
+                                            cleanString = parts.pre + entity.value + parts.post.slice(0,remainderJSONParts.start) + parts.post.slice(remainderJSONParts.end+1)
+                                        // otherwise use the body as () meta data
+                                        } else if (remainderParts && remainderParts.body) {
                                             var entityTypeParts = remainderParts.body.split(":")
+                                            //console.log(['OT ent parts',entityTypeParts])
                                             entity.type = cleanEntity(entityTypeParts[0])
                                             if (entityTypeParts.length > 1 && entityTypeParts[1].length > 0) {
                                                 allSynonyms[entityTypeParts[1]] = allSynonyms[entityTypeParts[1]] ? allSynonyms[entityTypeParts[1]] : []
                                                 allSynonyms[entityTypeParts[1]].push(entity.value)
                                                 entity.synonym = entityTypeParts[1]
                                             }
-                                           cleanString = parts.pre + entity.value + parts.post.slice(0,remainderParts.start) + parts.post.slice(remainderParts.end+1)
-                                            //cleanString = cleanString.slice(0,remainderParts.start) + cleanString.slice(remainderParts.end+1)
-                                        } 
-                                    
-                                    // if there is a json meta data section
-                                    } else if (remainderJSONParts && remainderJSONParts.body) {
-                                        try {
-                                            var entityTypeParts = JSON.parse("{"+remainderJSONParts.body+"}")
-                                            //console.log(['JS ent parts',entityTypeParts])
-                                            entity.type = cleanEntity(entityTypeParts.entity)
-                                            if (entityTypeParts.value && entityTypeParts.value.length > 0) {
-                                                allSynonyms[entityTypeParts.value] = allSynonyms[entityTypeParts.value] ? allSynonyms[entityTypeParts.value] : []
-                                                allSynonyms[entityTypeParts.value].push(entity.value)
-                                                entity.synonym = entityTypeParts.value
-                                            }
-                                        } catch (e) {}
-                                        //cleanString = cleanString.slice(0,remainderJSONParts.start) + cleanString.slice(remainderJSONParts.end+1)
-                                        cleanString = parts.pre + entity.value + parts.post.slice(0,remainderJSONParts.start) + parts.post.slice(remainderJSONParts.end+1)
-                                    // otherwise use the body as () meta data
-                                    } else if (remainderParts && remainderParts.body) {
-                                        var entityTypeParts = remainderParts.body.split(":")
-                                        //console.log(['OT ent parts',entityTypeParts])
-                                        entity.type = cleanEntity(entityTypeParts[0])
-                                        if (entityTypeParts.length > 1 && entityTypeParts[1].length > 0) {
-                                            allSynonyms[entityTypeParts[1]] = allSynonyms[entityTypeParts[1]] ? allSynonyms[entityTypeParts[1]] : []
-                                            allSynonyms[entityTypeParts[1]].push(entity.value)
-                                            entity.synonym = entityTypeParts[1]
+                                            cleanString = parts.pre + entity.value + parts.post.slice(0,remainderParts.start) + parts.post.slice(remainderParts.end+1)
+                                            //console.log(['UPDATE CLEANSTRING IN ()  ',cleanString,parts.pre , entity.value , parts.post.slice(0,remainderParts.start),parts.post.slice(remainderParts.end+1)])
+                                        } else {
+                                            throw new Error('Invalid bracket structure at line '+intentKey)
                                         }
-                                        cleanString = parts.pre + entity.value + parts.post.slice(0,remainderParts.start) + parts.post.slice(remainderParts.end+1)
-                                        //console.log(['UPDATE CLEANSTRING IN ()  ',cleanString,parts.pre , entity.value , parts.post.slice(0,remainderParts.start),parts.post.slice(remainderParts.end+1)])
-                                    } else {
-                                        throw new Error('Invalid bracket structure at line '+intentKey)
+                                        //if (entity.value && entity.type) console.log(['ENTITY',entity, cleanString])
+                                        //else console.log(['NOENTITY',entity, cleanString])
+                                        //allEntities[entity.type] = entity
+                                        intentData.entities = Array.isArray(intentData.entities) ? intentData.entities : []
+                                        intentData.entities.push(entity)
+                                        if (entity.value) allEntities[entity.value] = {id: generateObjectId(), value: entity.value, synonym: entity.synonym, start: entity.start, end: entity.end, tags: [entity.type]}
+                                        parts = balanced('[', ']', cleanString)
+                                        //console.log(['PARENEND',parts])
                                     }
-                                    //if (entity.value && entity.type) console.log(['ENTITY',entity, cleanString])
-                                    //else console.log(['NOENTITY',entity, cleanString])
-                                    //allEntities[entity.type] = entity
-                                    intentData.entities = Array.isArray(intentData.entities) ? intentData.entities : []
-                                    intentData.entities.push(entity)
-                                    if (entity.value) allEntities[entity.value] = {id: generateObjectId(), value: entity.value, synonym: entity.synonym, start: entity.start, end: entity.end, tags: [entity.type]}
-                                    parts = balanced('[', ']', cleanString)
-                                    //console.log(['PARENEND',parts])
+                                    intentData.example = cleanString
+                                    //intentData.skills = [title]
+                                    
+                                    allIntents.push(intentData)
+                                    //console.log(['INTENT',intentData])
+                                    
+                                    
                                 }
-                                intentData.example = cleanString
-                                intentData.skills = (item.name && item.name.trim().length > 0) ? [item.name.trim()] : (item.title && item.title.trim().length > 0 ? [item.title.trim()] : [])
-                                
-                                allIntents.push(intentData)
-                                //console.log(['INTENT',intentData])
-                                
-                                
+                            } catch (e) {
+                                console.log(e)
                             }
-                        } catch (e) {
-                            console.log(e)
                         }
                     }
                 }
@@ -567,10 +586,31 @@ function sortExampleSplits(a,b) {
             //})  
             //return null
         //}) 
-   
-        var final = {intents: allIntents, regexps: Object.values(allRegexps), entities : Object.values(allEntities)}
-        console.log(['rasa MD IMPORT',final,allRegexps])
+        var final = {title: title, intents: allIntents, regexps: Object.values(allRegexps), entities : Object.values(allEntities)}
+        console.log(['rasa MD IMPORTd', JSON.stringify(final),allRegexps])
         return final
+    }
+    
+    function titleFromFilename(item) {
+        var title = ''
+        if (item && item.title) {
+            if (item.title.split(".").length > 1) {
+                title = item.title.split(".").slice(0,-1).join('.') 
+            } else {
+                title = item.title
+            }
+        } 
+        if (!(title && title.trim())) {
+            if (item && item.name) {
+                if (item.name.split(".").length > 1) {
+                    title = item.name.split(".").slice(0,-1).join('.') 
+                } else {
+                    title = item.name
+                }
+            } 
+        }
+        console.log(['titlefromfilename',item,title])
+        return title
     }
 
     function generateSplitsFromRasaJson(item, files) {
@@ -579,16 +619,26 @@ function sortExampleSplits(a,b) {
         var allRegexps={}
         var allSynonyms={}
         var entitiesFromLookup={}
+        var title = titleFromFilename(item)
+        
         try {
             var json = JSON.parse(item.data)
-            console.log(['rasa JSON impORT',json, item.name, item])
+            //console.log(['rasa JSON impORT',json, item.name, item])
             if (json && json.rasa_nlu_data && json.rasa_nlu_data.regex_features) {
+                //console.log(['REGEXFEAT',json.rasa_nlu_data.regex_features])
+                 //"regex_features": [
+            //{
+                //"name": "zipcode",
+                //"pattern": "[0-9]{5}"
+            //},
                 for (var i in json.rasa_nlu_data.regex_features) {
                     var regex = json.rasa_nlu_data.regex_features[i]
-                    regex.name = cleanRegexp(regex.name)
-                    console.log(['rasa JSON impORT reg',regex])
-                    if (regex && regex.name && regex.name.trim().length > 0 && regex.pattern && regex.pattern.trim().length > 0) {
-                        allRegexps[regex.name]={'id':generateObjectId(), 'value':regex.name,'synonym': regex.pattern}
+                    if (regex && typeof regex === "object") {
+                        regex.name = cleanRegexp(regex.name)
+                        //console.log(['rasa JSON impORT reg',regex])
+                        if (regex && regex.name && regex.name.trim().length > 0 && regex.pattern && regex.pattern.trim().length > 0) {
+                            allRegexps[regex.name]={'id':generateObjectId(), 'value':regex.name,'synonym': regex.pattern}
+                        }
                     }
                 }
             }
@@ -648,7 +698,7 @@ function sortExampleSplits(a,b) {
                         //allEntities[entity.value].
                     })
                     //if (entity.text && entity.text.trim()) {
-                        allIntents[entity.text] = {'id':generateObjectId(), 'example':entity.text,'intent':entity.intent,"entities":cleanEntities, tags:[], skills: (item.name && item.name.trim().length > 0) ? [item.name.trim()] : (item.title && item.title.trim().length > 0 ? [item.title.trim()] : [])}
+                        allIntents[entity.text] = {'id':generateObjectId(), 'example':entity.text,'intent':entity.intent,"entities":cleanEntities, tags:[]}
                     //}
                 }
             }
@@ -679,17 +729,18 @@ function sortExampleSplits(a,b) {
             })  
             return null
         }) 
-   
-        var final = {intents: Object.values(allIntents), regexps: Object.values(allRegexps), entities : Object.values(allEntities)}
-        //console.log(['rasa MD IMPORT',final])
+                
+        var final = {title: title, intents: Object.values(allIntents), regexps: Object.values(allRegexps), entities : Object.values(allEntities)}
+        //console.log(['rasa json IMPORT',final])
         return final
     }
 
     function generateSplitsFromJovoJson(item) {
         var items = []
+        var title = titleFromFilename(item)
         try {
             var json = JSON.parse(item.data)
-            console.log(['JOVO IMPORT',json,item.name])
+            //console.log(['JOVO IMPORT',json,item.name])
             if (json && json.invocation && json.intents) {
                 json.intents.map(function(intent) {
                     if (intent && intent.phrases) {
@@ -712,8 +763,7 @@ function sortExampleSplits(a,b) {
                                     }
                                 }
                                 //console.log(['JOVO IMPORT pushg item',intent.name])
-                                
-                                items.push({'id':generateObjectId(), 'example':phrase.trim(),'intent':cleanIntent(intent.name),"entities": entities, tags: [], skills: (item.name && item.name.trim().length > 0) ? [item.name.trim()] : []})
+                                items.push({'id':generateObjectId(), 'example':phrase.trim(),'intent':cleanIntent(intent.name),"entities": entities, tags: []})
                                 //console.log(['JOVO IMPORT pushed item',JSON.parse(JSON.stringify(items))])
                                 
                             }
@@ -725,7 +775,8 @@ function sortExampleSplits(a,b) {
                 //console.log(['JOVO done IMPORT',items])
             }
         } catch(e) {}
-        return {intents: items}
+                
+        return {title: title, intents: items}
     }   
     
     
@@ -738,6 +789,7 @@ function sortExampleSplits(a,b) {
         var allRegexps={}
         var allSynonyms={}
         var entitiesFromLookup={}
+        var title = titleFromFilename(item)
         
         try {
           const doc = yaml.safeLoad(item.data);
@@ -757,7 +809,8 @@ function sortExampleSplits(a,b) {
                             var examples = nluData.examples.split("\n")
                             for (var i in examples) {
                                 var entities = {}
-                                var example = examples[i].trim() // remove leading -.slice(1)
+                                
+                                var example = examples[i] && examples[i].trim ? examples[i].trim() : '' // remove leading -.slice(1)
                                 if (example.indexOf('-') === 0) example = example.slice(1).trim()
                                 var intentData = {intent: intent, example: example}
                                 if (example.length > 0) {
@@ -860,7 +913,7 @@ function sortExampleSplits(a,b) {
                                         //console.log(['PARENEND',parts])
                                     }
                                     intentData.example = cleanString
-                                    intentData.skills = (item.name && item.name.trim().length > 0) ? [item.name.trim()] : []
+                                   // intentData.skills = [title]
                                     allIntents.push(intentData)
                                     //console.log(['INTENT',intentData])
                                     
@@ -868,15 +921,21 @@ function sortExampleSplits(a,b) {
                                 }
                             }
                         }
+                        //console.log(['REG',JSON.stringify(nluData.regex),JSON.stringify(nluData.examples)])
+                        
+       
                         if (nluData.regex && nluData.examples) {
+                            
                             var regexTitle = cleanRegexp(nluData.regex)
                             var examples = nluData.examples.split("\n")
                             for (var i in examples) {
-                                var value = examples[i].trim()
-                                if (value.indexOf('-') === 0) value = value.slice(1).trim()
-                                if (regexTitle && value) {
-                                    allRegexps[regexTitle] = Array.isArray(allRegexps[regexTitle]) ? allRegexps[regexTitle]  : []
-                                    allRegexps[regexTitle].push(value)
+                                if (examples[i] && examples[i].trim) {
+                                    var value = examples[i].trim()
+                                    if (value.indexOf('-') === 0) value = value.slice(1).trim()
+                                    if (regexTitle && value) {
+                                        allRegexps[regexTitle] = Array.isArray(allRegexps[regexTitle]) ? allRegexps[regexTitle]  : []
+                                        allRegexps[regexTitle].push(value)
+                                    }
                                 }
                             }
                         }
@@ -884,11 +943,13 @@ function sortExampleSplits(a,b) {
                             var synonym = nluData.synonym
                             var examples = nluData.examples.split("\n")
                             for (var i in examples) {
-                                var value = examples[i].trim()
-                                if (value.indexOf('-') === 0) value = value.slice(1).trim()
-                                if (synonym && value) {
-                                    allSynonyms[synonym] = Array.isArray(allSynonyms[synonym]) ? allSynonyms[synonym]  : []
-                                    allSynonyms[synonym].push(value)
+                                if (examples[i] && examples[i].trim) {
+                                    var value = examples[i].trim()
+                                    if (value.indexOf('-') === 0) value = value.slice(1).trim()
+                                    if (synonym && value) {
+                                        allSynonyms[synonym] = Array.isArray(allSynonyms[synonym]) ? allSynonyms[synonym]  : []
+                                        allSynonyms[synonym].push(value)
+                                    }
                                 }
                             }
                         }
@@ -896,7 +957,7 @@ function sortExampleSplits(a,b) {
                             var entityType = nluData.lookup
                             var examples = nluData.examples.split("\n")
                             examples.map(function(value) {
-                                if (value && value.trim()) {
+                                if (value && value.trim && value.trim()) {
                                     if (value.indexOf('-') === 0) value = cleanEntity(value.slice(1).trim())
                                     if (entitiesFromLookup[value]) {
                                         entitiesFromLookup[value].tags = entitiesFromLookup[value].tags ? uniquifyArray(entitiesFromLookup[value].tags.push(entityType)) : []
@@ -915,13 +976,13 @@ function sortExampleSplits(a,b) {
            
         }
         
-        
-        var final = {intents: Object.values(allIntents), regexps: Object.keys(allRegexps).map(function(regexTitle) {
-                var allValues = Array.isArray(allRegexps[regexTitle]) ? allRegexps[regexTitle].join("\n") : ''
+                 
+        var final = {title: title, intents: Object.values(allIntents), regexps: Object.keys(allRegexps).map(function(regexTitle) {
+                var allValues = Array.isArray(allRegexps[regexTitle]) ? allRegexps[regexTitle].join("\n") : '';
                 return {id: generateObjectId(), value: regexTitle, synonym: allValues}
             }), entities : Object.values(allEntities)}
-        //console.log(['rasa MD IMPORT',final])
+        //console.log(['rasa YM::L IMPORT',final])
         return final
     }
 
-export default function useImportUtils() { return  {unzip, splitSentences, generateIntentSplits, generateEntitySplits, generateUtteranceSplits, generateMycroftUtteranceSplits,  cleanListItem, extractSynonym, sortListSplits, sortExampleSplits, detectFileType, generateSplitsFromJovoJson, generateSplitsFromRasaJson, generateSplitsFromRasaMd, generateIntentSplitsForMycroft, generateSplitsFromRasaYml}}
+export default function useImportUtils() { return  {unzip, splitSentences, generateIntentSplits, generateEntitySplits, generateUtteranceSplits, generateMycroftUtteranceSplits,  cleanListItem, extractSynonym, sortListSplits, sortExampleSplits, detectFileType, generateSplitsFromJovoJson, generateSplitsFromRasaJson, generateSplitsFromRasaMd, generateIntentSplitsForMycroft, generateSplitsFromRasaYml, titleFromFilename}}

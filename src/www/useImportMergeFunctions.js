@@ -51,7 +51,7 @@ export default function useImportMergeFunctions() {
                         allItems = []
                     }
                     // index existing items by example
-                    
+                    console.log(['allitems',allItemsIndex])
                     allItems.map(function(listItem) {
                         const key = JSON.stringify({entities:listItem.entities ? listItem.entities : [], intent: listItem.intent ? listItem.intent : '', example: listItem.example ? listItem.example : ''})
                         if (listItem && listItem.example && listItem.example.trim())  {
@@ -66,13 +66,21 @@ export default function useImportMergeFunctions() {
                         if (listItem && listItem.example && listItem.example.trim())  {
                             const key = JSON.stringify({entities:listItem.entities ? listItem.entities : [], intent: listItem.intent ? listItem.intent : '', example: listItem.example ? listItem.example : ''})
                             listItem.id = listItem.id ? listItem.id : generateObjectId()
+                            //if ()
+                            listItem.skills = Array.isArray(listItem.skills) ? listItem.skills : []
+                            if (skill) {
+                                listItem.skills.push(skill)
+                            }
                             // intent example already exists
                             if (allItemsIndex[key]) {
+                                if (Array.isArray(allItemsIndex[key].skills)) {
+                                    listItem.skills = [].concat(listItem.skills,allItemsIndex[key].skills)
+                                }
                                 replacements.push(listItem)
                             } else {
                                 newItems.push(listItem)
-                                if (skill) listItem.skills = listItem.skills ? uniquifyArray( listItem.skills.push(skill)) : [skill]
                             }
+                            
                             //allItemsIndex[listItem.value] = listItem
                         } 
                         return null
@@ -81,7 +89,6 @@ export default function useImportMergeFunctions() {
                     if (replacements.length > 0) {
                         replacements.map(function(listItem) {
                             const key = JSON.stringify({entities:listItem.entities ? listItem.entities : [], intent: listItem.intent ? listItem.intent : '', example: listItem.example ? listItem.example : ''})
-                            if (skill) listItem.skills = listItem.skills ? uniquifyArray( listItem.skills.push(skill)) : [skill]
                             allItemsIndex[key] = listItem
                             return null
                         }); 
@@ -89,7 +96,7 @@ export default function useImportMergeFunctions() {
                     } else {
                         final = [].concat(newItems,allItems)
                     }
-                    console.log('IMPORT MERGE intents',final)
+                    //console.log('IMPORT MERGE intents',final)
                     localforageStorageIntents.setItem('alldata',final).then(function() {
                       resolve({updated:replacements.length, created: newItems.length})  
                     })
@@ -97,15 +104,15 @@ export default function useImportMergeFunctions() {
                 
                 })
               } else {
-                reject({error:"Missing import data"})
+                resolve({error:"No intent data"})
             }
         })
     }
     
     
-     function updateIntents(examples) {
+    function updateIntents(examples) {
         return new Promise(function(resolve, reject) {
-            console.log(['update examples',examples, typeof examples])
+            //console.log(['update examples',examples, typeof examples])
             if (examples) {
                 localforageStorageIntents.getItem('alldata').then(function(allItems) {
                     // index incoming examples by id
@@ -127,9 +134,9 @@ export default function useImportMergeFunctions() {
                         }
                     })
                    
-                    console.log('IMPORT updated intents',newItems)
+                    //console.log('IMPORT updated intents',newItems)
                     localforageStorageIntents.setItem('alldata',newItems).then(function(err,data) {
-                        console.log(["DONE SAVE IMPORT intents",err,data])
+                        //console.log(["DONE SAVE IMPORT intents",err,data])
                         //throw new Error('eee')
                         resolve()  
                     })
@@ -137,7 +144,7 @@ export default function useImportMergeFunctions() {
                 
                 })
               } else {
-                reject({error:"Missing import data"})
+                resolve({error:"No intent update data"})
             }
         })
     }
@@ -166,7 +173,7 @@ export default function useImportMergeFunctions() {
                     entities.map(function(listItem,listItemIndex) {
                         var newListItem = listItem;
                         newListItem.id = newListItem.id ? newListItem.id : generateObjectId()
-                        // already there, just update tags
+                        // already there
                         if (allListsIndex[listItem.value]) {
                             updated += 1
                             newListItem.tags = newListItem.tags ? newListItem.tags : []
@@ -209,13 +216,13 @@ export default function useImportMergeFunctions() {
                     //},2000)
                 })
             } else {
-                reject({error:"Failed import"})
+                resolve({error:"No entity data"})
             }
         })
     }
     
     function mergeUtterances(utterances,addTag) {
-        console.log(['merge utterances',utterances, addTag])
+        //console.log(['merge utterances',utterances, addTag])
         return new Promise(function(resolve, reject) {
             if (utterances) {
                 localforageStorageUtterances.getItem('alldata').then(function(allLists) {
@@ -253,6 +260,7 @@ export default function useImportMergeFunctions() {
                         } else {
                             created += 1
                             newListItem.id = generateObjectId()
+                            newListItem.tags = newListItem.tags ? newListItem.tags : []
                              //= {id: generateObjectId() , value: newListItem.value, synonym: newListItem.synonym ? newListItem.synonym : '', tags:[]}
                             if (addTag && addTag.trim().length > 0) newListItem.tags.push(addTag.trim())
                             // uniquify and sort tags
@@ -262,7 +270,7 @@ export default function useImportMergeFunctions() {
                         return null
                     })
                     
-                    console.log(['IMPORT MERGE responses DONE',allListsIndex])
+                    //console.log(['IMPORT MERGE responses DONE',allListsIndex])
                     localforageStorageUtterances.setItem('alldata',Object.values(allListsIndex)).then(function() {
                         resolve({updated:updated, created: created})  
                     })
@@ -274,70 +282,70 @@ export default function useImportMergeFunctions() {
                     //},2000)
                 })
             } else {
-                reject({error:"Failed import"})
+                resolve({error:"No response data"})
             }
         })
     }
     
     
-    function mergeRegexps(regexps,addTag) {
-        console.log(['merge regexps',regexps, addTag])
-        return new Promise(function(resolve, reject) {
-            if (regexps) {
-                localforageStorageRegexps.getItem('alldata').then(function(allLists) {
-                    ////console.log(['got list ',allLists])
-                    var allListsIndex = {}
-                    if (!allLists) {
-                        allLists = []
-                    }
-                    // index by value
-                    allLists.map(function(listItem) {
-                        if (listItem && listItem.value && listItem.value.trim().length > 0)  {
-                            allListsIndex[listItem.value] = listItem
-                        }
-                        return null
-                    })
-                    var created = 0
-                    var updated = 0;
-                    regexps.map(function(listItem,listItemIndex) {
-                        var newListItem = listItem;
-                        newListItem.id = newListItem.id ? newListItem.id : generateObjectId()
-                        // already there, just append tag and alternatives
-                        if (allListsIndex[listItem.value]) {
-                            updated += 1
-                            newListItem.tags = newListItem.tags ? newListItem.tags : []
-                            if (addTag && addTag.trim().length > 0) newListItem.tags.push(addTag.trim())
-                            // uniquify and sort tags
-                            newListItem.tags = uniquifyArray(newListItem.tags).sort()
-                            allListsIndex[newListItem.value] = newListItem
-                        // new list item    
-                        } else {
-                            created += 1
-                            newListItem = {id: generateObjectId() , value: newListItem.value, synonym: newListItem.synonym ? newListItem.synonym : '', tags:[]}
-                            if (addTag && addTag.trim().length > 0) newListItem.tags.push(addTag.trim())
-                            // uniquify and sort tags
-                            newListItem.tags = uniquifyArray(newListItem.tags).sort()
-                            allListsIndex[newListItem.value] = newListItem
-                        }
-                        return null
-                    })
+    //function mergeRegexps(regexps,addTag) {
+        //console.log(['merge regexps',regexps, addTag])
+        //return new Promise(function(resolve, reject) {
+            //if (regexps) {
+                //localforageStorageRegexps.getItem('alldata').then(function(allLists) {
+                    //////console.log(['got list ',allLists])
+                    //var allListsIndex = {}
+                    //if (!allLists) {
+                        //allLists = []
+                    //}
+                    //// index by value
+                    //allLists.map(function(listItem) {
+                        //if (listItem && listItem.value && listItem.value.trim().length > 0)  {
+                            //allListsIndex[listItem.value] = listItem
+                        //}
+                        //return null
+                    //})
+                    //var created = 0
+                    //var updated = 0;
+                    //regexps.map(function(listItem,listItemIndex) {
+                        //var newListItem = listItem;
+                        //newListItem.id = newListItem.id ? newListItem.id : generateObjectId()
+                        //// already there, just append tag and alternatives
+                        //if (allListsIndex[listItem.value]) {
+                            //updated += 1
+                            //newListItem.tags = newListItem.tags ? newListItem.tags : []
+                            //if (addTag && addTag.trim().length > 0) newListItem.tags.push(addTag.trim())
+                            //// uniquify and sort tags
+                            //newListItem.tags = uniquifyArray(newListItem.tags).sort()
+                            //allListsIndex[newListItem.value] = newListItem
+                        //// new list item    
+                        //} else {
+                            //created += 1
+                            //newListItem = {id: generateObjectId() , value: newListItem.value, synonym: newListItem.synonym ? newListItem.synonym : '', tags:(Array.isArray(newListItem.tags) ? newListItem.tags :[])}
+                            //if (addTag && addTag.trim().length > 0) newListItem.tags.push(addTag.trim())
+                            //// uniquify and sort tags
+                            //newListItem.tags = uniquifyArray(newListItem.tags).sort()
+                            //allListsIndex[newListItem.value] = newListItem
+                        //}
+                        //return null
+                    //})
                     
-                    console.log('IMPORT MERGE reg',allListsIndex)
-                    localforageStorageRegexps.setItem('alldata',Object.values(allListsIndex)).then(function() {
-                        resolve({updated:updated, created: created})  
-                    })
+                    ////console.log('IMPORT MERGE reg',allListsIndex)
+                    //localforageStorageRegexps.setItem('alldata',Object.values(allListsIndex)).then(function() {
+                        //resolve({updated:updated, created: created})  
+                    //})
               
-                })
-            } else {
-                reject({error:"Failed import"})
-            }
-        })
-    }
+                //})
+            //} else {
+                //resolve({error:"No regexp data"})
+            //}
+        //})
+    //}
     
     // froim here
     
     function mergeForms(forms,addTag) {
-        console.log(['merge forms',forms, addTag])
+        //console.log(['merge forms',forms, addTag])
         return new Promise(function(resolve, reject) {
             if (forms) {
                 localforageStorageForm.getItem('alldata').then(function(allLists) {
@@ -379,20 +387,20 @@ export default function useImportMergeFunctions() {
                         }
                         return null
                     })
-                    console.log('IMPORT MERGE form',allListsIndex)
+                    //console.log('IMPORT MERGE form',allListsIndex)
                     localforageStorageForm.setItem('alldata',Object.values(allListsIndex)).then(function() {
                         resolve({updated:updated, created: created})  
                     })
                 })
             } else {
-                reject({error:"Failed import"})
+                resolve({error:"No form data"})
             }
         })
     }
     
     
     function mergeActions(actions,addTag) {
-        console.log(['merge actions',actions, addTag])
+        //console.log(['merge actions',actions, addTag])
         return new Promise(function(resolve, reject) {
             if (actions) {
                 localforageStorageAction.getItem('alldata').then(function(allLists) {
@@ -434,20 +442,20 @@ export default function useImportMergeFunctions() {
                         }
                         return null
                     })
-                    console.log('IMPORT MERGEd act',allListsIndex)
+                    //console.log('IMPORT MERGEd act',allListsIndex)
                     localforageStorageAction.setItem('alldata',Object.values(allListsIndex)).then(function() {
                         resolve({updated:updated, created: created})  
                     })
                 })
             } else {
-                reject({error:"Failed import"})
+                resolve({error:"No action data"})
             }
         })
     }
     
     
     function mergeApis(apis,addTag) {
-        console.log(['merge apis',apis, addTag])
+        //console.log(['merge apis',apis, addTag])
         return new Promise(function(resolve, reject) {
             if (apis) {
                 localforageStorageApi.getItem('alldata').then(function(allLists) {
@@ -489,14 +497,14 @@ export default function useImportMergeFunctions() {
                         return null
                     })
                     
-                    console.log('IMPORT MERGEd apis',allListsIndex)
+                    //console.log('IMPORT MERGEd apis',allListsIndex)
                     localforageStorageApi.setItem('alldata',Object.values(allListsIndex)).then(function() {
                         resolve({updated:updated, created: created})  
                     })
               
                 })
             } else {
-                reject({error:"Failed import"})
+                resolve({error:"No api data"})
             }
         })
     }
@@ -506,31 +514,44 @@ export default function useImportMergeFunctions() {
     
     
     
-    function mergeSkill(skill) {
+    function mergeSkill(skill, skillTitle) {
         //console.log(['merge skill',skill])
+        skill.title = skillTitle && skillTitle.trim() ? skillTitle : (skill.title ? skill.title : '')
         return new Promise(function(resolve, reject) {
             if (skill && skill.title) {
                 localforageStorageSkill.getItem(skill.title).then(function(found) {
                     // merge ?
                     if (found) {
-                        //console.log(['found skill',skill])
-                        localforageStorageSkill.setItem(skill.title,skill).then(function() {
+                        var newSkill = found
+                        if (skill.entitiesMeta) newSkill.entities = skill.entitiesMeta
+                        if (skill.regexps) newSkill.regexps = skill.regexps
+                        if (skill.rules) newSkill.rules = skill.rules
+                        if (skill.stories) newSkill.stories = skill.stories
+                        if (skill.config) newSkill.config = skill.config
+                        console.log(['found skill',skill.title,newSkill])
+                        localforageStorageSkill.setItem(skill.title,newSkill).then(function() {
                             resolve({})  
                         })
                     } else {
-                        //console.log(['create skill',skill])
-                        localforageStorageSkill.setItem(skill.title,skill).then(function() {
+                        var newSkill = {}
+                        if (skill.entitiesMeta) newSkill.entities = skill.entitiesMeta
+                        if (skill.regexps) newSkill.regexps = skill.regexps
+                        if (skill.rules) newSkill.rules = skill.rules
+                        if (skill.stories) newSkill.stories = skill.stories
+                        if (skill.config) newSkill.config = skill.config
+                        console.log(['create skill',skill.title,newSkill])
+                        localforageStorageSkill.setItem(skill.title,newSkill).then(function() {
                             resolve({})  
                         })
                     }
                 })
             } else {
-                reject({error:"Failed import"})
+                resolve({error:"Failed skill import missing title"})
             }
         })
     }
     
 
-    return  {mergeIntents, mergeEntities, mergeUtterances, mergeRegexps, mergeForms, mergeActions, mergeApis,  mergeSkill, updateIntents}
+    return  {mergeIntents, mergeEntities, mergeUtterances, mergeForms, mergeActions, mergeApis,  mergeSkill, updateIntents}
 
 }

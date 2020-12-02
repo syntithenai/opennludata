@@ -84,7 +84,7 @@ export default function useDB(database, databaseTable,singleKey, initialData=[],
     },[])
     
     useEffect(function() {
-        console.log(['dbsingle key items updated',items])
+        //console.log(['dbsingle key items updated',items])
         //var cleanItems = []
         //try {
             //cleanItems = JSON.parse(JSON.stringify(items))
@@ -119,7 +119,7 @@ export default function useDB(database, databaseTable,singleKey, initialData=[],
     
     // save or create
     function saveItem(item,index) {
-        console.log(['save singlekey',item,index])
+        //console.log(['save singlekey',item,index])
         if (item) {
             // update sources and save text in seperate localstorage
             // ensure id
@@ -172,7 +172,7 @@ export default function useDB(database, databaseTable,singleKey, initialData=[],
     }
 
     function setItemsWrap(items) {
-        console.log(['setitems is singlekey',items])
+        //console.log(['setitems is singlekey',items])
         localforageStorage.clear().then(function() {
             dispatch({ type: "replaceall", items: items})
             if (setChanged) setChanged(true)

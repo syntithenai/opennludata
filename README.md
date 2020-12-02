@@ -149,3 +149,10 @@ Search for skills in the community repository
 ## BUGS
 
 - skill entities editor sometimes no show placeholder text so invisible for selection of entity lists
+
+
+"words-to-numbers": "^1.5.1",
+    "youtube-api-search": "0.0.5"
+    "chatui": "file:../chatui",
+    "js-chess-engine": "^0.5.1",
+    

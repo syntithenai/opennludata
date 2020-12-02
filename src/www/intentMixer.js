@@ -12,7 +12,7 @@ function mix(intents,entityType,entityList) {
      });
      
      return new Promise(function(resolve, reject) {
-            console.log(['import examples'])
+            //console.log(['import examples'])
             localforageStorageEntities.getItem('alldata').then(function(allItems) {
                 const entitiesInList=allItems.filter(function(item) {
                     if (item && item.tags && item.tags.indexOf(entityList) !== -1) {
@@ -20,7 +20,7 @@ function mix(intents,entityType,entityList) {
                     }  
                 })
                 if (entitiesInList.length > 0) {
-                    console.log(['mix',intents,entityList])
+                    //console.log(['mix',intents,entityList])
                     var newIntents = intents.map(function(intent) {
                         intent.tags = Array.isArray(intent.tags) ? intent.tags : []
                         intent.tags.push('mix '+entityType+' '+entityList)

@@ -50,7 +50,7 @@ export default  function ActionsManager(props) {
             // instantiate api to discover available functions
             var apiInstance = null
             var newApiFunctions = apiFunctions
-            console.log(['CALLAPI LOOKUP',apisCompleteLookups,window])
+            //console.log(['CALLAPI LOOKUP',apisCompleteLookups,window])
             apisCompleteLookups.map(function(apiComplete) {
               //if (apiComplete.value === button.text) {
                 try {

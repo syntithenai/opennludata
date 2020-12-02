@@ -5,11 +5,15 @@ import localforage from 'localforage'
  * to ensure the completeness of the skill model add
  *   - utterancesData
  *   - entitiesData
- * which are both arrays of objects containing value and synonym(alternatives) eg {value:"cat", synonym:"kitty\npussy"}
+ * which are both arrays of objects containing value and synonym(alternatives) eg {value:"cat", 
+ * 
+ * also iterate stories and rules collating all the of the utterances, actions, apis and forms that 
+ * are used in stories and updating the skill with the (minimised) collated lists.
+ synonym:"kitty\npussy"}
  */
 function exportJSON(skill) {
     
-    console.log(['EXPPORT JSON',skill, skill ? skill.apis : []])
+    //console.log(['EXPPORT JSON',skill, skill ? skill.apis : []])
     var listsStorage = localforage.createInstance({
         name: "nlutool",
         storeName   : "lists",
@@ -156,7 +160,7 @@ function exportJSON(skill) {
                 //console.log(['API loaded stories',allForms,allActions,allApis,usedUtterances,usedForms,usedActions])
                 
                 function doForm(key) {
-                    console.log(['API DO FORM',key,allForms[key]])
+                   // console.log(['API DO FORM',key,allForms[key]])
                     if (key && allForms[key]  && !finalForms[key]) {
                         var form = allForms[key]
                         finalForms[key] = form
@@ -290,16 +294,27 @@ function exportJSON(skill) {
                 var allUtterances={}
                 if (Array.isArray(allUtterancesArray)) {
                     allUtterancesArray.map(function(thisUtterance) {
-                        
-                        if (thisUtterance.value && mixed.usedUtterances[thisUtterance.value]) {
-                            allUtterances[thisUtterance.value] = thisUtterance
+                        if (thisUtterance) {
+                            if (mixed.usedUtterances) {
+                                Object.keys(mixed.usedUtterances).map(function(usedUtterance) {
+                                    if (usedUtterance) {
+                                        //console.log(['CHECK',thisUtterance.value,usedUtterance])
+                                        if (thisUtterance.value === usedUtterance) {
+                                            allUtterances[thisUtterance.value] = thisUtterance
+                                        } else if (thisUtterance.value.indexOf(usedUtterance+"/") === 0) {
+                                            allUtterances[thisUtterance.value] = thisUtterance
+                                        }
+                                    }
+                                })
+                            }
+                            
                         }
                         return null 
                     })
                 }
                 //Object.values(
                 newSkill.utterances = allUtterances
-                console.log(['API DONE EXPORT JSON',newSkill,allUtterances])
+                //console.log(['API DONE EXPORT JSON',newSkill,allUtterances])
                 oresolve(newSkill)
             })
         })

@@ -7,7 +7,7 @@ import { useAccordionToggle } from 'react-bootstrap/AccordionToggle';
 import localforage from 'localforage'
 import useImportMergeFunctions from './useImportMergeFunctions'
 import useImportFunctions from './useImportFunctions'
-
+import {useHistory} from 'react-router-dom'
 
 
 function ContextAwareToggle({ children, eventKey, callback }) {
@@ -17,7 +17,6 @@ function ContextAwareToggle({ children, eventKey, callback }) {
     eventKey,
     () => callback && callback(eventKey),
   );
-
   const isCurrentEventKey = currentEventKey === eventKey;
 
   return (
@@ -37,9 +36,10 @@ function ContextAwareToggle({ children, eventKey, callback }) {
 }
 
 function ImportReviewPage(props) {
-    const {mergeEntities, mergeIntents, mergeUtterances, mergeRegexps} = useImportMergeFunctions()
+    const {mergeEntities, mergeIntents, mergeUtterances, mergeRegexps, mergeSkill} = useImportMergeFunctions()
     const [skillTitle, setSkillTitle] = useState('')
-    
+    const history = useHistory()
+  
     const [collatedIntents, setCollatedIntents] = useState({})
     const [collatedEntities, setCollatedEntities] = useState({})
     const [importData, setImportData] = useState({})
@@ -49,8 +49,8 @@ function ImportReviewPage(props) {
     });
     useEffect(() => {
         localforageStorageImport.getItem('alldata').then(function(importData) {
-             //console.log('importData')  
-             //console.log(importData)  
+             console.log('importData')  
+             console.log(importData)  
              setImportData(importData)
              if (importData.title) setSkillTitle(importData.title)
              if (importData.intents) {
@@ -86,10 +86,45 @@ function ImportReviewPage(props) {
     const blockStyle={borderTop: '2px solid black', minHeight:'5em'}
     const [visible, setVisible] = useState({})
     //<pre>{JSON.stringify(importData,null,2)}</pre>
+    
+    function importAll() {
+        var messages=[]
+        mergeIntents(importData.intents , skillTitle).then(function(counts) {
+            if (counts.updated > 0 || counts.created > 0) messages.push('Updated '+(counts.updated ? counts.updated : 0) +' and created '+(counts.created ? counts.created : 0) + ' intents. ')
+            
+            mergeEntities(importData.entities, skillTitle).then(function(counts) {
+                if (counts.updated > 0 || counts.created > 0) messages.push('Updated '+(counts.updated ? counts.updated : 0) +' and created '+(counts.created ? counts.created : 0) + ' entities. ') 
+                
+                mergeUtterances(importData.utterances, skillTitle).then(function(counts) {
+                    if (counts.updated > 0 || counts.created > 0) messages.push('Updated '+(counts.updated ? counts.updated : 0) +' and created '+(counts.created ? counts.created : 0)+ ' responses. ')
+                    
+                    //mergeRegexps(importData.regexpsData, skillTitle).then(function(counts) {
+                        //if (counts.updated > 0 || counts.created > 0) messages.push('Updated '+(counts.updated ? counts.updated : 0) +' and created '+(counts.created ? counts.created : 0)+ ' regular expressions. ')
+                        mergeSkill(importData, skillTitle).then(function() {
+                            props.setPageMessage(messages.join('\n'),8000)
+                            if (skillTitle && importData.intents && Object.keys(importData.intents).length > 0) {
+                                setTimeout(function() {
+                                    history.push("/skills/skill/"+skillTitle)
+                                },500)
+                            }
+                            
+                        })
+                    //})
+                })
+                
+                
+            })
+        })
+            
+            
+    }
+    
         
     return <div style={{marginLeft:'1em'}}>
-        <h3>Import Review</h3>
-        
+        <h3>Import Review </h3>
+            {skillTitle && <Button style={{float:'right'}} onClick={importAll} variant="success" >Import</Button>}
+            {!skillTitle && <Button style={{float:'right'}}  variant="secondary" >Import</Button>}
+            <label>Skill <input type='text' value={skillTitle} onChange={function(e) {setSkillTitle(e.target.value)}} /></label>
           <Accordion >
 
            {/* INTENTS */}
@@ -97,15 +132,7 @@ function ImportReviewPage(props) {
                 <Card.Header>
                   <ContextAwareToggle as={Button} variant="link" eventKey="root-0"  >
                   </ContextAwareToggle>
-                  {importData.intents && <span style={{marginLeft:'2em'}}  id='intents' >{Object.keys(collatedIntents).length } intents with {importData.intents ? Object.keys(importData.intents).length : 0} examples <Button 
-                    style={{marginLeft:'2em'}} 
-                    onClick={function(e) {
-                                    mergeIntents(importData.intents , skillTitle)
-                                    .then(function(counts) {
-                                        props.setPageMessage('Updated '+(counts.updated ? counts.updated : 0) +' and created '+(counts.created ? counts.created : 0),4000)
-                                        // TODO remove item from import data
-                                    })
-                                }}>Import All Intents</Button></span>}
+                  {importData.intents && <span style={{marginLeft:'2em'}}  id='intents' >{Object.keys(collatedIntents).length } intents with {importData.intents ? Object.keys(importData.intents).length : 0} examples </span>}
                 </Card.Header>
                 
                 {<Accordion.Collapse eventKey="root-0"><Card.Body>{Object.keys(collatedIntents).map(function(intent, key) {
@@ -117,15 +144,7 @@ function ImportReviewPage(props) {
                                     </ContextAwareToggle>&nbsp;&nbsp;
                                     
                               <b>{intent}</b> with {collatedIntents[intent].length} examples
-                              <Button 
-                                style={{marginLeft:'2em'}} 
-                                onClick={function(e) {
-                                    mergeIntents(collatedIntents[intent], skillTitle)
-                                    .then(function(counts) {
-                                        props.setPageMessage('Updated '+(counts.updated ? counts.updated : 0) +' and created '+(counts.created ? counts.created : 0),4000)
-                                        // TODO remove item from import data
-                                    })
-                                }}>Import {intent}</Button>
+                              
                             </Card.Header>
                             {<Accordion.Collapse eventKey={"intent-"+key}>
                             <Card.Body>
@@ -154,36 +173,23 @@ function ImportReviewPage(props) {
                 <Card.Header>
                   <ContextAwareToggle as={Button} variant="link" eventKey="root-1"  >
                   </ContextAwareToggle>
-                  {importData.entities && <span style={{marginLeft:'2em'}}  id='entities' >{importData.entities ? Object.keys(importData.entities).length : 0} entities <Button 
-                    style={{marginLeft:'2em'}} 
-                    onClick={function(e) {
-                        mergeEntities(importData.entities, skillTitle)
-                        .then(function(counts) {
-                            props.setPageMessage('Updated '+(counts.updated ? counts.updated : 0) +' and created '+(counts.created ? counts.created : 0),4000)
-                        })
-                    }}>Import All Entities</Button></span>}
+                  {importData.entities && <span style={{marginLeft:'2em'}}  id='entities' >{importData.entities ? Object.keys(importData.entities).length : 0} entities </span>}
                 </Card.Header>
+                
                 {<Accordion.Collapse eventKey="root-1"><Card.Body>{Object.keys(collatedEntities).map(function(entityKey, key) {
                     return <Card key={key}>
                         <Accordion >
                             <Card.Header>
                                <ContextAwareToggle as={Button} variant="link" eventKey={"entity-"+key}  >
-                                </ContextAwareToggle>&nbsp;&nbsp;
+                               </ContextAwareToggle>&nbsp;&nbsp; {entityKey} 
                                     
                               {/*<b>{entity}</b> with {Object.values(importData.entities[entity].values).length} examples*/}
-                              <Button 
-                                style={{marginLeft:'2em'}} 
-                                onClick={function(e) {
-                                    mergeEntities(collatedEntities[entityKey].map(function(i) {return importData.entities[i]}), skillTitle)
-                                    .then(function(counts) {
-                                        props.setPageMessage('Updated '+(counts.updated ? counts.updated : 0) +' and created '+(counts.created ? counts.created : 0),4000)
-                                    })
-                                }}>Import {entityKey}</Button>
+                             
                             </Card.Header>
                             {<Accordion.Collapse eventKey={"entity-"+key}>
                                 <Card.Body>
                                     <ul>{collatedEntities[entityKey] && collatedEntities[entityKey].map(function(example,ikey) {
-                                        return <li key={ikey}>{importData && importData.entities[example] && importData.entities[example].value ? importData.entities[example].value : ''}</li> 
+                                        return <li key={ikey}>{importData && importData.entities[example] && importData.entities[example].value ? importData.entities[example].value : ''}{importData && importData.entities[example] && importData.entities[example].synonym && importData.entities[example].synonym.trim() ? <b>{'       (' + importData.entities[example].synonym + ')'}</b> : ''}</li> 
                                     })}</ul>
                                 </Card.Body>
                             </Accordion.Collapse>}
@@ -205,14 +211,7 @@ function ImportReviewPage(props) {
                 <Card.Header>
                   <ContextAwareToggle as={Button} variant="link" eventKey="root-2"  >
                   </ContextAwareToggle>
-                  {importData.utterances && <span style={{marginLeft:'2em'}}  id='utterances' >{importData.utterances ? Object.keys(importData.utterances).length : 0} utterances <Button 
-                    style={{marginLeft:'2em'}} 
-                    onClick={function(e) {
-                        mergeUtterances(importData.utterances, skillTitle)
-                        .then(function(counts) {
-                            props.setPageMessage('Updated '+(counts.updated ? counts.updated : 0) +' and created '+(counts.created ? counts.created : 0),4000)
-                        })
-                    }}>Import All Utterances</Button></span>}
+                  {importData.utterances && <span style={{marginLeft:'2em'}}  id='utterances' >{importData.utterances ? Object.keys(importData.utterances).length : 0} utterances </span>}
                 </Card.Header>
                 
                 {<Accordion.Collapse eventKey="root-2"><Card.Body>{importData.utterances &&  Object.values(importData.utterances).map(function(utterance, key) {
@@ -220,14 +219,7 @@ function ImportReviewPage(props) {
                                  
                             <Card.Header>
                               <b>{utterance.value}</b> 
-                              <Button 
-                                style={{marginLeft:'2em'}} 
-                                onClick={function(e) {
-                                    mergeUtterances([utterance], skillTitle)
-                                    .then(function(counts) {
-                                        props.setPageMessage('Updated '+(counts.updated ? counts.updated : 0) +' and created '+(counts.created ? counts.created : 0),4000)
-                                    })
-                                }}>Import</Button>
+                              
                             </Card.Header>
                            <div>
                                 {utterance.synonym && utterance.synonym.split("\n").map(function(alt,p) {
@@ -246,53 +238,7 @@ function ImportReviewPage(props) {
               
               
               
-              
-
-           {/* REGULAR EXPRESSIONS */}
-           {JSON.stringify(importData.regexps)}
-              {importData.regexps && <Card>
-                <Card.Header>
-                  <ContextAwareToggle as={Button} variant="link" eventKey="root-3"  >
-                  </ContextAwareToggle>
-                  {importData.regexps && <span style={{marginLeft:'2em'}}  id='utterances' >{Array.isArray(importData.regexps) ? importData.regexps.length : 0} regular expressions <Button 
-                    style={{marginLeft:'2em'}} 
-                    onClick={function(e) {
-                        mergeRegexps(importData.regexps, skillTitle)
-                        .then(function(counts) {
-                            props.setPageMessage('Updated '+(counts.updated ? counts.updated : 0) +' and created '+(counts.created ? counts.created : 0),4000)
-                        })
-                    }}>Import All Regular Expressions</Button></span>}
-                </Card.Header>
-                
-                {<Accordion.Collapse eventKey="root-3"><Card.Body>{Array.isArray(importData.regexps) &&  importData.regexps.map(function(regexp, key) {
-                    return <Card key={key}>
-                            <Card.Header>
-                              <b>{regexp.value}</b> 
-                              <Button 
-                                style={{marginLeft:'2em'}} 
-                                onClick={function(e) {
-                                    mergeRegexps([regexp], skillTitle)
-                                    .then(function(counts) {
-                                        props.setPageMessage('Updated '+(counts.updated ? counts.updated : 0) +' and created '+(counts.created ? counts.created : 0),4000)
-                                    })
-                                }}>Import</Button>
-                            </Card.Header>
-                           <div>
-                                {regexp.synonym && regexp.synonym.split("\n").map(function(alt,p) {
-                                   return <div key={p}>{alt}</div>
-                                })}
-                           </div>
-                    </Card>
-                          
-                    
-                })}
-                </Card.Body></Accordion.Collapse>}
-                
-              </Card>   }     
-              
-              
-              
-                    
+                   
         </Accordion>    
         
     </div>   

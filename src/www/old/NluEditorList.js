@@ -17,12 +17,12 @@ import NluExampleRow from './NluExampleRow'
 
 
 export default function NluEditorList(props) {
-    console.log('RENDER LIST')    
+    //console.log('RENDER LIST')    
     var renderSplitRow = function(data) {
         var splitNumber = data.index
         var style = data.style
         var item = props.items[splitNumber]
-        console.log(['RENDER SPLIT ROW',splitNumber,item,data])
+       // console.log(['RENDER SPLIT ROW',splitNumber,item,data])
         return (<NluExampleRow  saveNlu={props.saveNlu} createSelection={props.createSelection} deleteSplit={props.deleteSplit} updateSplitContent={props.updateSplitContent} entityClicked={props.entityClicked} intentChanged={props.intentChanged} entityTypeChanged={props.entityTypeChanged} entityDelete={props.entityDelete} 
          splitNumber={splitNumber} item={item} style={style} 
          intentLookups={props.intentLookups} setIntentLookups={props.setIntentLookups} 

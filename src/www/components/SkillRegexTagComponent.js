@@ -20,3 +20,4 @@ export default function SkillRegexTagComponent(props) {
     </span>
   )
 }
+ 

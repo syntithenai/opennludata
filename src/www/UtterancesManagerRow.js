@@ -73,9 +73,9 @@ export default function UtterancesManagerRow(props) {
     function handleUrlGrab(type,url) {
         var videoId = YouTubeGetID(url)
             
-        if (type==='video') {
-            console.log('ISYOUTUBE '+videoId)
-        }
+        //if (type==='video') {
+            //console.log('ISYOUTUBE '+videoId)
+        //}
         
         addListItemData(type,{label:url,href:url, youtubeVideoId: videoId, start:'', end:''}) 
         setImageGrabUrl('')

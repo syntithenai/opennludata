@@ -215,7 +215,7 @@ export default function FormsManagerRow(props) {
                                 style={{marginLeft:'1em'}} 
                                 onClick={function(e) {
                                     addAction(item.validate).then(function() {
-                                        console.log('NOW UPD')
+                                        //console.log('NOW UPD')
                                             setTimeout(props.updateFunctions.updateActions,500)
                                     })
                                 }} variant="success">

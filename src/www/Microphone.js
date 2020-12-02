@@ -346,10 +346,10 @@ var Microphone = function(config) {
         
      
         function stopPlaying() {
-            console.log('STOP PLAY')
+            //console.log('STOP PLAY')
             isPlaying = false
             if (bufferSource) {
-                 console.log('STOP PLAY real')
+                 //console.log('STOP PLAY real')
                  bufferSource.stop()
              }
             if (urlAudioPlayer) {

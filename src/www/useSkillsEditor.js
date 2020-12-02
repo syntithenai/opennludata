@@ -18,6 +18,7 @@ export default function useSkillsEditor(props) {
     const [skillKeys, setSkillKeys] = useState([])
     const [filteredItems, setFilteredItems] = useState([])
     const [currentIntent, setCurrentIntent] = useState('')
+    const [regexpError, setRegexpError] = useState('')
     const [entitiesForSkill, setEntitiesForSkill] = useState({})
     const [listsForEntity, setListsForEntity] = useState({})
     const [currentSkill, setCurrentSkillInner] = useState(null)
@@ -69,6 +70,7 @@ export default function useSkillsEditor(props) {
         ////console.log(['ssv',parts,value])
         history.push(parts.join(''))
     }
+    
     
     // load skill on init
     useEffect(() => {
@@ -278,7 +280,7 @@ export default function useSkillsEditor(props) {
     
     function indexEntities(currentSkill, filteredItems) {
          ////console.log(['INDEX ENETITIES',currentSkill,filteredItems])
-         var entities = {}
+         var entities = currentSkill && currentSkill.entities ? currentSkill.entities : {}
             // collate entities from filteredItems
             if (Array.isArray(filteredItems)) {
                 filteredItems.map(function (item,itemKey) {
@@ -291,6 +293,9 @@ export default function useSkillsEditor(props) {
                              if (currentSkill && currentSkill.entities && currentSkill.entities[entity.type]&& currentSkill.entities[entity.type].alexaType) entities[entity.type].alexaType = currentSkill.entities[entity.type].alexaType
                              if (currentSkill && currentSkill.entities && currentSkill.entities[entity.type]&& currentSkill.entities[entity.type].googleType) entities[entity.type].googleType = currentSkill.entities[entity.type].googleType
                              if (currentSkill && currentSkill.entities && currentSkill.entities[entity.type]&& currentSkill.entities[entity.type].lists) entities[entity.type].lists = currentSkill.entities[entity.type].lists
+                             if (currentSkill && currentSkill.entities && currentSkill.entities[entity.type]&& currentSkill.entities[entity.type].trims) entities[entity.type].trims = currentSkill.entities[entity.type].trims
+                             if (currentSkill && currentSkill.entities && currentSkill.entities[entity.type]&& currentSkill.entities[entity.type].builtin) entities[entity.type].builtin = currentSkill.entities[entity.type].builtin
+                             if (currentSkill && currentSkill.entities && currentSkill.entities[entity.type]&& currentSkill.entities[entity.type].regexps) entities[entity.type].regexps = currentSkill.entities[entity.type].regexps
                              entities[entity.type].values.push(entity.value)
                          }
                          return null
@@ -454,6 +459,19 @@ export default function useSkillsEditor(props) {
        } 
     }
     
+     function setBuiltinEntityType(entity, type) {
+        if (currentSkill && entity) {
+            var skill = currentSkill;
+            if (!skill.entities) skill.entities={}
+            if (!skill.entities[entity]) skill.entities[entity] = {}
+            skill.entities[entity].builtin = type
+            setCurrentSkill(skill)  
+            //console.log('ALEXA')
+            //console.log(skill)
+            forceReload()  
+       } 
+    }
+    
     function setRASASlotType(entity, type, slots) {
         if (currentSkill && entity && type) {
             var skill = currentSkill;
@@ -570,77 +588,178 @@ export default function useSkillsEditor(props) {
        }
     }  
       
-    
-        
-    function addRegexp(regexp,entity) {
-        //console.log(['ADDREGEX',regexp])
-        if (currentSkill && regexp) {
+    function addTrim(entity) {
+        if (entity && entity.trim()) {
             var skill = currentSkill;
-            if (!Array.isArray(skill.regexps)) skill.regexps=[]
-            skill.regexps.push({name: regexp.name, synonym: regexp.synonym ,entity:entity})
-            //skill.regexps = uniquifyArray(skill.regexps)
+            skill.entities = skill.entities ? skill.entities : {}
+            skill.entities[entity] = skill.entities[entity] ? skill.entities[entity] : {}
+            skill.entities[entity].trims = skill.entities[entity].trims ? skill.entities[entity].trims : []
+            skill.entities[entity].trims.push({type:'before',words:[]})
             setCurrentSkill(skill)  
-            //// if this is a new regexp, add it to the main database
-            if (!props.lookups.regexpListsLookups[regexp.name] && !props.lookups.regexpsLookups[regexp.name]) {
-                 var regexpStorage = localforage.createInstance({
-                   name: "nlutool",
-                   storeName   : "regexps",
-                 });
-                 regexpStorage.getItem('alldata', function (err,regexps) {
-                     if (err) throw new Error(err)
-                     if (Array.isArray(regexps)) {
-                         regexps.unshift({id:generateObjectId(), value:regexp.name, synonyms:'', tags:[]})
-                         regexpStorage.setItem('alldata',regexps)
-                     }
-                 })
+            forceReload()  
+        }
+    }
+    
+    function updateTrim(entity,index,trim) {
+        if (entity && entity.trim() && trim && index>= 0) {
+            var skill = currentSkill;
+            skill.entities = skill.entities ? skill.entities : {}
+            skill.entities[entity] = skill.entities[entity] ? skill.entities[entity] : {}
+            skill.entities[entity].trims = skill.entities[entity].trims ? skill.entities[entity].trims : []
+            if (skill.entities[entity].trims.length >= index) {
+                skill.entities[entity].trims[index] = trim
+                setCurrentSkill(skill)  
+                forceReload()  
             }
-            forceReload()
-       } 
-    }
-    
-    function removeRegexp(index) {
-        //console.log(['RE UTTERANCE',index])
-        if (typeof index === "number" && currentSkill && currentSkill.regexps && currentSkill.regexps.length > index) {
-            var skill = currentSkill;
-            skill.regexps = [...skill.regexps.slice(0,index),...skill.regexps.slice(index+1)]
-            setCurrentSkill(skill)  
-            //console.log('RASA')
-            //console.log(skill)
-            forceReload()
         }
     }
     
-    function setRegexpIntent(index, intent) {
-        //console.log(['set reg intent',index, intent])
-        if (typeof index === "number" && currentSkill && currentSkill.regexps && currentSkill.regexps.length > index) {
+    function removeTrim(entity,index) {
+        if (entity && entity.trim() && index>= 0) {
             var skill = currentSkill;
-            skill.regexps = skill.regexps ? skill.regexps : []
-            var key = (!isNaN(parseInt(index)) ? parseInt(index) : 0)
-            var regexp = skill.regexps[key] ? skill.regexps[key] : {}
-            regexp.intent = intent
-            skill.regexps[key] = regexp
-            setCurrentSkill(skill)  
-            //console.log('RASA')
-            //console.log(skill)
-            forceReload()
+            skill.entities = skill.entities ? skill.entities : {}
+            skill.entities[entity] = skill.entities[entity] ? skill.entities[entity] : {}
+            skill.entities[entity].trims = skill.entities[entity].trims ? skill.entities[entity].trims : []
+            if (skill.entities[entity].trims.length >= index) {
+                skill.entities[entity].trims.splice(index,1)
+                setCurrentSkill(skill)  
+                forceReload()  
+            }
         }
     }
     
-    function setRegexpEntity(index,entity) {
-        //console.log(['set reg entity',index, entity])
-        if (typeof index === "number" && currentSkill && currentSkill.regexps && currentSkill.regexps.length > index) {
+     
+    function addRegexp(entity) {
+        if (entity && entity.trim()) {
             var skill = currentSkill;
-            skill.regexps = skill.regexps ? skill.regexps : []
-            var key = (parseInt(index) != NaN ? parseInt(index) : 0)
-            var regexp = skill.regexps[key] ? skill.regexps[key] : {}
-            regexp.entity = entity
-            skill.regexps[key] = regexp
+            skill.entities = skill.entities ? skill.entities : {}
+            skill.entities[entity] = skill.entities[entity] ? skill.entities[entity] : {}
+            skill.entities[entity].regexps = skill.entities[entity].regexps ? skill.entities[entity].regexps : []
+            skill.entities[entity].regexps.push({})
             setCurrentSkill(skill)  
-            //console.log('RASA')
-            //console.log(skill)
-            forceReload()
+            forceReload()  
         }
     }
+    
+    function updateRegexp(entity,index,regexp) {
+        if (entity && entity.trim() && regexp && index >= 0) {
+            var skill = currentSkill;
+            skill.entities = skill.entities ? skill.entities : {}
+            skill.entities[entity] = skill.entities[entity] ? skill.entities[entity] : {}
+            skill.entities[entity].regexps = skill.entities[entity].regexps ? skill.entities[entity].regexps : []
+            if (skill.entities[entity].regexps.length >= index) {
+                if (regexp && regexp.hasOwnProperty('expression')) {
+                    try {
+                        skill.entities[entity].regexps[index] = regexp
+                        setCurrentSkill(skill)  
+                        forceReload()  
+                        
+                        var index = regexp.expression.lastIndexOf('/');
+                        var flags = 'g'
+                        var exp = null
+                        if (index > 0) {
+                           flags =  regexp.expression.slice(index + 1)
+                           var query = regexp.expression.slice(1, index)
+                           exp =  new RegExp(query, flags);
+                        } else {
+                            exp =  new RegExp(regexp.expression, flags);
+                        }
+                        
+                        setRegexpError(null)
+                    } catch(e) {
+                        setRegexpError('Invalid regular expression '+regexp.expression+'  '+e.toString())
+                        console.log(e)
+                    }
+                    
+                }
+            }
+        }
+    }
+    
+    function removeRegexp(entity,index) {
+        if (entity && entity.trim() && index>= 0) {
+            var skill = currentSkill;
+            skill.entities = skill.entities ? skill.entities : {}
+            skill.entities[entity] = skill.entities[entity] ? skill.entities[entity] : {}
+            skill.entities[entity].trims = skill.entities[entity].regexps ? skill.entities[entity].regexps : []
+            if (skill.entities[entity].regexps.length >= index) {
+                skill.entities[entity].regexps.splice(index,1)
+                setCurrentSkill(skill)  
+                forceReload()  
+            }
+        }
+    }
+      
+        
+    //function addRegexp(regexp,entity) {
+        ////console.log(['ADDREGEX',regexp])
+        //if (currentSkill && regexp) {
+            //var skill = currentSkill;
+            //if (!Array.isArray(skill.regexps)) skill.regexps=[]
+            //skill.regexps.push({name: regexp.name, synonym: regexp.synonym ,entity:entity})
+            ////skill.regexps = uniquifyArray(skill.regexps)
+            //setCurrentSkill(skill)  
+            ////// if this is a new regexp, add it to the main database
+            //if (!props.lookups.regexpListsLookups[regexp.name] && !props.lookups.regexpsLookups[regexp.name]) {
+                 //var regexpStorage = localforage.createInstance({
+                   //name: "nlutool",
+                   //storeName   : "regexps",
+                 //});
+                 //regexpStorage.getItem('alldata', function (err,regexps) {
+                     //if (err) throw new Error(err)
+                     //if (Array.isArray(regexps)) {
+                         //regexps.unshift({id:generateObjectId(), value:regexp.name, synonyms:'', tags:[]})
+                         //regexpStorage.setItem('alldata',regexps)
+                     //}
+                 //})
+            //}
+            //forceReload()
+       //} 
+    //}
+    
+    //function removeRegexp(index) {
+        ////console.log(['RE UTTERANCE',index])
+        //if (typeof index === "number" && currentSkill && currentSkill.regexps && currentSkill.regexps.length > index) {
+            //var skill = currentSkill;
+            //skill.regexps = [...skill.regexps.slice(0,index),...skill.regexps.slice(index+1)]
+            //setCurrentSkill(skill)  
+            ////console.log('RASA')
+            ////console.log(skill)
+            //forceReload()
+        //}
+    //}
+    
+    //function setRegexpIntent(index, intent) {
+        ////console.log(['set reg intent',index, intent])
+        //if (typeof index === "number" && currentSkill && currentSkill.regexps && currentSkill.regexps.length > index) {
+            //var skill = currentSkill;
+            //skill.regexps = skill.regexps ? skill.regexps : []
+            //var key = (!isNaN(parseInt(index)) ? parseInt(index) : 0)
+            //var regexp = skill.regexps[key] ? skill.regexps[key] : {}
+            //regexp.intent = intent
+            //skill.regexps[key] = regexp
+            //setCurrentSkill(skill)  
+            ////console.log('RASA')
+            ////console.log(skill)
+            //forceReload()
+        //}
+    //}
+    
+    //function setRegexpEntity(index,entity) {
+        ////console.log(['set reg entity',index, entity])
+        //if (typeof index === "number" && currentSkill && currentSkill.regexps && currentSkill.regexps.length > index) {
+            //var skill = currentSkill;
+            //skill.regexps = skill.regexps ? skill.regexps : []
+            //var key = (parseInt(index) != NaN ? parseInt(index) : 0)
+            //var regexp = skill.regexps[key] ? skill.regexps[key] : {}
+            //regexp.entity = entity
+            //skill.regexps[key] = regexp
+            //setCurrentSkill(skill)  
+            ////console.log('RASA')
+            ////console.log(skill)
+            //forceReload()
+        //}
+    //}
     
     function addAction(action) {
         //console.log(['ADD action',action])
@@ -836,10 +955,11 @@ export default function useSkillsEditor(props) {
         thisSkill.jovo,thisSkill.mycroft,thisSkill.entities,thisSkill.utterances,thisSkill.utterancesLists, thisSkill.regexps, thisSkill.tags,thisSkill.rules,thisSkill.stories,thisSkill.config]))  
     }
         
-    //addRegexpUtteranceTags,
+    //addRegexpUtteranceTags,setRegexpIntent, setRegexpEntity,
     return {setAlexaEntityType,setGoogleAssistantEntityType,  removeListFromSkillEntity, addListToSkillEntity,
-    currentSkill,setCurrentSkill,  skillFilterValue, invocation, setInvocation, entitiesForSkill, collatedItems, collatedCounts, setCurrentIntent, setSkillFilterValue,setRules,addAction, addForm, 
-     addRegexp, removeRegexp, setRegexpIntent, setRegexpEntity, setMongoId, saveItem, deleteItem, searchItems,
+    currentSkill,setCurrentSkill,  skillFilterValue, invocation, setInvocation, entitiesForSkill, collatedItems, collatedCounts, setCurrentIntent, setSkillFilterValue,setRules,addAction, addForm, updateRegexp, removeRegexp,
+     addRegexp, removeRegexp,  setMongoId, saveItem, deleteItem, searchItems,
+     addTrim, updateTrim, removeTrim, setBuiltinEntityType, regexpError, 
      removeUtterance, addUtterance,  addUtteranceList, removeUtteranceList, skillKeys, addSkillTag, removeSkillTag,
      newSlot, newSlotValue,    setNewSlotValue,  slots: props.slots, setRASASlotAutofill, setRASASlotType, deleteSlot ,
      setRASAActions, setRASASession , setRASAEndpoint , setRASACredentials  ,setRASAStories ,setRASAConfig, duplicates,

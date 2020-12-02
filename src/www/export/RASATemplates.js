@@ -19,9 +19,7 @@ pipeline:
 policies:
   - name: MemoizationPolicy
   - name: RulePolicy
-  - name: TEDPolicy
-    max_history: 5
-    epochs: 100
+
     `,
     credentials: `
 # This file contains the credentials for the voice & chat platforms

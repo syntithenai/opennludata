@@ -2,7 +2,7 @@ export default function useRestEndpoint(axiosClient,restUrl=process.env.REACT_AP
    
     // to  endpoint root
     function doPost(modelType,data) {
-        console.log(['POST', modelType, data, restUrl])  
+        //console.log(['POST', modelType, data, restUrl])  
         return new Promise(function(resolve,reject) {
             if (modelType && data) {
                 axiosClient.post(restUrl+modelType,
@@ -28,7 +28,7 @@ export default function useRestEndpoint(axiosClient,restUrl=process.env.REACT_AP
     
     // to  endpoint with id
     function doPut(modelType,data) {
-        console.log(['PUT', modelType, data, restUrl]) 
+        //console.log(['PUT', modelType, data, restUrl]) 
         return new Promise(function(resolve,reject) {
             if (modelType && data && data._id) {
                 axiosClient.put(restUrl+modelType+"/"+data._id,
@@ -53,7 +53,7 @@ export default function useRestEndpoint(axiosClient,restUrl=process.env.REACT_AP
     }
     
     function doGet(modelType,id) {
-        console.log(['GET', modelType, id, restUrl]) 
+        //console.log(['GET', modelType, id, restUrl]) 
         return new Promise(function(resolve,reject) {
             if (id) {
                 axiosClient.get(restUrl+modelType+"/"+id,
@@ -79,7 +79,7 @@ export default function useRestEndpoint(axiosClient,restUrl=process.env.REACT_AP
     }
     
     function doGetMany(modelType,filter, limit=20, skip=0, sort='', populate=null) {
-        console.log(['GETMANY', modelType, filter, restUrl]) 
+        //console.log(['GETMANY', modelType, filter, restUrl]) 
         return new Promise(function(resolve,reject) {
             var queryParts=[
                 'query='+encodeURIComponent(JSON.stringify(filter)),
@@ -110,7 +110,7 @@ export default function useRestEndpoint(axiosClient,restUrl=process.env.REACT_AP
     
     // to  endpoint with id
     function doDelete(modelType,id) {
-        console.log(['DELETE', modelType, id, restUrl]) 
+        //console.log(['DELETE', modelType, id, restUrl]) 
         return new Promise(function(resolve,reject) {
             if (id) {
                 return axiosClient.delete(restUrl+modelType+"/"+id,
@@ -136,7 +136,7 @@ export default function useRestEndpoint(axiosClient,restUrl=process.env.REACT_AP
     }
     // to  endpoint with id
     function doPatch(modelType, data) {
-        console.log(['PATCH', modelType, data, restUrl]) 
+        //console.log(['PATCH', modelType, data, restUrl]) 
         return new Promise(function(resolve,reject) {
             if (modelType && data && data._id) {
                 axiosClient.patch(restUrl+modelType+"/"+data._id,

@@ -22,9 +22,8 @@ export default function JSONTextEditor(props) {
     const [editorMode, setEditorMode] = useState('json')
     const [editorOptions, setEditorOptions] = useState(['json','text'])
     
-    const id = props.match.params.itemId ? props.match.params.itemId  : generateObjectId()
-    const { findKeyBy} = props  
-    const index = findKeyBy('id',id)
+    const id =props.match && props.match.params && props.match.params.itemId ? props.match.params.itemId  : generateObjectId()
+    const index = props.findByKey ? props.findKeyBy('id',id) : null
    
     
     const transforms = [
@@ -128,11 +127,13 @@ export default function JSONTextEditor(props) {
     
     },[text])
      
-    var parentLink = parentUrl(props.match.url)
-    var linkParts = props.match.url.split("/")
-    // link up two where id is present
-    if (linkParts[linkParts.length -1] !== "text") {
-       parentLink = parentUrl(parentUrl(props.match.url)) 
+    if (props.match && props.match.url) { 
+        var parentLink = parentUrl(props.match.url) 
+        var linkParts = props.match.url.split("/")
+        // link up two where id is present
+        if (linkParts[linkParts.length -1] !== "text") {
+           parentLink = parentUrl(parentUrl(props.match.url)) 
+        }
     }
     var editorModeOptions = editorOptions.map(function(value,j) {
       return <Dropdown.Item key={j} value={value} onClick={function(e) {setEditorMode(value); }}  >{value}</Dropdown.Item>
@@ -149,19 +150,22 @@ export default function JSONTextEditor(props) {
               {editorModeOptions}
           </Dropdown.Menu>
         </Dropdown>
-        {(!isJson || editorMode === "text") && <Dropdown variant='info'  style={{marginLeft:'1em'}}  as={ButtonGroup}>
+        {(!isJson && editorMode === "text") && <Dropdown variant='info'  style={{marginLeft:'1em'}}  as={ButtonGroup}>
                   <Dropdown.Toggle variant='info'  split  size="sm"  id="dropdown-transforms" ></Dropdown.Toggle>
                   <Button  variant='info'   size="sm"  ><b>{'Transform'}</b></Button>
                   <Dropdown.Menu>
                       {transforms.map(function(transform) {return <Dropdown.Item key={transform.name} value={transform.name} onClick={transform.callMe}  >{transform.name}</Dropdown.Item>})}
                   </Dropdown.Menu>
-                </Dropdown>}
+        </Dropdown>}
             <span style={{float:'right'}} >
                 
+                
                 {(text && title) && <Link to={parentLink} ><Button onClick={function(e) {props.saveItem({id:id,title:title,data:text},index)}} variant='success' >Save</Button></Link>}
-                {!(text && title) && <Button variant='secondary' >Save</Button>}
+                {!(text && title ) && <Button variant='secondary' >Save</Button>}
                 
                 <Link  to={parentLink} ><Button variant="danger" >Cancel</Button></Link>
+                
+                
             </span>
             <label>&nbsp;Title <input size={60}  type='text' onChange={function(e) { setTitle(e.target.value)}}  value={title} /></label>
             {(!isJson || editorMode === "text") && <>

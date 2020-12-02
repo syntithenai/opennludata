@@ -1,6 +1,6 @@
 /* global window */
 import React, {useState, useEffect} from 'react';
-import {ListGroup, Button, Accordion, Card, AccordionContext, Form, Row, Col, Container} from 'react-bootstrap'
+import {Tabs, Tab, ListGroup, Button, Accordion, Card, AccordionContext, Form, Row, Col, Container} from 'react-bootstrap'
 import { Link  } from 'react-router-dom'
 import DropDownComponent from './components/DropDownComponent'
 import DropDownSelectorComponent from './components/DropDownSelectorComponent'
@@ -27,6 +27,52 @@ function RulesEditor(props) {
     
     const [newCondition, setNewCondition] = useState('')
     const [conditions, setConditions] = useState([])
+    const [intentOptions, setIntentOptions] = useState([])
+    const [utteranceOptions, setUtteranceOptions] = useState([])
+    
+    useEffect(() => {
+        //console.log(['col rule intn options',props.intents])
+        if (Array.isArray(props.intents)) {
+            var groupedIntents = {}
+            var nonGroupedIntents = {}
+            props.intents.map(function(intent) {
+                var parts = intent.split("/")
+                if (parts.length > 1) {
+                    groupedIntents[parts[0]] = 1
+                } else if (parts[0] && parts[0].trim()) {
+                    nonGroupedIntents[parts[0]] = 1
+                }
+                return null
+            })
+            var final = ['welcome','fallback'].concat(Object.keys(groupedIntents)).concat(Object.keys(nonGroupedIntents))
+            //console.log(['col rule intn options',groupedIntents,final])
+            setIntentOptions(final)
+        }
+        
+        
+        
+        //props.lookups.utterancesLookups ? props.lookups.utterancesLookups.filter(function(a) {if (a.indexOf(ruleStepName) !== -1) {return true} else return false }).sort() : []
+        
+        //console.log(['col rule utt options',props.intents])
+        if (Array.isArray(props.lookups.utterancesLookups)) {
+            var grouped = {}
+            var nonGrouped = {}
+            props.lookups.utterancesLookups.map(function(utt) {
+                var parts = utt.split("/")
+                if (parts.length > 1) {
+                    grouped[parts[0]] = 1
+                } else if (parts[0] && parts[0].trim()) {
+                    nonGrouped[parts[0]] = 1
+                }
+                return null
+            })
+            var final = [].concat(Object.keys(grouped)).concat(Object.keys(nonGrouped))
+            //console.log(['col rule utt options',grouped,final])
+            setUtteranceOptions(final)
+        }
+        
+        
+    },[])
         
     //console.log(['USE EFFECT RULES',props])
     useEffect(() => {
@@ -346,11 +392,15 @@ function RulesEditor(props) {
                 <DropDownSelectorComponent  
                     variant = {((newRuleName && newRuleName.trim()) ? "success" : "secondary")} 
                     title="New Rule" 
-                    options={((newRuleName && newRuleName.trim()) ? (['welcome','fallback'].concat(props.intents)) : []) } selectItem = {function(v) {addRule(v)}} /> 
+                    options={((newRuleName && newRuleName.trim()) ? (intentOptions) : []) } selectItem = {function(v) {addRule(v)}} /> 
             </label>
             <input style={{marginLeft:'2em'}}  type='text' value={ruleFilter} onChange={function(e) {setRuleFilter(e.target.value)}} placeholder={'Filter rules'} /><Button variant="danger" onClick={function() {setRuleFilter('')}} >X</Button>
             
+            
             {Array.isArray(rules) && <div><form onSubmit={function(e) {e.preventDefault(); return false}} >
+            
+              <Tabs style={{marginLeft: 0, width:'100%' }} defaultActiveKey="rules_0" id="platform-rules">
+                          
                 {rules.map(function(rule,key) {
                     var triggerIntent  = rule.triggerIntent
                     //console.log(ruleFilter && ruleFilter.trim(),triggerIntent.indexOf(ruleFilter) )
@@ -360,87 +410,79 @@ function RulesEditor(props) {
                         
                         var steps = (Array.isArray(rule.steps) && rule.steps.length > 0) ? rule.steps : []
                        return (
-                       <div key={key} style={{clear:'both', borderTop:'2px solid black'}}>
-                       
-                       
-                       <hr style={{clear:'both', width:'100%'}} />
-                       <Button style={{float:'right', width:'10em', marginBottom:'0.5em'}} size="sm" variant="danger" onClick={function(e) {deleteRule(key)}} > Delete Rule </Button>
-                       
-                       &nbsp;&nbsp;<Button variant="primary" onClick={function(e) {moveRuleUp(key)}} > ^ </Button> 
-                       &nbsp;<Button variant="primary" onClick={function(e) {moveRuleDown(key)}} > v </Button>
+                       <Tab  key={key}  eventKey={"rules_"+key} title={rule && rule.name ? rule.name: 'unnamed rule'}>
+                           <div key={key} style={{clear:'both', borderTop:'2px solid black'}}>
+                           
+                           
+                           <hr style={{clear:'both', width:'100%'}} />
+                           <Button style={{float:'right', width:'10em', marginBottom:'0.5em'}} size="sm" variant="danger" onClick={function(e) {deleteRule(key)}} > Delete Rule </Button>
+                           
+                           &nbsp;&nbsp;<Button variant="primary" onClick={function(e) {moveRuleUp(key)}} > ^ </Button> 
+                           &nbsp;<Button variant="primary" onClick={function(e) {moveRuleDown(key)}} > v </Button>
+                                        
+                                        
+                            <span><label style={{fontWeight:'bold', marginLeft:'1em'}} >Trigger Intent </label> <DropDownSelectorComponent  variant = "primary" title={triggerIntent} options={intentOptions} selectItem = {function(v) {
+                                updateRuleTriggerIntent(key,v)
+                            }} /></span>
+                            
+                           <span  >&nbsp;&nbsp;<label style={{fontWeight:'bold'}} >Description </label> <input size='40' type='text' value={rule.name} onChange={function(e) {setRuleName(key, e.target.value)}} /></span>  
+                           
+                           
+                           
+                            
+                            
+                            
+                            <div  style={{clear:'both', width: '100%'}}  >
+                                <b>Conditions</b>
+                                <div style={{fontWeight:'bold', width: '100%'}} >
+                                {rule.conditions && rule.conditions.map(function(step,stepKey) {
+                                    var parts = step.split(' ')
+                                    var ruleStepType = parts[0].trim()
+                                    var ruleStepName = parts.slice(1).join(' ')
+                                    //console.log(props.lookups)
+                                    var suggestions = []
+                                    var createNewLabel = 'Create New Condition'
                                     
-                                    
-                        <span><label style={{fontWeight:'bold', marginLeft:'1em'}} >Trigger Intent </label> <DropDownSelectorComponent  variant = "primary" title={triggerIntent} options={[].concat(['welcome','fallback',triggerIntent],props.intents)} selectItem = {function(v) {
-                            updateRuleTriggerIntent(key,v)
-                        }} /></span>
-                        
-                       <span  >&nbsp;&nbsp;<label style={{fontWeight:'bold'}} >Description </label> <input size='40' type='text' value={rule.name} onChange={function(e) {setRuleName(key, e.target.value)}} /></span>  
-                       
-                       
-                       
-                        
-                        
-                        
-                        <div  style={{clear:'both', width: '100%'}}  >
-                            <b>Conditions</b>
-                            <div style={{fontWeight:'bold', width: '100%'}} >
-                            {rule.conditions && rule.conditions.map(function(step,stepKey) {
-                                var parts = step.split(' ')
-                                var ruleStepType = parts[0].trim()
-                                var ruleStepName = parts.slice(1).join(' ')
-                                //console.log(props.lookups)
-                                var suggestions = []
-                                var createNewLabel = 'Create New Condition'
-                                
-                                return <div  style={{width: '100%'}} key={stepKey} >
-                                <br/>
-                                <span style={{float:'left', clear:'both'}} >
-                                    {<Button  variant="danger" onClick={function(e) {e.preventDefault(); deleteRuleCondition(key,stepKey)}} > X </Button>}
-                                    
-                                    &nbsp;&nbsp;<Button variant="primary" onClick={function(e) {moveRuleConditionUp(key,stepKey)}} > ^ </Button> 
-                                    &nbsp;<Button variant="primary" onClick={function(e) {moveRuleConditionDown(key,stepKey)}} > v </Button>
-                                   
-                                    &nbsp;&nbsp;<b>{ruleStepType.padEnd(12,' ')}&nbsp;&nbsp;</b>
-                                </span>
-                                <span style={{float:'left', width:'20em', display:'inline'}} >
+                                    return <div  style={{width: '100%'}} key={stepKey} >
+                                    <br/>
+                                    <span style={{float:'left', clear:'both'}} >
+                                        {<Button  variant="danger" onClick={function(e) {e.preventDefault(); deleteRuleCondition(key,stepKey)}} > X </Button>}
+                                        
+                                        &nbsp;&nbsp;<Button variant="primary" onClick={function(e) {moveRuleConditionUp(key,stepKey)}} > ^ </Button> 
+                                        &nbsp;<Button variant="primary" onClick={function(e) {moveRuleConditionDown(key,stepKey)}} > v </Button>
                                        
-                                        
-                                        {ruleStepType === 'has_slot' && <input style={{float:'left', width:'20em', display:'inline'}} type="text" value={ruleStepName}  onChange={function(e) {updateRuleCondition(key,stepKey,ruleStepType + ' '+e.target.value)}} />}
-                                        
-                                        {ruleStepType === 'active_form' && <Autosuggest
-                                            suggestions={formSuggestions.map(function(suggestion) {return {tag: suggestion}})}
-                                            shouldRenderSuggestions={function() {return true}}
-                                            onSuggestionsFetchRequested={onFormSuggestionsFetchRequested}
-                                            onSuggestionsClearRequested={onFormSuggestionsClearRequested}
-                                            getSuggestionValue={function (suggestion)  { return suggestion.tag}}
-                                            renderSuggestion={renderSuggestion}
-                                            onSuggestionSelected={function(event, { suggestion, suggestionValue, suggestionIndex, sectionIndex, method }) {
-                                                updateRuleCondition(key,stepKey,ruleStepType + ' '+suggestionValue)
-                                            }}
-                                            inputProps={{
-                                                style:{width:'30em', display:'inline', float:'left'},
-                                              value: ruleStepName,
-                                              onChange: function(e) {updateRuleCondition(key,stepKey,ruleStepType + ' '+e.target.value)}
-                                            }}
-                                        />}
-                                        
-                                </span>
-                               
-                               </div>
+                                        &nbsp;&nbsp;<b>{ruleStepType.padEnd(12,' ')}&nbsp;&nbsp;</b>
+                                    </span>
+                                    <span style={{float:'left', width:'20em', display:'inline'}} >
+                                           
+                                            
+                                            {ruleStepType === 'has_slot' && <input style={{float:'left', width:'20em', display:'inline'}} type="text" value={ruleStepName}  onChange={function(e) {updateRuleCondition(key,stepKey,ruleStepType + ' '+e.target.value)}} />}
+                                            
+                                            {ruleStepType === 'active_form' && <Autosuggest
+                                                suggestions={formSuggestions.map(function(suggestion) {return {tag: suggestion}})}
+                                                shouldRenderSuggestions={function() {return true}}
+                                                onSuggestionsFetchRequested={onFormSuggestionsFetchRequested}
+                                                onSuggestionsClearRequested={onFormSuggestionsClearRequested}
+                                                getSuggestionValue={function (suggestion)  { return suggestion.tag}}
+                                                renderSuggestion={renderSuggestion}
+                                                onSuggestionSelected={function(event, { suggestion, suggestionValue, suggestionIndex, sectionIndex, method }) {
+                                                    updateRuleCondition(key,stepKey,ruleStepType + ' '+suggestionValue)
+                                                }}
+                                                inputProps={{
+                                                    style:{width:'30em', display:'inline', float:'left'},
+                                                  value: ruleStepName,
+                                                  onChange: function(e) {updateRuleCondition(key,stepKey,ruleStepType + ' '+e.target.value)}
+                                                }}
+                                            />}
+                                            
+                                    </span>
+                                   
+                                   </div>
                             })}
                             <span style={{float:'left', clear:'both'}}  ><br/><DropDownSelectorComponent  variant = "success" title={'New Condition'} options={['is_conversation_start','has_slot','active_form']} selectItem = {function(v) {addRuleCondition(key,v)}} /></span>
                             </div> 
                             <span style={{float:'left', clear:'both'}} ><br/><br/></span>
                         </div>
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
                         
                         
                         <div  style={{clear:'both', width: '100%'}}  >
@@ -457,7 +499,8 @@ function RulesEditor(props) {
                                 var editLink=''
                                 if (ruleStepType === "utter") {
                                     createNewLabel = createNewLabel + 'Utterance '
-                                    suggestions = props.lookups.utterancesLookups ? props.lookups.utterancesLookups.filter(function(a) {if (a.indexOf(ruleStepName) !== -1) {return true} else return false }).sort() : []
+                                    suggestions = utteranceOptions.sort()
+                                    //props.lookups.utterancesLookups ? props.lookups.utterancesLookups.filter(function(a) {if (a.indexOf(ruleStepName) !== -1) {return true} else return false }).sort() : []
                                     clickCreate = function(e) {
                                         props.createUtterance({name:ruleStepName}).then(function() {
                                                 setTimeout(props.updateFunctions.updateUtterances,500)
@@ -546,9 +589,14 @@ function RulesEditor(props) {
                         
                         
                        </div>
+                       </Tab>
                         )
                     }
+                    
                 })}
+                    
+                </Tabs>
+                            
              </form> </div>}
         </div>
     )

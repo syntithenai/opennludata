@@ -63,7 +63,7 @@ function exportRASA(skill) {
     return new Promise(function(resolve,reject) {
          
         exportJSON(skill).then(function(json) {
-            console.log(['EXP RASA ',skill])
+            //console.log(['EXP RASA ',skill])
             // COMMON EXAMPLES  
             // ENTITY LOOKUPS AND CACHE SYNONYMS
             var synonymLookups = {}
@@ -98,7 +98,7 @@ function exportRASA(skill) {
             })
             //console.log(['ENTSYN',synonymLookups,entityLookups])
             // COMMON EXAMPLES  
-            var nluOut=["version:'2.0'","",'nlu:']
+            var nluOut=['version: "2.0"', "",'nlu:']
             if (skill.intents) {
                 var collatedExamples = {}
                 //console.log(['have intents',skill.intents])
@@ -115,28 +115,28 @@ function exportRASA(skill) {
                 //console.log(['CE',collatedExamples])
                     
                 Object.keys(collatedExamples).map(function(intentKey) {
-                    nluOut.push('- intent: '+intentKey)
-                    nluOut.push('  examples: |')
+                    nluOut.push('  - intent: '+intentKey)
+                    nluOut.push('    examples: |')
                     uniquifyArray(collatedExamples[intentKey]).map(function(example) {
-                        nluOut.push('    - '+example)
+                        nluOut.push('      - '+example)
                         return null
                     })
                     return null
                 })
                 Object.keys(entityLookups).map(function(entityKey) {
-                    nluOut.push('- lookup: '+entityKey)
-                    nluOut.push('  examples: |')
+                    nluOut.push('  - lookup: '+entityKey)
+                    nluOut.push('    examples: |')
                     uniquifyArray(entityLookups[entityKey]).map(function(example) {
-                        nluOut.push('    - '+example)
+                        nluOut.push('      - '+example)
                         return null
                     })
                     return null
                 })
                 Object.keys(synonyms).map(function(synonymKey) {
-                    nluOut.push('- synonym: '+synonymKey)
-                    nluOut.push('  examples: |')
+                    nluOut.push('  - synonym: '+synonymKey)
+                    nluOut.push('    examples: |')
                     uniquifyArray(synonyms[synonymKey]).map(function(example) {
-                        nluOut.push('    - '+example)
+                        nluOut.push('      - '+example)
                         return null
                     })
                     return null
@@ -146,25 +146,32 @@ function exportRASA(skill) {
             
             // REGEXPS
             var collatedRegexps = {}
-            if (Object.keys(skill.regexps).length > 0) {
-                 Object.keys(skill.regexps).map(function(regexpKey) {
-                    var regexp = skill.regexps[regexpKey]
-                    if (regexp && regexp.synonym && regexp.synonym.trim() && regexp.entity && regexp.entity.trim()) {
-                        collatedRegexps[regexp.entity] = Array.isArray(collatedRegexps[regexp.entity]) ? collatedRegexps[regexp.entity] : []
-                        collatedRegexps[regexp.entity].push(regexp.synonym)
+            if (skill && skill.entities && Object.keys(skill.entities).length > 0) {
+                console.log(['regexpexp rasa2',skill.entities])
+                Object.keys(skill.entities).map(function(entityKey) {
+                    var entity = skill.entities[entityKey]
+                    console.log(['regexpexp rasa2 entity',entity])
+                    if (entity && Array.isArray(entity.regexps)) {
+                        entity.regexps.map(function(regexp,rkey) {
+                            console.log(['regexpexp rasa2 regexp',regexp])
+                            if (regexp && regexp.expression && regexp.expression.trim() ) {
+                                collatedRegexps[entityKey] = Array.isArray(collatedRegexps[entityKey]) ? collatedRegexps[entityKey] : []
+                                collatedRegexps[entityKey].push(regexp.expression)
+                            }
+                        })
                     }
                 })
                 Object.keys(collatedRegexps).map(function(key) {
-                    nluOut.push("- regex: "+key)
-                    nluOut.push("  examples: |")
+                    nluOut.push("  - regex: "+key)
+                    nluOut.push("    examples: |")
                     collatedRegexps[key].map(function(reg) {
-                          nluOut.push("    - "+reg)
+                          nluOut.push("      - "+reg)
                     })
                 })
             }
             
             var nluContent = nluOut.join("\n") //+"\n"+synonymsOut.join("\n")+lookups.join("\n")
-            console.log(['NLUC',nluContent])
+            //console.log(['NLUC',nluContent])
             // CONSTANTS
             var configContent = skill && skill.rasa && skill.rasa.config && skill.rasa.config.trim() ?  skill.rasa.config : RASATemplates.config
             var credentialsContent = skill && skill.rasa && skill.rasa.credentials && skill.rasa.credentials.trim() ?  skill.rasa.credentials :  RASATemplates.credentials
@@ -196,7 +203,7 @@ function exportRASA(skill) {
                     return null
                 })
             }
-            console.log(['act',actionFiles,actionsContent])
+            //console.log(['act',actionFiles,actionsContent])
             
             
            
@@ -238,9 +245,13 @@ function exportRASA(skill) {
             var domainSlots = skill.rasa && skill.rasa.slots ?  Object.keys(skill.rasa.slots) : (skill.entities ? Object.keys(skill.entities) : [])
             var domainSlotsMeta = {}
             domainSlots.map(function(slot) {
-               domainSlotsMeta[slot] = {
-                   type: skill.rasa.slots && skill.rasa.slots[slot] &&  skill.rasa.slots[slot].slotType ? skill.rasa.slots[slot].slotType : 'unfeaturized'
-                }
+               domainSlotsMeta[slot] = {}
+                
+               domainSlotsMeta[slot].type = skill && skill.rasa && skill.rasa.slots && skill.rasa.slots[slot] &&  skill.rasa.slots[slot].slotType ? skill.rasa.slots[slot].slotType : 'text'
+               domainSlotsMeta[slot].influence_conversation = 'false'
+               if (false && skill && skill.rasa && skill.rasa.slots && skill.rasa.slots[slot] &&  skill.rasa.slots[slot].slotType && skill.rasa.slots[slot].slotType.trim() &&  skill.rasa.slots[slot].slotType !=="unfeaturized") {
+                   domainSlotsMeta[slot].influence_conversation = 'true'
+               }
                return null
             })
             //console.log(['DOMAIN',domainEntities, domainIntents, domainSlots, domainSlotsMeta])
@@ -248,12 +259,28 @@ function exportRASA(skill) {
             var domainContentParts=['version: "2.0"',""]
             if (domainIntents.length > 0) {
                 domainContentParts.push("intents:")
+                var grouped = {}
+                var ungrouped = {}
                 domainIntents.map(function(intent) {
-                    domainContentParts.push("- "+intent+"")
+                    var parts = intent.split("/")
+                    if (parts.length > 1) {
+                        grouped[parts[0]] = "- "+parts[0]
+                    } else {    
+                        ungrouped[intent] = "- "+intent
+                    }
+                    ['welcome'].map(function(i) {
+                        ungrouped[i] = "- "+i
+                    })
                     // TODO
                     // domainContentParts.push("  use_entities:\n")
                     // domainContentParts.push("  - "+entityForIntent)
                     return null
+                })
+                Object.values(grouped).map(function(group) {
+                  domainContentParts.push(group)  
+                })
+                Object.values(ungrouped).map(function(group) {
+                  domainContentParts.push(group)  
                 })
                 domainContentParts.push("\n")
             }
@@ -271,11 +298,12 @@ function exportRASA(skill) {
                 domainSlots.map(function(slot,i) {
                     domainContentParts.push("  "+slot+":")
                     domainContentParts.push("    type: "+domainSlotsMeta[slot].type)
+                    domainContentParts.push("    influence_conversation: "+(domainSlotsMeta[slot].influence_conversation))
                     return null
                 })
                 domainContentParts.push("\n")
             }
-            console.log(['DOM',domainContentParts])
+           // console.log(['DOM',domainContentParts])
             
             
             // UTTERANCES
@@ -311,13 +339,13 @@ function exportRASA(skill) {
                                 return null
                             //})
                         } 
-                        console.log(['ULIpre',utteranceItem,utterance.images,utterance.buttons])
+                       // console.log(['ULIpre',utteranceItem,utterance.images,utterance.buttons])
                         // text
                         var textOptions = utterance.synonym && utterance.synonym.split("\n").length > 0 ? utterance.synonym.split("\n") : ['']
                         textOptions.map(function(synonym) {
                             var utteranceLineItem = JSON.parse(JSON.stringify(utteranceItem))
                             utteranceLineItem.text = synonym
-                            console.log(['ULI',utteranceLineItem,utteranceItem])
+                           // console.log(['ULI',utteranceLineItem,utteranceItem])
                             responses['utter_'+utterance.value].push(utteranceLineItem)
                             return null
                         })
@@ -329,10 +357,10 @@ function exportRASA(skill) {
                     //}
                     return null
                  })
-                 console.log(['ULIposy',responses])
+                 //console.log(['ULIposy',responses])
                  responsesContent=[yaml.dump({responses: responses})]
              }
-             
+         
              
              //if (Object.keys(responses).length > 0) {
                  //domainContentParts.push('')
@@ -391,7 +419,7 @@ function exportRASA(skill) {
                     var steps = []
                     if (rule && Array.isArray(rule.conditions)) {
                         rule.conditions.map(function(condition) {
-                            console.log(condition)
+                            //console.log(condition)
                             if (condition.indexOf('is_conversation_start') === 0) {
                                 isConversationStart = true
                             } else if (condition.indexOf('has_slot ') === 0) {
@@ -405,7 +433,7 @@ function exportRASA(skill) {
                             }
                         })
                     }
-                    console.log(['CND',conditions])
+                   // console.log(['CND',conditions])
                     if (rule && Array.isArray(rule.steps)) {
                         rule.steps.map(function(step) {
                             if (step.indexOf('action ') === 0) {
@@ -435,8 +463,8 @@ function exportRASA(skill) {
                     }
                 })
             }
-             console.log(['RULES'])
-             console.log(yaml.dump({rules:rules}))
+             //console.log(['RULES'])
+             //console.log(yaml.dump({rules:rules}))
              
             // STORIES
              var stories = []
@@ -474,12 +502,17 @@ function exportRASA(skill) {
                     }
                 })
             }
-             console.log(['STORIES'])
-             console.log(yaml.dump({stories:stories}))
-              
+             //console.log(['STORIES'])
+             //console.log(yaml.dump({stories:stories}))
+            
+            var configStructure = yaml.load(configContent)
+            //console.log(['LOADED CONFIG',configStructure])
+            if (stories.length > 0) {
+                configStructure.policies.push({name:"TedPolicy", max_history: 5, epochs: 100})
+            } 
              
-             console.log(['RE',skill.regexps,skill.forms,skill.stories,skill.rules])
-             resolve(generateFolderTree(yaml.dump({version:'2.0',rules:rules}), yaml.dump({version:'2.0',stories:stories}), nluContent,responsesContent.join("\n"), yaml.dump({forms: collatedForms}), fileLookups, actionsContent, configContent, domainContentParts.join("\n")+"\n\n"+sessionContent+"\n\n"+responsesContent.join("\n"), credentialsContent, endpointsContent, actionFiles) )
+             //console.log(['RE',skill.regexps,skill.forms,skill.stories,skill.rules])
+             resolve(generateFolderTree(yaml.dump({version:'2.0',rules:rules}), yaml.dump({version:'2.0',stories:stories}), nluContent,responsesContent.join("\n"), yaml.dump({forms: collatedForms}), fileLookups, actionsContent, yaml.dump(configStructure), domainContentParts.join("\n")+"\n\n"+sessionContent+"\n\n"+responsesContent.join("\n"), credentialsContent, endpointsContent, actionFiles) )
 
         })
     })
@@ -490,7 +523,7 @@ function exportRASA(skill) {
 function exportRASAZip(skill) {
     return new Promise(function(resolve,reject) {
         exportRASA(skill).then(function(data) {
-            console.log(data)
+            //console.log(data)
             createZip(data).then(function(res) {
                 resolve(res)
             })

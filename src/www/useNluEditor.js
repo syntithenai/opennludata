@@ -32,14 +32,14 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups, setCh
             parts.push('/skill/'+skillFilterValue)
         }
         if (intentFilterValue.length > 0) {
-            parts.push('/intent/'+intentFilterValue)
+            parts.push('/intent/'+intentFilterValue.replace('/', '_____'))
         }
         if (tagFilterValue.length > 0) {
             parts.push('/tag/'+tagFilterValue)
         }////console.log(['ssv',parts,value])
         history.push(parts.join(''))
     }
-    var intentFilterValue = params.intentId ? params.intentId : '';
+    var intentFilterValue = params.intentId ? params.intentId.replace('_____','/') : '';
     
     function setIntentFilterValue(value) {
         var root = history.location.pathname.split("/")
@@ -49,7 +49,7 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups, setCh
             parts.push('/skill/'+skillFilterValue)
         }
         if (intentFilterValue.length > 0) {
-            parts.push('/intent/'+intentFilterValue)
+            parts.push('/intent/'+intentFilterValue.replace('/', '_____'))
         }
         if (tagFilterValue.length > 0) {
             parts.push('/tag/'+tagFilterValue)
@@ -67,7 +67,7 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups, setCh
             parts.push('/skill/'+skillFilterValue)
         }
         if (intentFilterValue.length > 0) {
-            parts.push('/intent/'+intentFilterValue)
+            parts.push('/intent/'+intentFilterValue.replace('/', '_____'))
         }
         if (tagFilterValue.length > 0) {
             parts.push('/tag/'+tagFilterValue)
@@ -401,7 +401,7 @@ function useNluEditor(database, databaseTable, databaseKey, updateLookups, setCh
     }
     
     function saveItemWrap(item,index) {
-        console.log(['SAVEITEMWRAP',index,item,listRef ? listRef.current : 'notcurrent'])
+        //console.log(['SAVEITEMWRAP',index,item,listRef ? listRef.current : 'notcurrent'])
         saveItem(item,index)
         updateLookups(items)
         if (listRef && listRef.current) {

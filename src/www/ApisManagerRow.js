@@ -50,7 +50,7 @@ export default function ApisManagerRow(props) {
             //if (preLines && postLines)  {
                 var middle = preLine.slice(0,selectionState.start.column) + text + postLine.slice(selectionState.end.column )
                 var final = [].concat(preLines,[middle],postLines)
-                console.log([selectionState,preLines,postLines,middle,final])
+                //console.log([selectionState,preLines,postLines,middle,final])
                 
                 updateExampleSynonym(final.join("\n"))
             //insertAtCaret(codeTextareaId,'insert utt')

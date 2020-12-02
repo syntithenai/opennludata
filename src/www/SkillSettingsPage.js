@@ -7,7 +7,11 @@ import { SketchPicker } from 'react-color'
 import DropDownComponent from './components/DropDownComponent'
 import RASATemplates from './export/RASATemplates'
 import FileReaderInput from 'react-file-reader-input';
-
+import { JsonEditor } from 'jsoneditor-react';
+import 'jsoneditor-react/es/editor.min.css';
+import ace from 'brace';
+import 'brace/mode/json';
+import 'brace/theme/github';
 
 export default  function SkillSettingsPage (props) {
     var skillsEditor = useSkillsEditor(Object.assign({},props,{user:props.user, lookups: props.lookups, updateFunctions: props.updateFunctions}))
@@ -227,6 +231,21 @@ export default  function SkillSettingsPage (props) {
               <Tab eventKey="google_assistant" title="Google Assistant">
                 <div style={{marginTop:'0.7em', marginLeft:'1.4em'}} >
                     <label style={{fontWeight:'bold', marginLeft:'0.5em'}} > Invocation <input type='text' value={skillsEditor.invocation} onChange={function(e) {skillsEditor.setInvocation(e.target.value)}} /></label>
+                </div>
+              </Tab>
+              <Tab eventKey="contextdata" title="Context Data">
+                <div style={{marginTop:'0.7em', marginLeft:'1.4em'}} >
+                <JsonEditor
+                    value={currentSkill.config.contextData}
+                    theme={"ace/theme/github"}
+                    ace={ace}
+                    history={true}
+                    mode={'code'}
+                    allowedModes={['tree','code']}
+                    onChange={function(value) { skillsEditor.setConfigValue('contextData',value)}}
+                />
+                
+                
                 </div>
               </Tab>
                 

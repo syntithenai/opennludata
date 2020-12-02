@@ -23,7 +23,9 @@ const GoogleAssistant = {
 const Alexa = {
     entityTypes: ["AMAZON.DATE","AMAZON.DURATION","AMAZON.FOUR_DIGIT_NUMBER","AMAZON.NUMBER","AMAZON.Ordinal","AMAZON.PhoneNumber","AMAZON.TIME","AMAZON.SearchQuery","AMAZON.Actor","AMAZON.Airline","AMAZON.Airport","AMAZON.Anaphor","AMAZON.Animal","AMAZON.Artist","AMAZON.Author","AMAZON.Book","AMAZON.City","AMAZON.Color","AMAZON.Corporation","AMAZON.Country","AMAZON.CreativeWorkType","AMAZON.DayOfWeek","AMAZON.FictionalCharacter","AMAZON.FirstName","AMAZON.Food","AMAZON.Genre","AMAZON.Language","AMAZON.Month","AMAZON.Movie","AMAZON.MusicAlbum","AMAZON.MusicGroup","AMAZON.Musician","AMAZON.MusicRecording","AMAZON.Person","AMAZON.RadioChannel","AMAZON.Region","AMAZON.RelativePosition","AMAZON.Room","AMAZON.Sport","AMAZON.StreetName","AMAZON.TVSeries","AMAZON.VideoGame","AMAZON.VisualModeTrigger"]
 }
-
+const BuiltinTypes = {
+    entityTypes: ["Date", "Number", "URL", "Email", "Phone Number", "Hashtag", "Person", "Place", "Organization"]
+}
 
 function toSnakeCase(str) {
     return str.toLowerCase().replace(/[^a-z]/g, '_').replace('__','_')
@@ -181,15 +183,18 @@ function concatText(text,words) {
      *  create array by splitting on newline and fullstop
      */
     function splitSentences(text) {
+        console.log(['splitsent',text])
       var final = []
       if (text) {
           // split by newline and full stop
          var splits = text.split('\n').join('::::').split('.').join('::::').split('::::') //.map(function(value) { return value.trim()})
         // trim all splits
-        for (var splitText in splits) {
-            if(splitText.trim().length > 0) final.push(splits[splitText])
+        for (var id in splits) {
+            var splitText= splits[id] && splits[id].trim && splits[id].trim() ? splits[id].trim() : ''
+            if(splitText.length > 0) final.push(splitText)
         }
      }
+     //console.log(['splitsent',JSON.stringify(final),JSON.stringify(splits)])
      return final;
     }
     
@@ -216,4 +221,4 @@ function concatText(text,words) {
   
 
 
-export {cleanUtterance, cleanIntent, cleanEntity, cleanRegexp,  generateObjectId, parentUrl, concatText , findFirstDiffPos,uniquifyArray, multiplyArrays, expandOptions, splitSentences, uniquifyArrayOfObjects, replaceEntities,replaceEntitiesWithValues,  RASA, GoogleAssistant, Alexa, snakeToCamelCase, camelToSnakeCase, toSnakeCase }
+export {cleanUtterance, cleanIntent, cleanEntity, cleanRegexp,  generateObjectId, parentUrl, concatText , findFirstDiffPos,uniquifyArray, multiplyArrays, expandOptions, splitSentences, uniquifyArrayOfObjects, replaceEntities,replaceEntitiesWithValues, BuiltinTypes,   RASA, GoogleAssistant, Alexa, snakeToCamelCase, camelToSnakeCase, toSnakeCase }
