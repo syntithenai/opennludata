@@ -169,7 +169,8 @@ function startWebSocketAsr(server) {
 
         //}
         // audio to stream - pushed to when audio packet arrives
-        //var audioIn = new Readable()
+        var audioIn  = null
+        //= new Readable()
         //audioIn._read = () => {} // _read is required but you can noop it
         //audioIn.pipe(detector)	
 
