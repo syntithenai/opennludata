@@ -19,15 +19,12 @@ var cors = require('cors')
 var proxy = require('express-http-proxy');
 var JWT = require('jsonwebtoken');
 var WebSocketServer = require('websocket').server;
-const speech = require('@google-cloud/speech');
 
 var stream = require('stream') 
 var Readable = stream.Readable;
-var silenceTimeout = null
-var maxTimeout = null
- 
-var connection = null
-var detector = null 
+
+var getGoogleDetector = require('./getGoogleDetector') 
+var {getDeepSpeechDetector, getDeepSpeechModel} = require('./getDeepSpeechDetector') 
  
 //console.log("PRECONNECT")    
 try {
@@ -52,52 +49,12 @@ function getUserFromAccessToken(bearerToken,secret) {
    })
 }
 
-function createMaxTimeout() {
-    maxTimeout = setTimeout(function() {
-        console.log('SERVER MAX TIMEOUT')
-        if (detector) {
-            detector.pause()
-            detector.destroy()
-        }
-        if (connection) {
-            connection.close()
-        }
-    },14000)
-}
-
-function clearMaxTimeout() {
-    if (maxTimeout) clearTimeout(maxTimeout)
-    maxTimeout = null
-}
-
-function createSilenceTimeout() {
-    silenceTimeout = setTimeout(function() {
-        console.log('SERVER SILENCE TIMEOUT')
-        if (detector) {
-            detector.pause()
-            detector.destroy()
-        }
-        if (connection) {
-            connection.close()
-        }
-    },3000)
-}
-
-function clearSilenceTimeout() {
-    if (silenceTimeout) clearTimeout(silenceTimeout)
-    silenceTimeout = null
-}
-
-function clearTimeouts() {
-    clearSilenceTimeout()
-    clearMaxTimeout()
-}
-
 
 function startWebSocketAsr(server) {
-    console.log('START WEBSOCKT')
+    //console.log('START WEBSOCKT')
     //console.log([config])
-    wsServer = new WebSocketServer({
+    
+   wsServer = new WebSocketServer({
         httpServer: server,
         // You should not use autoAcceptConnections for production
         // applications, as it defeats all standard cross-origin protection
@@ -107,97 +64,165 @@ function startWebSocketAsr(server) {
         autoAcceptConnections: false
     });
      
-    function originIsAllowed(origin) {
-        //return true
-        if (config.websocketAsr  && config.websocketAsr.googleServiceCredentialsFile && Array.isArray(config.websocketAsr.allowedOrigins)) {
-            if (config.websocketAsr.allowedOrigins.indexOf(origin) !== -1) {
-                return true
-            }
-        } 
-      // put logic here to detect whether the specified origin is allowed.
-      return false;
-    }
-    
+   
     wsServer.on('connect', function(request) {
-        console.log(['WS connect'])
+        //console.log(['WS connect'])
     })
     
     wsServer.on('close', function(request) {
-        console.log(['WS close'])
-        clearTimeouts()
+        //console.log(['WS close'])
+        //clearTimeouts()
     })
      
     wsServer.on('request', function(request) {
-          console.log(['WS request'])
+        //console.log(['WS request'])
         if (!originIsAllowed(request.origin)) {
-          
           // Make sure we only accept requests from an allowed origin
           request.reject();
           console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected.');
           return;
         }
+
+        
+        var silenceTimeout = null
+        var maxTimeout = null
+         
+        var connection = null
+        var detector = null 
+        var token = null
+        
+        function cleanup() {
+            clearTimeouts()
+            try {
+                if (detector) {
+                    if (detector.pause) detector.pause()
+                    if (detector.destroy) detector.destroy()
+                }
+                if (connection) {
+                    connection.close()
+                }
+            } catch (e) {
+                console.log(e)
+            }
+            
+        }
+        
+        function createMaxTimeout() {
+            maxTimeout = setTimeout(function() {
+                console.log('SERVER MAX TIMEOUT')
+                cleanup()
+            },10000)
+        }
+
+        function clearMaxTimeout() {
+            if (maxTimeout) clearTimeout(maxTimeout)
+            maxTimeout = null
+        }
+
+        function createSilenceTimeout() {
+            silenceTimeout = setTimeout(function() {
+                console.log('SERVER SILENCE TIMEOUT')
+                cleanup()
+            },3000)
+        }
+
+        function clearSilenceTimeout() {
+            if (silenceTimeout) clearTimeout(silenceTimeout)
+            silenceTimeout = null
+        }
+
+        function clearTimeouts() {
+            clearSilenceTimeout()
+            clearMaxTimeout()
+        }
+
+        function originIsAllowed(origin) {
+            //return true
+            if (config.websocketAsr && Array.isArray(config.websocketAsr.allowedOrigins)) {
+                if (config.websocketAsr.allowedOrigins.indexOf(origin) !== -1) {
+                    return true
+                }
+            } 
+          // put logic here to detect whether the specified origin is allowed.
+          return false;
+        }
+        
+
         clearTimeouts()
         createSilenceTimeout()
         createMaxTimeout()
-        // Creates a speech recognition client
-        const client = new speech.SpeechClient();
-        const encoding = 'LINEAR16';
-        const sampleRateHertz = 16000;
-        const languageCode = 'en-AU';
-        const speechRequest = {
-          config: {
-            encoding: encoding,
-            sampleRateHertz: sampleRateHertz,
-            languageCode: languageCode,
-          },
-          interimResults: false, // If you want interim results, set this to true
-        };
-
-        // Stream the audio to the Google Cloud Speech API
-        detector = client
-          .streamingRecognize(speechRequest)
-          .on('error', console.log)
-          .on('data', data => {
-            console.log(['TRANSCRIPT',(data && data.results && data.results[0] && data.results[0].alternatives && data.results[0].alternatives[0]  && data.results[0].alternatives[0].transcript) ?  data.results[0].alternatives[0].transcript : "NOTRANSCRIPT"])
-            detector.pause()
-            detector.destroy()
-            if (data && data.results && data.results[0] && data.results[0].alternatives && data.results[0].alternatives[0]  && data.results[0].alternatives[0].transcript && data.results[0].alternatives[0].transcript.trim()) {
-                connection.sendUTF(JSON.stringify({transcript: data.results[0].alternatives[0].transcript}))
-            }
-        });
-        // audio to stream - pushed to when audio packet arrives
-        var audioIn = new Readable()
-        audioIn._read = () => {} // _read is required but you can noop it
-        audioIn.pipe(detector)	
-
+        
         connection = request.accept('asr-audio', request.origin);
         console.log((new Date()) + ' Connection accepted.');
+        var model = getDeepSpeechModel()
+        //console.log(['dsmodel',model])
+        
+        var detector = null
+        //if (!detector) {
+            //if (token) {
+                //console.log('USE GOOGLE')
+                //detector = getGoogleDetector(connection)
+            //} else {
+                ////console.log('USE DEEPSPEECH')
+                ////detector = getDeepSpeechDetector(connection, model)
+            //}
+
+        //}
+        // audio to stream - pushed to when audio packet arrives
+        //var audioIn = new Readable()
+        //audioIn._read = () => {} // _read is required but you can noop it
+        //audioIn.pipe(detector)	
+
         connection.on('message', function(message) {
             //console.log(['Received Message: ',message]);
             if (message.type === 'utf8') {
-                console.log('Received Text Message: ' + message.utf8Data);
+                //console.log('Received Text Message: ' + message.utf8Data);
+                //if (message.utf8data) {
+                    var data = {}
+                    try {
+                        data = JSON.parse(message.utf8Data)
+                        //console.log(['ddd Text Message: ' ,JSON.stringify(data),config.jwtAccessTokenSecret]);
+                        if (data.user) {
+                            token = data.token
+                            skill = data.skill
+                            console.log('set Text token: ' ,token);
+                            if (token) {
+                                console.log('USE GOOGLE')
+                                detector = getGoogleDetector(connection)
+                            } else {
+                               console.log('USE DEEPSPEECH')
+                                detector = getDeepSpeechDetector(connection, model)
+                            }
+                            audioIn = new Readable()
+                            audioIn._read = () => {} // _read is required but you can noop it
+                            audioIn.pipe(detector)	
+                            //getUserFromAccessToken(token,config.jwtAccessTokenSecret).then(function(user) {
+                              //console.log(['user from token ',user])  
+                            //})
+                        }
+                    } catch (e) {
+                        
+                    }
+                //}
                 //connection.sendUTF(message.utf8Data);
             }
             else if (message.type === 'binary') {
+                
                 clearSilenceTimeout()
                 createSilenceTimeout()
-                console.log('Received Binary Message of ' + message.binaryData.length + ' bytes');
+                //console.log('Received Binary Message of ' + message.binaryData.length + ' bytes');
                 //connection.sendBytes(message.binaryData);
                 audioIn.push(message.binaryData)
             }
         });
         connection.on('close', function(reasonCode, description) {
             console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
-            detector.pause()
-            detector.destroy()
-            clearTimeouts()
+            cleanup()
             
         });
         connection.on('error', function(reasonCode, description) {
             console.log([(new Date()) + ' Peer ' + connection.remoteAddress + ' error.',description]);
-            detector.pause()
-            detector.destroy()
-            clearTimeouts()
+            cleanup()
         });
     });
 
