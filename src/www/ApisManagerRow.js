@@ -388,11 +388,10 @@ export default function ApisManagerRow(props) {
                         
                       <div style={{borderBottom: '1px solid black'}}>  
                           <AceEditor
-                          style={{width:'100%',height:'200',border:'1px solid black'}} 
+                          style={{width:'100%',border:'1px solid black'}} 
                             mode="javascript"
                             theme="github"
                             showGutter={false}
-                            maxLines={50}
                             minLines={30}
                             enableBasicAutocompletion={true}
                             enableLiveAutocompletion={true}

@@ -3,6 +3,7 @@
 var hark = require('hark');
 
 var WebsocketAsrClient = function(config) {
+    console.log(['WEBSOCKCLIENT',config])
         var PorcupineManager = require('./porcupine/porcupine_manager')
         var KeywordData =  require('./porcupine/keyword_data_edison')
         try {
@@ -82,6 +83,8 @@ var WebsocketAsrClient = function(config) {
         } 
          
         function startHotword() {
+            //return
+            
             //console.log('START HOTWORD')
             if (onCallbacks.hasOwnProperty('hotwordStart')) {
                 onCallbacks['hotwordStart']()
@@ -90,10 +93,12 @@ var WebsocketAsrClient = function(config) {
             if (!hotwordInitialised) {
                 let processCallback = function (keyword) {
                     if (keyword && hotwordStarted) {
-                        startMicrophone()
-                        // TODO ??sendMessage('hermod/'+config.site+'/hotword/detected',{})
-                        if (onCallbacks.hasOwnProperty('hotwordDetected')) {
-                            onCallbacks['hotwordDetected'](keyword)
+                        if (localStorage.getItem('auto_microphone') === "YES") {
+                            startMicrophone()
+                            // TODO ??sendMessage('hermod/'+config.site+'/hotword/detected',{})
+                            if (onCallbacks.hasOwnProperty('hotwordDetected')) {
+                                onCallbacks['hotwordDetected'](keyword)
+                            }
                         }
                         //console.log('hotword DETECT')
                     }
@@ -145,7 +150,7 @@ var WebsocketAsrClient = function(config) {
 
         
         function bufferAudio(audio) {
-            //console.log('buffer')
+           // console.log(['buffer',audio])
             microphoneAudioBuffer.push(audio);
             if (microphoneAudioBuffer.length > 8) {
                 microphoneAudioBuffer.shift();
@@ -153,11 +158,16 @@ var WebsocketAsrClient = function(config) {
         }
         
         function sendAudioBuffer() {
-            //console.log(["send buffer",microphoneAudioBuffer.length])
+            console.log(["send buffer",microphoneAudioBuffer.length])
             if (client && client.readyState === client.OPEN) {
-                //console.log('sendbuffer')
+                //console.log(['sendbuffer open'])
                 for (var a in microphoneAudioBuffer) {
-                    sendAudio(microphoneAudioBuffer[a]);
+                    //console.log(['sendbuffer single',microphoneAudioBuffer[a], typeof microphoneAudioBuffer[a], microphoneAudioBuffer[a] instanceof ArrayBuffer])
+                    if (microphoneAudioBuffer[a] instanceof ArrayBuffer || ArrayBuffer.isView(microphoneAudioBuffer[a])) {
+                        console.log(['sendbuffer isview',microphoneAudioBuffer[a]])
+                        //sendAudio(new Int16Array(microphoneAudioBuffer[a]));
+                        sendAudio(microphoneAudioBuffer[a]);
+                    }
                 }
                 microphoneAudioBuffer = [];
             } else {
@@ -166,16 +176,16 @@ var WebsocketAsrClient = function(config) {
         }
         
         function sendAudio(data) {
-             //console.log('WebSocket send audio');
+            console.log(['WebSocket send audio',data])
             if (client && client.readyState === client.OPEN) {
-                //console.log('WebSocket send audio');
+                console.log('WebSocket send audio real');
                 client.send(data);
             }
         }
         
         function createRecorderTimeout(a) {
             //console.log(['CREATE RECORDER TIMEOUT',a])
-            //if (!recorderTimeout) recorderTimeout = setTimeout(function() {console.log(['RECORDER TIMEOUT']); sendAudioBuffer(); stopMicrophone(); startHotword(); },3000)
+            if (!recorderTimeout) recorderTimeout = setTimeout(function() {console.log(['RECORDER TIMEOUT']); sendAudioBuffer(); stopMicrophone(); startHotword(); },3000)
         }
         
         function clearRecorderTimeout(a) {
@@ -205,7 +215,7 @@ var WebsocketAsrClient = function(config) {
                 sendAudioBuffer()
                 stopMicrophone()
                 startHotword(); 
-            },14000)
+            },10000)
         }
 
         function clearMaxTimeout() {
@@ -215,6 +225,7 @@ var WebsocketAsrClient = function(config) {
         
         
         function startMicrophone() {
+            //return 
             //console.log('START MIC CREATE CLIENT')
             microphoneAudioBuffer = []
             isSending = true
@@ -266,7 +277,7 @@ var WebsocketAsrClient = function(config) {
                 console.log('WebSocket Client Connected send init');
                 //isConnected = true;
                 // init message sends current skill id to ASR server
-                if (client) client.send(JSON.stringify({init:config && config.skill ? config.skill : 'anonymous'}));
+                if (client) client.send(JSON.stringify({token: (config.user && config.user.token  && config.user.token.access_token ) ? config.user.token.access_token : null, skill:config && config.skill ? config.skill : 'anonymous'}));
             };
             client.onclose = function() {
                 //console.log('WebSocket Client Closed');
@@ -276,7 +287,7 @@ var WebsocketAsrClient = function(config) {
                 //isConnected = false
             };
             client.onmessage = function(e) {
-                //console.log(["WebSocket Received ee: ",e])
+                console.log(["WebSocket Received ee: ",e])
                 if (typeof e.data === 'string') {
                     var message = {}
                     try {
@@ -362,28 +373,81 @@ var WebsocketAsrClient = function(config) {
                           offlineCtx.startRendering();
                     }
                     
-                    let recorder = microphoneContext.createScriptProcessor(bufferSize, 1, 1);
-                    recorder.onaudioprocess = function(e){
-                      //console.log(['activate recording onaudioprocess',isRecording,isSending,speaking])
-                      if (isRecording && isSending) { // && speaking) {
-                          resample(e.inputBuffer,16000,function(res) {
-                            //if (isRecording  && isSending) {
-                                if (client && client.readyState === client.OPEN) {// && speaking) {
+                    
+                    function createGoogleAudioProcessor(microphoneContext, audioSource) {
+                        let recorder = microphoneContext.createScriptProcessor(bufferSize, 1, 1);
+                        recorder.onaudioprocess = function(e){
+                          //console.log(['activate recording onaudioprocess',isRecording,isSending,speaking])
+                          if (isRecording && isSending) { // && speaking) {
+                              resample(e.inputBuffer,16000,function(res) {
+                                //if (isRecording  && isSending) {
+                                    if (client && client.readyState === client.OPEN) {// && speaking) {
+                                        if (speaking) {
+                                            clearRecorderTimeout(' is speaking')
+                                        } else {
+                                            createRecorderTimeout(' not speaking')
+                                        }
+                                        bufferAudio(Buffer.from(convertFloat32ToInt16(res)));
+                                        sendAudioBuffer() 
+                                        
+                                    } else {
+                                        bufferAudio(Buffer.from(convertFloat32ToInt16(res)));
+                                    }
+                                //} 
+                              });
+                          }
+                        }
+                        return recorder
+                    }
+                    
+                    // DS
+                    function createDSAudioProcessor(audioContext, audioSource) {
+                        let processor = audioContext.createScriptProcessor(4096, 1, 1);
+                        
+                        const sampleRate = audioSource.context.sampleRate;
+                        // webworkify - not working
+                        //var work = require('webworkify');
+                        //var fn = require('./downsampling_worker')
+                        //console.log(fn)
+                        //var downsampler = work(fn);
+                        let downsampler = new Worker('./downsampling_worker.js');
+                        downsampler.postMessage({command: "init", inputSampleRate: sampleRate});
+                        downsampler.onmessage = (e) => {
+                            //console.log(['downsample message',e.data.buffer])
+                            if (client && client.readyState === client.OPEN) {// && speaking) {
                                     if (speaking) {
                                         clearRecorderTimeout(' is speaking')
                                     } else {
                                         createRecorderTimeout(' not speaking')
                                     }
-                                    bufferAudio(Buffer.from(convertFloat32ToInt16(res)));
+                                    bufferAudio(e.data.buffer);
                                     sendAudioBuffer() 
-                                    
-                                } else {
-                                    bufferAudio(Buffer.from(convertFloat32ToInt16(res)));
-                                }
-                            //} 
-                          });
-                      }
+                            } else {
+                                bufferAudio(e.data.buffer);
+                            }
+                            
+                            //if (this.socket.connected) {
+                                //this.socket.emit('stream-data', e.data.buffer);
+                            //}
+                        }
+                        
+                        processor.onaudioprocess = (event) => {
+                            var data = event.inputBuffer.getChannelData(0);
+                            downsampler.postMessage({command: "process", inputFrame: data});
+                        };
+                        
+                        processor.shutdown = () => {
+                            processor.disconnect();
+                            this.onaudioprocess = null;
+                        };
+                        
+                        //processor.connect(audioContext.destination);
+                        
+                        return processor;
                     }
+                    
+                    //var recorder = createGoogleAudioProcessor(microphoneContext, microphoneGainNode)
+                    var recorder = createDSAudioProcessor(microphoneContext,microphoneGainNode)
                   //
                 microphoneGainNode.connect(recorder);
                 audioInput.connect(microphoneGainNode);

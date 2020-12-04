@@ -421,11 +421,11 @@ function ChatPage(props) {
    
 
     function restartVoiceNow(startVoice) {
-        //console.log(['RESTART VOICE start',startVoice,localStorage.getItem('auto_microphone'),client]) 
+        console.log(['RESTART VOICE start',startVoice,localStorage.getItem('auto_microphone'),client]) 
         if (localStorage.getItem('auto_microphone') === "YES") {
             if (client) {
                 if (startVoice) {
-                    //console.log(['RESTART VOICE start']) 
+                    console.log(['RESTART VOICE start']) 
                     //client.stopHotword()
                     client.startMicrophone()
                 } 
@@ -489,11 +489,12 @@ function ChatPage(props) {
 
     function createWebsocketClient(d,skillIdent) {
       //  if (!wc) {
-            //console.log(['CREATEWEBSOCKETCLIENT real'])
+            console.log(['CREATEWEBSOCKETCLIENT real',props])
                 var config = {skill:skillIdent}
-                config.server = 'wss://api.opennludata.org:5000/'
+               // config.server = 'wss://api.opennludata.org:5000/'
                 //config.server = 'ws://localhost:8080/'
-                //config.server = 'wss://localhost:5000/'
+                config.server = 'wss://localhost:5000/'
+                config.user = props.user
                 client = new WebsocketAsrClient(config)
                 client.init()
                 setWc(client)

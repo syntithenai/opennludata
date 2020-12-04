@@ -24,7 +24,7 @@ export const ChatUIComponent = (props) => {
            return (
                 <div  style={{ borderTop:'3px solid black', marginTop:'0.1em',padding:'0.2em', width:'100%'}}  key={ookey} >
                 
-                    {(false && entry.user) && <span style={{ marginBottom:'1em',marginTop:'1em',padding:'0.2em', width:'100%'}}><hr/><b>User: </b><button onClick={function() {sendUserMessage(entry.user)}} ><i>{entry.user}</i></button></span>} 
+                    {(entry.user) && <span style={{ marginBottom:'1em',marginTop:'1em',padding:'0.2em', width:'100%'}}><hr/><b>User: </b><button onClick={function() {sendUserMessage(entry.user)}} ><i>{entry.user}</i></button></span>} 
                     {Array.isArray(entry.bot) && <div>
                     {entry.bot.map(function(botEntry,okey) {
                          return (<div  key={okey}  >

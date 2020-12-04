@@ -6,6 +6,7 @@ import useSkillsEditor from './useSkillsEditor'
 import {exportJSON} from './export/exportJSON'
 
 function ChatPageWithLoader(props) {
+    console.log(['cjhat;lpader',props]) 
     const params = useParams()
     const [currentExport,setCurrentExport] = useState(null)
     const [currentSkillHere,setCurrentSkillHere] = useState(null)

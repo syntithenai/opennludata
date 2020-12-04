@@ -518,7 +518,6 @@ export default function ActionsManagerRow(props) {
                             mode="javascript"
                             theme="github"
                             showGutter={false}
-                            maxLines={50}
                             minLines={15}
                             enableBasicAutocompletion={true}
                             enableLiveAutocompletion={true}
