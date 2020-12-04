@@ -213,7 +213,7 @@ function startWebSocketAsr(server) {
                 createSilenceTimeout()
                 //console.log('Received Binary Message of ' + message.binaryData.length + ' bytes');
                 //connection.sendBytes(message.binaryData);
-                audioIn.push(message.binaryData)
+                if (audioIn) audioIn.push(message.binaryData)
             }
         });
         connection.on('close', function(reasonCode, description) {
