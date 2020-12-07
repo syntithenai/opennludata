@@ -103,7 +103,11 @@ function getIbmDetector(connection ,logTranscription, skillId) {
                                         }
                                     } else {
                                         //console.log('push chunk');
-                                        this.push(chunk)
+                                        try {
+                                            this.push(chunk)
+                                        } catch (e) {
+                                            console.log(e)
+                                        }
                                         //recognizeStream.write(chunk)
                                     }
                                 }
