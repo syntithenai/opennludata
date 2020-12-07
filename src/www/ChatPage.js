@@ -503,7 +503,7 @@ function ChatPage(props) {
                 var config = {skill:skillIdent}
                 //config.server = 'wss://api.opennludata.org:5000/'
                 //config.server = 'ws://localhost:8080/'
-                config.server = 'wss://localhost:5000/'
+                config.server = process.env.REACT_APP_speechServer ?  process.env.REACT_APP_speechServer : 'wss://localhost:5000/'
                 config.user = props.user
                 client = new WebsocketAsrClient(config)
                 client.init()

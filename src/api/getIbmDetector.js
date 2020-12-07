@@ -79,7 +79,7 @@ function getIbmDetector(connection ,logTranscription, skillId) {
             if (chunk === null) {
                 //connection.sendUTF(JSON.stringify({message: 'force end detection with null chunk'}))
                 //bailout('empty chunk')
-                this.push(chunk)
+                if (!finished && this.writable) this.push(chunk)
                 callback()
             } else {
                 try {
@@ -89,7 +89,7 @@ function getIbmDetector(connection ,logTranscription, skillId) {
                                 break;
                             case VAD.Event.SILENCE:
                                 //console.log(['dwrtite silence',silenceCount, finished])
-                                if (!finished) {
+                                if (!finished && this.writable) {
                                     var now = new Date().getTime()
                                     //console.log('should silence TO',(now - lastAudio))
                                     if (state === voice.START && (now - lastAudio > 800)) { //30
@@ -116,7 +116,7 @@ function getIbmDetector(connection ,logTranscription, skillId) {
                             case VAD.Event.NOISE:
                                 if (startTimeout) clearTimeout(startTimeout);
                                     
-                                if (!finished) {
+                                if (!finished && this.writable) {
                                     state = voice.START;
                                             
                                     try {
