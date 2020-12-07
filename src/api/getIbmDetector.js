@@ -62,11 +62,11 @@ function getIbmDetector(connection ,logTranscription, skillId) {
     recognizeStream.on('error', function (event) {
         console.log(['ibm recog error']) //,JSON.stringify(event, null, 2)])
         console.log(event)
-        //bailout('connection error')
+        bailout('connection error')
     });
     recognizeStream.on('close', function (event) {
         console.log(['ibm close']) //,JSON.stringify(event, null, 2)])
-        //bailout('connection closed')
+        bailout('connection closed')
     });
     recognizeStream.on('finish', function (event) {
         console.log(['ibm fin']) //,JSON.stringify(event, null, 2)])
