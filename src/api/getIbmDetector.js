@@ -12,7 +12,7 @@ function getIbmDetector(connection ,logTranscription, skillId) {
     let state = voice.START;
 	var finished = false
     var startTime = new Date().getTime()
-			
+	var closed = false		
     var startTimeout = setTimeout(function() {
             console.log('START TIMEOUT')
             bailout('start timeout')
@@ -51,6 +51,7 @@ function getIbmDetector(connection ,logTranscription, skillId) {
         var transcript = event.toString()
         console.log(['ibm recog data',transcript])
         if (transcript && transcript.trim()) {
+            closed = true
             connection.sendUTF(JSON.stringify({transcript: transcript}))
             console.log(['ibm sent transcript',transcript])
             let time = new Date().getTime() - startTime;
@@ -60,15 +61,18 @@ function getIbmDetector(connection ,logTranscription, skillId) {
         }
     });
     recognizeStream.on('error', function (event) {
+        closed = true
         console.log(['ibm recog error']) //,JSON.stringify(event, null, 2)])
         console.log(event)
         bailout('connection error')
     });
     recognizeStream.on('close', function (event) {
+        closed = true
         console.log(['ibm close']) //,JSON.stringify(event, null, 2)])
         bailout('connection closed')
     });
     recognizeStream.on('finish', function (event) {
+        closed = true
         console.log(['ibm fin']) //,JSON.stringify(event, null, 2)])
     });
     
@@ -79,7 +83,7 @@ function getIbmDetector(connection ,logTranscription, skillId) {
             if (chunk === null) {
                 //connection.sendUTF(JSON.stringify({message: 'force end detection with null chunk'}))
                 //bailout('empty chunk')
-                if (!finished && this.writable) this.push(chunk)
+                if (!finished && !closed) this.push(chunk)
                 callback()
             } else {
                 try {
@@ -89,7 +93,7 @@ function getIbmDetector(connection ,logTranscription, skillId) {
                                 break;
                             case VAD.Event.SILENCE:
                                 //console.log(['dwrtite silence',silenceCount, finished])
-                                if (!finished && this.writable) {
+                                if (!finished && !closed) {
                                     var now = new Date().getTime()
                                     //console.log('should silence TO',(now - lastAudio))
                                     if (state === voice.START && (now - lastAudio > 800)) { //30
@@ -116,7 +120,7 @@ function getIbmDetector(connection ,logTranscription, skillId) {
                             case VAD.Event.NOISE:
                                 if (startTimeout) clearTimeout(startTimeout);
                                     
-                                if (!finished && this.writable) {
+                                if (!finished && !closed) {
                                     state = voice.START;
                                             
                                     try {
@@ -137,6 +141,7 @@ function getIbmDetector(connection ,logTranscription, skillId) {
                 } catch (e) {
                     console.log(['STREAM ERROR',e])
                     bailout('error finishing stream 3')
+                    callback()
                 }
             }
         
