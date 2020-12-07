@@ -24,8 +24,9 @@ var stream = require('stream')
 var Readable = stream.Readable;
 
 var getGoogleDetector = require('./getGoogleDetector') 
+var getIbmDetector = require('./getIbmDetector') 
 var {getDeepSpeechDetector, getDeepSpeechModel} = require('./getDeepSpeechDetector') 
- 
+var JWT = require('jsonwebtoken');
 //console.log("PRECONNECT")    
 try {
     //mongoose.connect(config.databaseConnection+config.database, {useNewUrlParser: true})
@@ -38,22 +39,79 @@ const {skillsSchema, skillTagsSchema, entitiesSchema, utterancesSchema, regexpsS
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
-function getUserFromAccessToken(bearerToken,secret) {
-   return new Promise(function(resolve,reject) {
-        return JWT.verify(bearerToken, secret, function(err, decoded) {
-            if (err) {
-              resolve(err, false);   // the err contains JWT error data
-            }
-            resolve(false,decoded.user)
-        });
-   })
-}
+var d = new Date()
+const ACCOUNTING_FILE = (process.env.ASR_ACCOUNTING_FOLDER ? process.env.ASR_ACCOUNTING_FOLDER : '../') + 'asr-accounting-'+d.getMonth()+'-'+d.getFullYear()+'.json'
+const BILLING_FILE = (process.env.ASR_ACCOUNTING_FOLDER ? process.env.ASR_ACCOUNTING_FOLDER : '../') + 'asr-billing.json'
 
+
+//function getUserFromAccessToken(bearerToken,secret) {
+   //return new Promise(function(resolve,reject) {
+        //return JWT.verify(bearerToken, secret, function(err, decoded) {
+            //if (err) {
+              //resolve(err, false);   // the err contains JWT error data
+            //}
+            //resolve(false,decoded.user)
+        //});
+   //})
+//}
+var accountingChanged = false
+var accounting = {}
+var billing = {}
+    
 
 function startWebSocketAsr(server) {
     //console.log('START WEBSOCKT')
     //console.log([config])
+    var model = getDeepSpeechModel()
+    function logTranscription(val) {
+        //console.log(['logTranscription',val])
+        if (val) {
+             //console.log(['logTranscription have val',val])
+            var {skill, duration, type} = val
+            if (skill && duration && type) {
+                 //console.log(['logTranscription have all',skill,duration,type])
+                var currentSite = accounting[skill] ? accounting[skill] : {}
+                var currentSiteMethod =currentSite[type] ? currentSite[type] : {}
+                var currentBillingChunks = currentSiteMethod && currentSiteMethod.chunks > 0 ? currentSiteMethod.chunks : 0
+                var currentDuration = currentSiteMethod && currentSiteMethod.duration > 0 ? currentSiteMethod.duration : 0
+                
+                if (duration > 0) {
+                    //console.log(['duration ',duration])
+                    var billingChunks = currentBillingChunks + parseInt(duration / 15) + 1
+                    var duration = currentDuration + duration
+                    currentSite[type] = {duration: duration, chunks: billingChunks}
+                    //console.log(['currentSIte ',currentSite, accounting])
+                    accounting[skill] = currentSite
+                    accountingChanged = true
+                }
+            }
+        }
+        //console.log(['DONE logTranscription',JSON.stringify(accounting)])
+    }
+    try {
+        accounting = JSON.parse(fs.readFileSync(ACCOUNTING_FILE))
+        console.log(['load accounting',JSON.stringify(accounting)])
+    } catch (e) {
+        console.log(e)
+    }
     
+    try {
+        billing = JSON.parse(fs.readFileSync(BILLING_FILE))
+        console.log(['load billing',JSON.stringify(billing)])
+    } catch (e) {
+        console.log(e)
+    }
+    
+    
+    setInterval(function() {
+       if (accountingChanged) {
+        console.log(['save accounting',JSON.stringify(accounting)])
+           fs.writeFileSync(ACCOUNTING_FILE,JSON.stringify(accounting))
+           accountingChanged = false
+       } 
+    },2000)
+    
+        
    wsServer = new WebSocketServer({
         httpServer: server,
         // You should not use autoAcceptConnections for production
@@ -75,7 +133,7 @@ function startWebSocketAsr(server) {
     })
      
     wsServer.on('request', function(request) {
-        //console.log(['WS request'])
+        console.log(['WS request'])
         if (!originIsAllowed(request.origin)) {
           // Make sure we only accept requests from an allowed origin
           request.reject();
@@ -95,6 +153,12 @@ function startWebSocketAsr(server) {
             clearTimeouts()
             try {
                 if (detector) {
+                    //console.log(JSON.stringify(detector,false,2))
+                    //if (detector.write) {
+                        //console.log('wrote stop f')
+                        //// for ibm
+                        ////detector.write(JSON.stringify({action: 'stop'}))
+                    //}
                     if (detector.pause) detector.pause()
                     if (detector.destroy) detector.destroy()
                 }
@@ -154,58 +218,118 @@ function startWebSocketAsr(server) {
         
         connection = request.accept('asr-audio', request.origin);
         console.log((new Date()) + ' Connection accepted.');
-        var model = getDeepSpeechModel()
         //console.log(['dsmodel',model])
         
         var detector = null
-        //if (!detector) {
-            //if (token) {
-                //console.log('USE GOOGLE')
-                //detector = getGoogleDetector(connection)
-            //} else {
-                ////console.log('USE DEEPSPEECH')
-                ////detector = getDeepSpeechDetector(connection, model)
-            //}
-
-        //}
-        // audio to stream - pushed to when audio packet arrives
-        var audioIn  = null
-        //= new Readable()
-        //audioIn._read = () => {} // _read is required but you can noop it
-        //audioIn.pipe(detector)	
-
+        var detectorCreated = false
+        var audioIn = null
+        audioIn = new Readable()
+        audioIn._read = () => {} // _read is required but you can noop it
+        console.log('create detector')                    
+        //detector = getIbmDetector(connection, logTranscription, 'sss')
+        ////detector = getDeepSpeechDetector(connection, model, logTranscription, 'sss') 
+        //if (detector) audioIn.pipe(detector)	
+        
         connection.on('message', function(message) {
             //console.log(['Received Message: ',message]);
             if (message.type === 'utf8') {
-                //console.log('Received Text Message: ' + message.utf8Data);
-                //if (message.utf8data) {
+                //console.log(['Received Text Message: ' + message.utf8Data,detectorCreated]);
+                if (!detectorCreated && !detector) {
+                    detectorCreated = true
+                            
                     var data = {}
                     try {
                         data = JSON.parse(message.utf8Data)
                         //console.log(['ddd Text Message: ' ,JSON.stringify(data),config.jwtAccessTokenSecret]);
-                        if (data.user) {
-                            token = data.token
-                            skill = data.skill
-                            console.log('set Text token: ' ,token);
-                            if (token) {
-                                console.log('USE GOOGLE')
-                                detector = getGoogleDetector(connection)
-                            } else {
-                               console.log('USE DEEPSPEECH')
-                                detector = getDeepSpeechDetector(connection, model)
-                            }
-                            audioIn = new Readable()
-                            audioIn._read = () => {} // _read is required but you can noop it
-                            audioIn.pipe(detector)	
-                            //getUserFromAccessToken(token,config.jwtAccessTokenSecret).then(function(user) {
-                              //console.log(['user from token ',user])  
-                            //})
-                        }
-                    } catch (e) {
                         
+                        function createProcessorForSkill(data,user) {
+                            var detector = null
+                            var billingKey = user && user.username ? user.username : null
+                            if (billingKey) {
+                                console.log('create detector')
+                                audioIn = new Readable()
+                                audioIn._read = () => {} // _read is required but you can noop it
+                                
+                                // default plan
+                                var billingData = billing.hasOwnProperty(billingKey) ? billing[billingKey] : {google:{chunks:0}, ibm:{duration:0}, deepspeech:{duration:1200}}
+                                
+                                var accountingData = accounting.hasOwnProperty(billingKey) ? accounting[billingKey] : {google:{chunks:0}, ibm:{duration:0}, deepspeech:{duration:0}}
+                                
+                                var googleChunks = accountingData && accountingData.google && accountingData.google.chunks ? accountingData.google.chunks : 0
+                                var ibmDuration = accountingData && accountingData.ibm && accountingData.ibm.duration ? accountingData.ibm.duration : 0
+                                var deepspeechDuration = accountingData && accountingData.deepspeech && accountingData.deepspeech.duration ? accountingData.deepspeech.duration : 0
+                                
+                                console.log([googleChunks, ibmDuration, deepspeechDuration])
+                                console.log([(billingData && billingData.google  && billingData.google.chunks > 0  && billingData.google.chunks > googleChunks) ? 'tt' : 'ff',
+                                (billingData && billingData.ibm && billingData.ibm.duration > 0 && billingData.ibm.duration > ibmDuration) ? 'tt' : 'ff'])
+                                console.log([billingData,accountingData])
+                                if (false && billingKey && data.token && data.token.trim()) {
+                                    console.log('USE GOOGLE by login')
+                                    detector = getGoogleDetector(connection, logTranscription, billingKey)
+                                } else if (billingData.google && billingData.google.chunks > 0 && billingData.google.chunks > googleChunks) {
+                                    console.log('USE GOOGLE from skill')
+                                    detector = getGoogleDetector(connection, logTranscription, billingKey)
+                                } else if (billingData.ibm && billingData.ibm.duration > 0 && billingData.ibm.duration > ibmDuration) {
+                                    console.log('USE IBM from skill')
+                                    detector = getIbmDetector(connection, logTranscription, billingKey)
+                                } else  {
+                                    console.log(['try ds'])
+                                    if (billingData.deepspeech && billingData.deepspeech.duration > 0) {
+                                        var usedSeconds = accountingData.deepspeech && accountingData.deepspeech.duration ? accountingData.deepspeech.duration : 0
+                                        if (usedSeconds < billingData.deepspeech.duration) {
+                                            console.log('1 USE DEEPSPEECH')
+                                            detector = getDeepSpeechDetector(connection, model, logTranscription, billingKey) 
+                                        } else {
+                                            connection.close()
+                                        }
+                                    } else {
+                                        connection.close()
+                                    }
+                                }
+                            } else {
+                                console.log('ANON USE DEEPSPEECH')
+                                detector = getDeepSpeechDetector(connection, model, logTranscription, billingKey) 
+                            }
+                            if (detector) audioIn.pipe(detector)	
+                            return detector
+                        }
+                        
+                        if (data.token) {
+                            try {
+                                function getUserFromAccessToken(bearerToken, secret) {
+                                    return JWT.verify(bearerToken, secret, function(err, decoded) {
+                                        if (err) {
+                                          console.log(['verify err',err]);   // the err contains JWT error data
+                                        } else {
+                                            console.log(['user from access token',decoded]) 
+                                            createProcessorForSkill(data, decoded && decoded.user ? decoded.user : {})
+                                        }
+                                    })
+                                }
+                                
+                                var secret = config && config.websocketAsr && config.websocketAsr.loginSecret ? config.websocketAsr.loginSecret : ''
+                                //console.log('secret'+secret)
+                                getUserFromAccessToken(data.token,secret)
+                                //.then(function(user) {
+                                  //console.log(['user from access token',user])  
+                                //})
+                            } catch (e) {
+                                console.log(e)
+                            }
+                                                    
+                            //detector = getIbmDetector(connection, logTranscription, billingKey)
+                            //detector = getDeepSpeechDetector(connection, model, logTranscription, billingKey) 
+                            if (detector) audioIn.pipe(detector)	
+                        } else {
+                            createProcessorForSkill(data, null)
+                        }
+                        // audio to stream - pushed to when audio packet arrives
+                        
+                    } catch (e) {
+                        console.log(e)
                     }
-                //}
-                //connection.sendUTF(message.utf8Data);
+                }
+                //////connection.sendUTF(message.utf8Data);
             }
             else if (message.type === 'binary') {
                 
@@ -213,7 +337,10 @@ function startWebSocketAsr(server) {
                 createSilenceTimeout()
                 //console.log('Received Binary Message of ' + message.binaryData.length + ' bytes');
                 //connection.sendBytes(message.binaryData);
-                if (audioIn) audioIn.push(message.binaryData)
+                if (audioIn) {
+                    //console.log('Pushed Binary Message of ' + message.binaryData.length + ' bytes');
+                    audioIn.push(message.binaryData)
+                }
             }
         });
         connection.on('close', function(reasonCode, description) {

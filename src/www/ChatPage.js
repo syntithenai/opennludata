@@ -72,6 +72,17 @@ function ChatPage(props) {
     //const { width } = useViewport();
     const breakpoint = 768;
 
+    useEffect(() => {
+        //console.log(['update user',props.user])
+        if (props.user && props.user.token) {
+            //console.log(['update user have user',props.user])
+            if (wc) {
+                //console.log(['update user have wc',wc])
+                wc.setUser(props.user)
+            }
+        }
+    },[props.user])
+
     function setMute(val) {
         if (val) {
             if (meSpeak) meSpeak.stop();
@@ -419,7 +430,6 @@ function ChatPage(props) {
         setMicrophoneButtonStyle({border:'1px dashed green', backgroundColor:'lightgreen'})
     }
    
-
     function restartVoiceNow(startVoice) {
         console.log(['RESTART VOICE start',startVoice,localStorage.getItem('auto_microphone'),client]) 
         if (localStorage.getItem('auto_microphone') === "YES") {
@@ -491,7 +501,7 @@ function ChatPage(props) {
       //  if (!wc) {
             console.log(['CREATEWEBSOCKETCLIENT real',props])
                 var config = {skill:skillIdent}
-               // config.server = 'wss://api.opennludata.org:5000/'
+                //config.server = 'wss://api.opennludata.org:5000/'
                 //config.server = 'ws://localhost:8080/'
                 config.server = 'wss://localhost:5000/'
                 config.user = props.user

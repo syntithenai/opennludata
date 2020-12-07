@@ -1,48 +1,70 @@
-// export DEEPSPEECH_MODEL=./deepspeech/deepspeech-0.9.1-models.pbmm;  DEEPSPEECH_SCORER=./deepspeech/deepspeech-0.9.1-models.scorer; bash bin/dev_api.sh
 
 var stream = require('stream') 
 var Writable = stream.Writable;
 var VAD= require('node-vad')
 const Ds = require('deepspeech');
+var config = require('./config')
 
 function getDeepSpeechModel() {
-    var model = new Ds.Model(process.env.DEEPSPEECH_MODEL ? process.env.DEEPSPEECH_MODEL : './deepspeech/deepspeech-0.9.1-models.pbmm');
-    model.enableExternalScorer(process.env.DEEPSPEECH_SCORER ? process.env.DEEPSPEECH_SCORER : './deepspeech/deepspeech-0.9.1-models.scorer');
+    console.log(['Load Deepspeech'])
+    //,JSON.stringify(config,false,2)])
+    let start = new Date()
+    
+    var model = new Ds.Model(config && config.websocketAsr && config.websocketAsr.deepspeechModel ? config.websocketAsr.deepspeechModel : './deepspeech/deepspeech-0.9.1-models.pbmm');
+    model.enableExternalScorer(config && config.websocketAsr && config.websocketAsr.deepspeechScorer ? config.websocketAsr.deepspeechScorer : './deepspeech/deepspeech-0.9.1-models.scorer');
+    let time = new Date().getTime() - start.getTime();
+    console.log('Loaded Deepspeech in '+time/1000+' seconds')
     return model
 }
 
-function getDeepSpeechDetector(connection,model) {
+function getDeepSpeechDetector(connection,model,logTranscription, skillId) {
     
     var startTimeout = null
     
 	function getDetector(connection,model) {
+        let start = new Date()
 		const vad = new VAD(VAD.Mode.NORMAL);
 		const voice = {START: true, STOP: false};
-		var sctx = model.createStream();
 		let state = voice.START;
+		var sctx = model.createStream();
 		var finished = false
 		let detector = new Writable();
 		var silenceCount = 0;
+        var lastAudio = new Date().getTime()
         
-        function bailout() {
+        function bailout(a) {
+            console.log(['BAILOUT',a])
+            if (sctx) {
+                let transcription = sctx.finishStream();
+                finished = true
+                let time = new Date().getTime() - start.getTime();
+                console.log('Transcript complete in '+time/1000+' seconds')
+                if (transcription) {
+                    connection.sendUTF(JSON.stringify({transcript: transcription, time: time}))
+                    logTranscription({skill:skillId, type:'deepspeech', transcript:transcription, duration: time/1000})
+                }
+                console.log(transcription)
+            }
             if (startTimeout) clearTimeout(startTimeout)
             if (sctx) Ds.FreeStream(sctx)
             if (connection) connection.close()
         }
         
-        startTimeout = setTimeout(function() {
-            console.log('START TIMEOUT')
-            connection.sendUTF(JSON.stringify({error: 'no packet timeout'}))
-            bailout()
-        },2000)
+        //var startTimeout = null
+        //setTimeout(function() {
+            //console.log('START TIMEOUT')
+            ////connection.sendUTF(JSON.stringify({error: 'no packet timeout'}))
+            //bailout('start timeout')
+        //},2000)
         
 		detector._write = function(chunk,encoding,cb) {
             if (chunk === null) {
                 connection.sendUTF(JSON.stringify({message: 'force end detection with null chunk'}))
-                bailout()
+                bailout('empty chunk')
             } else {
                 try {
                     vad.processAudio(chunk, 16000).then(res => {
+                        if (startTimeout) clearTimeout(startTimeout);
                         switch (res) {
                             case VAD.Event.ERROR:
                                 break;
@@ -52,23 +74,15 @@ function getDeepSpeechDetector(connection,model) {
                                 silenceCount++;
                                 if
                                  (!finished) {
-                                    if (state === voice.START && silenceCount > 30) { //30
+                                    var now = new Date().getTime()
+                                    console.log('should silence TO',(now - lastAudio))
+                                    if (state === voice.START && (now - lastAudio > 800)) { //30
                                         state = voice.STOP;
                                         silenceCount = 0;
-                                        if (startTimeout) clearTimeout(startTimeout);
-                                        try {
-                                            let transcription = sctx.finishStream();
-                                            finished = true
-                                            if (transcription) connection.sendUTF(JSON.stringify({transcript: transcription}))
-                                            console.log(transcription)
-                                            bailout()
-                                            
-                                        } catch (e) {
-                                            console.log(['FINISH STREAM ERROR',e])
-                                            connection.sendUTF(JSON.stringify({error: e.toString()}))
-                                            bailout()
-                                        }
+                                        bailout('silence')
+                                        
                                     } else {
+                                       // lastAudio = new Date().getTime()
                                         sctx.feedAudioContent(chunk);
                                     }
                                 }
@@ -76,18 +90,19 @@ function getDeepSpeechDetector(connection,model) {
                             case VAD.Event.VOICE:
                             case VAD.Event.NOISE:
                                 //console.log(['dwrtite sound'])
-                                if (startTimeout) clearTimeout(startTimeout)
+                                //if (startTimeout) clearTimeout(startTimeout)
                                 silenceCount = 0;
                                 state = voice.START;
                                     
                                 if (!finished) {
                                     // restart mic
                                     try {
+                                        lastAudio = new Date().getTime()
                                         sctx.feedAudioContent(chunk)
                                     } catch (e) {
                                         console.log(e)
                                         connection.sendUTF(JSON.stringify({error: e.toString()}))
-                                        bailout()
+                                        bailout('error finishing stream 2')
                                     }
                                 }
                                 break;
@@ -97,7 +112,7 @@ function getDeepSpeechDetector(connection,model) {
                 } catch (e) {
                     console.log(['STREAM ERROR',e])
                     connection.sendUTF(JSON.stringify({error: e.toString()}))
-                    bailout()
+                    bailout('error finishing stream 3')
                 }
             }
 		}

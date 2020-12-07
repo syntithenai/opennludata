@@ -90,6 +90,11 @@ module.exports = {
     websocketAsr: {
         allowedOrigins:process.env.websocketAsrAllowedOrigins ? process.env.websocketAsrAllowedOrigins.trim().split(",") : [],
         googleServiceCredentialsFile: process.env.websocketAsrGoogleServiceCredentialsFile,
+        ibmUrl: process.env.websocketAsrIbmUrl,
+        ibmApiKey: process.env.websocketAsrIbmApiKey,
+        deepspeechModel: process.env.websocketAsrDeepspeechModel,
+        deepspeechScorer: process.env.websocketAsrDeepspeechScorer,
+        loginSecret: process.env.websocketAsrLoginSecret
     }
 }
 

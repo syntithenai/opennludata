@@ -236,7 +236,7 @@ export default  function SkillSettingsPage (props) {
               <Tab eventKey="contextdata" title="Context Data">
                 <div style={{marginTop:'0.7em', marginLeft:'1.4em'}} >
                 <JsonEditor
-                    value={currentSkill.config.contextData}
+                    value={currentSkill && currentSkill.config && currentSkill.config.contextData ? currentSkill.config.contextData : {}}
                     theme={"ace/theme/github"}
                     ace={ace}
                     history={true}
